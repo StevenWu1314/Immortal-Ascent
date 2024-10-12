@@ -16,7 +16,7 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
     [SerializeField] private int numberOfRooms;
     [SerializeField] private TilePlacer tilePlacer;
     [SerializeField] private GameObject spawnPoint;
-    [SerializeField] private GameObject enemy;
+    [SerializeField] private GameObject[] enemies;
     public static int gridSize = 500;
     public Grid grid = new Grid(gridSize, gridSize, 1, new Vector3 (-gridSize/2, -gridSize/2));
     
@@ -71,20 +71,22 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
             int amountToSpawn = Random.Range(0, 11);
             if(amountToSpawn >= 5 && amountToSpawn <= 8)
             {
+                int type = Random.Range(0, enemies.Length);
                 float x = Random.Range(room.xMin+3, room.xMax-3)+0.5f;
                 float y = Random.Range(room.yMin+3, room.yMax-3)+0.5f;
-                GameObject newEnemy = Instantiate(enemy, new Vector3(x, y), quaternion.identity);
+                GameObject newEnemy = Instantiate(enemies[type], new Vector3(x, y), quaternion.identity);
                 newEnemy.GetComponent<EnemyBehavior>().detectionRadius = room;
             }
             else if(amountToSpawn > 8)
             {
+                int type = Random.Range(0, enemies.Length);
                 float x = Random.Range(room.xMin+3, room.xMax-3)+0.5f;
                 float y = Random.Range(room.yMin+3, room.yMax-3)+0.5f;
-                GameObject newEnemy = Instantiate(enemy, new Vector3(x, y), quaternion.identity);
+                GameObject newEnemy = Instantiate(enemies[type], new Vector3(x, y), quaternion.identity);
                 newEnemy.GetComponent<EnemyBehavior>().detectionRadius = room;
                 x = Random.Range(room.xMin+1, room.xMax-1);
                 y = Random.Range(room.yMin+1, room.yMax-1);
-                newEnemy = Instantiate(enemy, new Vector3(x, y), quaternion.identity);
+                newEnemy = Instantiate(enemies[type], new Vector3(x, y), quaternion.identity);
                 newEnemy.GetComponent<EnemyBehavior>().detectionRadius = room;
             }
         }

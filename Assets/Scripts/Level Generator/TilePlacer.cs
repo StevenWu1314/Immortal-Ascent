@@ -11,6 +11,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.U2D;
+using Random = UnityEngine.Random;
 
 public class TilePlacer : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class TilePlacer : MonoBehaviour
     public Tilemap floor; // Reference to the floor Tilemap component
     public Tilemap corridor;
     public TileBase floorTile; // Reference to the floor tile
+    public TileBase flowerFloorTile; // Reference to the flower tile
     public TileBase wallTileTop1; // Reference to the first top wall tile
     public TileBase wallTileTop2; // Reference to the second top wall tile
     public TileBase wallTileBottom1; // Reference to the first bottom wall tile
@@ -94,7 +96,16 @@ public class TilePlacer : MonoBehaviour
                     }
                     else
                     {
-                        floor.SetTile(pos, floorTile); // Floor
+                        int rand = Random.Range(0, 100);
+                        if(rand < 97)
+                        {
+                            floor.SetTile(pos, floorTile); // Floor
+                        }
+                        else
+                        {
+                            floor.SetTile(pos, flowerFloorTile);
+                        }
+                        
                     }
                 }
             }
