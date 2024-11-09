@@ -54,6 +54,7 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
             
         }
         tilePlacer.PlaceTiles(roomsSpace, grid);
+        tilePlacer.generateLootTiles(roomsSpace, grid);
         tilePlacer.branchingCorridors(rooms, grid);
         spawnEnemies(roomsSpace);
     }
@@ -72,16 +73,16 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
             if(amountToSpawn >= 5 && amountToSpawn <= 8)
             {
                 int type = Random.Range(0, enemies.Length);
-                float x = Random.Range(room.xMin+3, room.xMax-3)+0.5f;
-                float y = Random.Range(room.yMin+3, room.yMax-3)+0.5f;
+                float x = Random.Range(room.xMin+3, room.xMax-3);
+                float y = Random.Range(room.yMin+3, room.yMax-3);
                 GameObject newEnemy = Instantiate(enemies[type], new Vector3(x, y), quaternion.identity);
                 newEnemy.GetComponent<EnemyBehavior>().detectionRadius = room;
             }
             else if(amountToSpawn > 8)
             {
                 int type = Random.Range(0, enemies.Length);
-                float x = Random.Range(room.xMin+3, room.xMax-3)+0.5f;
-                float y = Random.Range(room.yMin+3, room.yMax-3)+0.5f;
+                float x = Random.Range(room.xMin+3, room.xMax-3);
+                float y = Random.Range(room.yMin+3, room.yMax-3);
                 GameObject newEnemy = Instantiate(enemies[type], new Vector3(x, y), quaternion.identity);
                 newEnemy.GetComponent<EnemyBehavior>().detectionRadius = room;
                 x = Random.Range(room.xMin+1, room.xMax-1);

@@ -1,16 +1,7 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Linq;
-using System.Net.Mail;
-using System.Runtime.InteropServices.WindowsRuntime;
-using JetBrains.Annotations;
-using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEngine.U2D;
 using Random = UnityEngine.Random;
 
 public class TilePlacer : MonoBehaviour
@@ -36,6 +27,7 @@ public class TilePlacer : MonoBehaviour
     public TileBase wallRighttoDown; // Reference to the rightside->Downside connection tile
     public TileBase wallDowntoLeft;
     public TileBase wallDowntoRight;
+    public TileBase chest;
     DungeonSpecifications dungeonSpecifications;
 
    // List of BoundsInt
@@ -582,6 +574,22 @@ public class TilePlacer : MonoBehaviour
                 //corridor.SetTile(currentPos, floorTile);
                 walls.SetTile(currentPos,null);
                 currentPos += new Vector3Int(0, -1, 0);
+            }
+        }
+    }
+
+    public void generateLootTiles(List<BoundsInt> roomsSpace, Grid grid)
+    {
+        foreach (BoundsInt room in roomsSpace)
+        {
+            int spawnLoot = Random.Range(1, 11);
+            if(spawnLoot > 5)
+            {
+                int x = Random.Range(room.xMin+3, room.xMax-3);
+                int y = Random.Range(room.yMin+3, room.yMax-3);
+                Vector3 pos = new Vector3(x, y);
+                grid.SetValueAtWorldLocation(pos, 99);
+                floor.SetTile(new Vector3Int(x, y), chest);
             }
         }
     }
