@@ -6,8 +6,8 @@ using System.Linq.Expressions;
 
 public abstract class Enemy : MonoBehaviour
 {
-    private int health;
-    private readonly int damage;
+    protected int health;
+    protected int damage;
 
     public void takeDamage(int damage)
     {
@@ -16,10 +16,15 @@ public abstract class Enemy : MonoBehaviour
         StartCoroutine(FlowupDamageText(damageText));
         if(health <= 0)
         {
+            Destroy(damageText);
             Die();
         }
     }
 
+    public void attack(PlayerStats target)
+    {
+        target.takeDamage(damage);
+    }
     IEnumerator FlowupDamageText(TextMesh damageText)
     {
         for(int i = 0; i < 100; i++)
@@ -27,10 +32,12 @@ public abstract class Enemy : MonoBehaviour
             damageText.transform.position += new Vector3(0, 0.1f, 0);
             yield return new WaitForSeconds(0.01f);
         }
+        Destroy(damageText);
     }
 
     private void Die()
     {
+        
         Destroy(gameObject);
     }
 

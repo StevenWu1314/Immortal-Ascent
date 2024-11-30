@@ -35,28 +35,28 @@ public class Controls : MonoBehaviour
             if(Input.GetKey(KeyCode.W)) 
             {
                 direction = new Vector2Int(0, 1);
-                grid.move(transform.position, direction, gameObject.transform);
+                grid.Move(transform.position, direction, gameObject.transform);
                 onMoveEvent(this);
                 
             }
             else if(Input.GetKey(KeyCode.S))
             {
                 direction = new Vector2Int(0, -1);
-                grid.move(transform.position, direction, gameObject.transform);
+                grid.Move(transform.position, direction, gameObject.transform);
                 onMoveEvent(this);
                 
             }
             else if(Input.GetKey(KeyCode.D))
             {
                 direction = new Vector2Int(1, 0);
-                grid.move(transform.position, direction, gameObject.transform);
+                grid.Move(transform.position, direction, gameObject.transform);
                 onMoveEvent(this);
                 
             }
             else if(Input.GetKey(KeyCode.A))
             {
                 direction = new Vector2Int(-1, 0);
-                grid.move(transform.position, direction, gameObject.transform);
+                grid.Move(transform.position, direction, gameObject.transform);
                 onMoveEvent(this);
                 
             }   

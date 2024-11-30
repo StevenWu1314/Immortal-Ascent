@@ -1,0 +1,3009 @@
+fileFormatVersion: 2
+guid: bb60660883732469a869a1e82eddb2f4
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 160
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: iPhone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: chestAndKey_updates_0
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5e47eab98b7cc46759c37ad4abba1b8a
+      internalID: -1639025622
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_1
+      rect:
+        serializedVersion: 2
+        x: 330
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1e37828666fa84cb69c7ae31ebdef34b
+      internalID: 898184315
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_2
+      rect:
+        serializedVersion: 2
+        x: 490
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a4e447006bad54ffb80dbe4c0dc14764
+      internalID: -959403533
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_3
+      rect:
+        serializedVersion: 2
+        x: 650
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b118ee2df811f43409d72b877b2d4900
+      internalID: 932256311
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_4
+      rect:
+        serializedVersion: 2
+        x: 810
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a341c7088821f4723b0f7463f9e9b173
+      internalID: -1184749934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_5
+      rect:
+        serializedVersion: 2
+        x: 970
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7d93434c505484ef5a042ee4545e478b
+      internalID: -1722636974
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_6
+      rect:
+        serializedVersion: 2
+        x: 1130
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 36333fdac1a484ba3b5a888bcd4fcfe4
+      internalID: 160087072
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_7
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bf92a162be19a405d8dfc43f0f2eef71
+      internalID: 1096839621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_8
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c0c69132a77194a998aaf40c18813df4
+      internalID: -1982333958
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_9
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc87e8264a1cf4c2f9b2386ee2ba2d98
+      internalID: 1233036880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_10
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5d79825941c7b4c2695f93c6f6a03d22
+      internalID: -1628835516
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_11
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cdc975be4c7cf4266ad9baccb73e7682
+      internalID: 899797485
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_12
+      rect:
+        serializedVersion: 2
+        x: 2410
+        y: 2410
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3d55ac795246443289f4ce4725c01f52
+      internalID: 1589425304
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_13
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 789da8f363cf74a50a681721292a32b2
+      internalID: -701215353
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_14
+      rect:
+        serializedVersion: 2
+        x: 330
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 353febc51a9f44672a7a9357c1860944
+      internalID: 2125799056
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_15
+      rect:
+        serializedVersion: 2
+        x: 490
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ba4773c29da694f90be77c7278a024b4
+      internalID: -2026919951
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_16
+      rect:
+        serializedVersion: 2
+        x: 650
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 23caf535ff21b420dbe8bfc71c1689a2
+      internalID: -755896419
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_17
+      rect:
+        serializedVersion: 2
+        x: 810
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 58e3d52712a474fc09a49cfedbedc7a6
+      internalID: 712934157
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_18
+      rect:
+        serializedVersion: 2
+        x: 970
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5603e0976ae8c4bc88c77aad208a9bf6
+      internalID: 1574555829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_19
+      rect:
+        serializedVersion: 2
+        x: 1130
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 53e2f2355fc1346b78b10b3249ebad68
+      internalID: -327949117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_20
+      rect:
+        serializedVersion: 2
+        x: 1290
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 57f4e6d0c80fd46abb414db118af369f
+      internalID: 1227442427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_21
+      rect:
+        serializedVersion: 2
+        x: 1450
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8822dfe0d61614fe8851cd3049544d39
+      internalID: 673109025
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_22
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 42787e356f6394a479eeff135577d5a2
+      internalID: 750978204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_23
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 362f6072a830f45a28ad1b7c88b81876
+      internalID: 948655271
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_24
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e61ac10a33a134022853a227145be88f
+      internalID: -320247866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_25
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9a71963b630454712aceb53672c78923
+      internalID: -245691898
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_26
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 92ef5c99962894c29928f1aa51358d62
+      internalID: -687179324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_27
+      rect:
+        serializedVersion: 2
+        x: 2410
+        y: 2250
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 117360cf0456c40b381785072c9bcd4a
+      internalID: -1475129360
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_28
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 666721fcae608489eaa068e50d029fe2
+      internalID: -1551779262
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_29
+      rect:
+        serializedVersion: 2
+        x: 330
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2e423b9f156d348b1a736803b7860488
+      internalID: 1424190157
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_30
+      rect:
+        serializedVersion: 2
+        x: 490
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f40b10d27c2984979939079184b207a2
+      internalID: 364311233
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_31
+      rect:
+        serializedVersion: 2
+        x: 650
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a8392857290cc4e018e375489ea6691e
+      internalID: 166422772
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_32
+      rect:
+        serializedVersion: 2
+        x: 810
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 73098388f56a64caeaa6d0cc11927da8
+      internalID: -676271437
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_33
+      rect:
+        serializedVersion: 2
+        x: 970
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fb1a19dd448e1410aa80203d0cd74567
+      internalID: 2041136621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_34
+      rect:
+        serializedVersion: 2
+        x: 1130
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 954a6f30d0a3944ba826d8015d0fdc8b
+      internalID: 1770834095
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_35
+      rect:
+        serializedVersion: 2
+        x: 1290
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cf053117b0c614b4099d65eca8d2d45c
+      internalID: -1146754683
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_36
+      rect:
+        serializedVersion: 2
+        x: 1450
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4b8bb6b50be6841fd93bbebaa9096f6c
+      internalID: -1492786337
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_37
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2924e398a470d465ea5f90e900af32f3
+      internalID: 544664758
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_38
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 111ec61e279f24ea19b8f426bd6f1e17
+      internalID: -1651546351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_39
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5e6e2f17a5b444cec9f560bc9fb37758
+      internalID: 618807998
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_40
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ab62acc7a1c3a472587559cec5c97f0e
+      internalID: 780866997
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_41
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fdc0b7e8b8fd44e2a9e8aa7f42ee2dcf
+      internalID: 578346078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_42
+      rect:
+        serializedVersion: 2
+        x: 2410
+        y: 2090
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f248d3096a8254ec2a2a3917a308c4c9
+      internalID: 1212229117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_43
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 08d2b31e8a3354dae9d2a4064af1229c
+      internalID: -1684128710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_44
+      rect:
+        serializedVersion: 2
+        x: 330
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8c0a0554ef04e47788cc25bdcf5bd556
+      internalID: 1696715682
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_45
+      rect:
+        serializedVersion: 2
+        x: 490
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 359642e3375364d9bb808a09a0bf4957
+      internalID: -685855095
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_46
+      rect:
+        serializedVersion: 2
+        x: 650
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c6bad88e001fe47f38c487b010ac434d
+      internalID: -1144912382
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_47
+      rect:
+        serializedVersion: 2
+        x: 810
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 89777c8705a0149a4b1ceb8165d3be22
+      internalID: -1790527718
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_48
+      rect:
+        serializedVersion: 2
+        x: 970
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 168f9943b635b4a57995f6ab295e1e1c
+      internalID: 738568727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_49
+      rect:
+        serializedVersion: 2
+        x: 1130
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 206d26536b3c9487ba3c35be230568b6
+      internalID: -1088246119
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_50
+      rect:
+        serializedVersion: 2
+        x: 1290
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 00c81fac7bf2e4226865b69a907a2f60
+      internalID: 403713120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_51
+      rect:
+        serializedVersion: 2
+        x: 1450
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 392802a0ac2ba49bdba8bf6d31e84074
+      internalID: -1782961977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_52
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8fd9916ff9b1f4f47a8b68658fbeb220
+      internalID: 1271146420
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_53
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 81fe051fbcfad40838d1f184bbfed921
+      internalID: 1943746559
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_54
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d4313c7191b27435ea76746b797614d2
+      internalID: -1628044271
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_55
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 93233f55ae87f4e84adfadc1abe8afe0
+      internalID: -632731903
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_56
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2e7e6d1fe85884057a636b30fad6756b
+      internalID: -199371832
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_57
+      rect:
+        serializedVersion: 2
+        x: 2410
+        y: 1930
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 849cbd1cc8ec64c3f9b4d45bfd166282
+      internalID: 912719760
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_58
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b4958cce062c54ce6bf3bd77848c903c
+      internalID: 942756761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_59
+      rect:
+        serializedVersion: 2
+        x: 330
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a954312774cec45f49c6c46d13a7a7d9
+      internalID: -2047856016
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_60
+      rect:
+        serializedVersion: 2
+        x: 490
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8ede5c1e507da4aca8c28dd56d488e01
+      internalID: -1466787503
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_61
+      rect:
+        serializedVersion: 2
+        x: 650
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1451f7bb8f703415d966168cb54f5f3b
+      internalID: 1204242663
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_62
+      rect:
+        serializedVersion: 2
+        x: 810
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 85ef9f00ff70649a18a7f7d44f35a6d0
+      internalID: -304402970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_63
+      rect:
+        serializedVersion: 2
+        x: 970
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6d2211232f770405683957c0f5afe64c
+      internalID: 721642285
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_64
+      rect:
+        serializedVersion: 2
+        x: 1130
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cb64cac2f3a17472aa5dc0dc3290531a
+      internalID: 950547130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_65
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 80f1dfcc915d446879a9d1cebb816312
+      internalID: -1838158311
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_66
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8af4f79f01a774476923a03a4dd63ac0
+      internalID: -1088935806
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_67
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f67ad7cca68194b888689c75f66c17e4
+      internalID: 68426102
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_68
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: af2b097d307b14d968ff407db6c5ae16
+      internalID: -253781932
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_69
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 64611d0bc0f7d406195c2274b0b2c411
+      internalID: 160771844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_70
+      rect:
+        serializedVersion: 2
+        x: 2410
+        y: 1770
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 817aef7fc14a044edb3dd07312b06fef
+      internalID: -1398443532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_71
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 1610
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c25fd3619dca84daa8c2319fc55a0eeb
+      internalID: -258926477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_72
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 1610
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: abc85feea86264384865020709e09299
+      internalID: 171954684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_73
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 1610
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: df67ec18439174808bbcf46ba14726fd
+      internalID: 1774545255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_74
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 1450
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4721d42e9dfca41a5bcc4bc61404ec38
+      internalID: 1860827261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_75
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 1450
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 12223ce09beaa48d7addc8ccb99af7f7
+      internalID: -2056242468
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_76
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 1450
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2d39f84be87f84b90841fe95fb1ce00d
+      internalID: -1676759557
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_77
+      rect:
+        serializedVersion: 2
+        x: 1450
+        y: 1290
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4d7e1b038ad134aeca5aa1c55c9a15f0
+      internalID: 297665365
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_78
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 1290
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6904ab41d200341bb9a65875902decf1
+      internalID: -1312338027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_79
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 1290
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a537499a396b24e798fb7e90175a92ea
+      internalID: 1001987397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_80
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 1290
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f79f3adc887b7441c86d042f7e82ea65
+      internalID: 1229541872
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_81
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 1290
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5786b76e94b2e4ef9a5288db8a5bfdfc
+      internalID: 350402965
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_82
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 1290
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5ac5e21c0125347d79b6bab1e7ea4bec
+      internalID: 431181916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_83
+      rect:
+        serializedVersion: 2
+        x: 2410
+        y: 1290
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 43d6ff0c42fdb4f2a8ec00790a254cdb
+      internalID: -632360158
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_84
+      rect:
+        serializedVersion: 2
+        x: 2570
+        y: 1290
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f36cd95762f3e4c8eb04f318d3904b83
+      internalID: -93990050
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_85
+      rect:
+        serializedVersion: 2
+        x: 2730
+        y: 1290
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 95ab5ecdf41124e4bb0d2c96bdd78d9d
+      internalID: 1944000382
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_86
+      rect:
+        serializedVersion: 2
+        x: 1450
+        y: 1130
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4045b8e2fc3d141f680eb16835a05008
+      internalID: -1738126666
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_87
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 1130
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 125c3a85bb301448ca2d332bb0a61581
+      internalID: 1769066625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_88
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 1130
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7a8ea3025dd8849eda8f7abbfef43379
+      internalID: 844110032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_89
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 1130
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c64154535e7364a9f8f59c2b2ce0af64
+      internalID: -69465728
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_90
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 1130
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 29344c0f69b7340809ee82f149c68dc2
+      internalID: 438016056
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_91
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 1130
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 00e47c9b3ee7b4a4786214ef265cbccf
+      internalID: 857709026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_92
+      rect:
+        serializedVersion: 2
+        x: 2410
+        y: 1130
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cc4e48d61dfdf4e4190c452d7b1525b9
+      internalID: -253862289
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_93
+      rect:
+        serializedVersion: 2
+        x: 2570
+        y: 1130
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4b05b7e0440f74065a0665a81b6a6de0
+      internalID: 626940080
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_94
+      rect:
+        serializedVersion: 2
+        x: 2730
+        y: 1130
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0e64e2e9333854dc290fe835a95b0d55
+      internalID: 2016974587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_95
+      rect:
+        serializedVersion: 2
+        x: 1450
+        y: 970
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4555d083bbb504c63a0628ffbed7cf81
+      internalID: -149601157
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_96
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 970
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9dedeb57de46743088d48f3136271bac
+      internalID: 654108067
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_97
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 970
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 252eb1c09fac54b4bb4410fea8539537
+      internalID: 1957109398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_98
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 970
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 89a6937ade47f48aca16f0cb2924d554
+      internalID: 1349416011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_99
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 970
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b324aa69ea33a479bb372a9990511312
+      internalID: 255687527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_100
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 970
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8eb45e4580fe4457e97ac5bb5a235ffd
+      internalID: 761214051
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_101
+      rect:
+        serializedVersion: 2
+        x: 2410
+        y: 970
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 75a845420d2074c03ad33e11a03fd9fc
+      internalID: -737163738
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_102
+      rect:
+        serializedVersion: 2
+        x: 2570
+        y: 970
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 10da4ddb9dec14705a875b066d5e4e6b
+      internalID: 476690235
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_103
+      rect:
+        serializedVersion: 2
+        x: 2730
+        y: 970
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e4ffe38d9327e4fd28e67dd21db02bae
+      internalID: 1276419036
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_104
+      rect:
+        serializedVersion: 2
+        x: 1450
+        y: 810
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e05c2ba4d81974758b198a73467cddce
+      internalID: -72685313
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_105
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 810
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2ce6205f3feb34a1593c8bc563859c18
+      internalID: 1206186038
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_106
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 810
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e09b0136ff3244eb8bf6108e8eef13a5
+      internalID: -34283199
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_107
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 810
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca3ab6a57707e4c16b32657354d1adfa
+      internalID: 2079372000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_108
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 810
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ba6d6f5ea496d4904a28435a15e82ae3
+      internalID: 1753323920
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_109
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 810
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 955f8b87d6ca84274808c2450628a5eb
+      internalID: -2019370436
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_110
+      rect:
+        serializedVersion: 2
+        x: 2410
+        y: 810
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eec509476a16a41c0ba78e4ccc45bfe7
+      internalID: -80673396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_111
+      rect:
+        serializedVersion: 2
+        x: 2570
+        y: 810
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d21d8af7a0c53481dacebed7ea035b81
+      internalID: 831824364
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_112
+      rect:
+        serializedVersion: 2
+        x: 2730
+        y: 810
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bd0c46543d7a5489a899c802c0d28a0a
+      internalID: 606709842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_113
+      rect:
+        serializedVersion: 2
+        x: 1450
+        y: 650
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fa411e9b1c89942aab6ddc53a8ec6506
+      internalID: 1540013066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_114
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 650
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7c59afa871a0741d59ba8fc67400cb9d
+      internalID: 1248321330
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_115
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 650
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b61fea6c944af44c8a672d519a6a61eb
+      internalID: 531070631
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_116
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 650
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c3378960f862f410eb51ac7385d7c27a
+      internalID: -1253773283
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_117
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 650
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 21c96c77918474cc6ac7dcfc790bf401
+      internalID: 532593322
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_118
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 650
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8ee7e4fb8a6ea4bb5914156063c6302d
+      internalID: 733913927
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_119
+      rect:
+        serializedVersion: 2
+        x: 2410
+        y: 650
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8abbe9f845e274d1b99df3ee3afd5e4c
+      internalID: -347444888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_120
+      rect:
+        serializedVersion: 2
+        x: 2570
+        y: 650
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 32624c4a99f624d36a721aedc6618484
+      internalID: 584240396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_121
+      rect:
+        serializedVersion: 2
+        x: 2730
+        y: 650
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9060734adffa54a1babe777f413449d3
+      internalID: -947532173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_122
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 490
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 68b09bdc6340e47ce89378b57a60132d
+      internalID: 1416910777
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_123
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 490
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: afa102c87ca5a47db9cf01b4fd6aae63
+      internalID: 1152759869
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_124
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 490
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 778896279ee22431686cfb2c34158199
+      internalID: -511271409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_125
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 330
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fd016c403ccaf4be3a4b2ef3f3d14bfc
+      internalID: 32188008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_126
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 330
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ba577087966e945809f79bd30875452b
+      internalID: -1297613306
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_127
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 330
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c71f06562762544ebbd10eaf224f5bff
+      internalID: 983112027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_128
+      rect:
+        serializedVersion: 2
+        x: 1930
+        y: 170
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 846651b1b33e749c6bd2c17e6e98effc
+      internalID: -963251925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_129
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 170
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e1c53e20467ba4b03b474af8cd1cabbf
+      internalID: 1931046761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chestAndKey_updates_130
+      rect:
+        serializedVersion: 2
+        x: 2250
+        y: 170
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 352ca0580fade4c90b1969bbc272be2d
+      internalID: 1104009987
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      chestAndKey_updates_0: -1639025622
+      chestAndKey_updates_1: 898184315
+      chestAndKey_updates_10: -1628835516
+      chestAndKey_updates_100: 761214051
+      chestAndKey_updates_101: -737163738
+      chestAndKey_updates_102: 476690235
+      chestAndKey_updates_103: 1276419036
+      chestAndKey_updates_104: -72685313
+      chestAndKey_updates_105: 1206186038
+      chestAndKey_updates_106: -34283199
+      chestAndKey_updates_107: 2079372000
+      chestAndKey_updates_108: 1753323920
+      chestAndKey_updates_109: -2019370436
+      chestAndKey_updates_11: 899797485
+      chestAndKey_updates_110: -80673396
+      chestAndKey_updates_111: 831824364
+      chestAndKey_updates_112: 606709842
+      chestAndKey_updates_113: 1540013066
+      chestAndKey_updates_114: 1248321330
+      chestAndKey_updates_115: 531070631
+      chestAndKey_updates_116: -1253773283
+      chestAndKey_updates_117: 532593322
+      chestAndKey_updates_118: 733913927
+      chestAndKey_updates_119: -347444888
+      chestAndKey_updates_12: 1589425304
+      chestAndKey_updates_120: 584240396
+      chestAndKey_updates_121: -947532173
+      chestAndKey_updates_122: 1416910777
+      chestAndKey_updates_123: 1152759869
+      chestAndKey_updates_124: -511271409
+      chestAndKey_updates_125: 32188008
+      chestAndKey_updates_126: -1297613306
+      chestAndKey_updates_127: 983112027
+      chestAndKey_updates_128: -963251925
+      chestAndKey_updates_129: 1931046761
+      chestAndKey_updates_13: -701215353
+      chestAndKey_updates_130: 1104009987
+      chestAndKey_updates_14: 2125799056
+      chestAndKey_updates_15: -2026919951
+      chestAndKey_updates_16: -755896419
+      chestAndKey_updates_17: 712934157
+      chestAndKey_updates_18: 1574555829
+      chestAndKey_updates_19: -327949117
+      chestAndKey_updates_2: -959403533
+      chestAndKey_updates_20: 1227442427
+      chestAndKey_updates_21: 673109025
+      chestAndKey_updates_22: 750978204
+      chestAndKey_updates_23: 948655271
+      chestAndKey_updates_24: -320247866
+      chestAndKey_updates_25: -245691898
+      chestAndKey_updates_26: -687179324
+      chestAndKey_updates_27: -1475129360
+      chestAndKey_updates_28: -1551779262
+      chestAndKey_updates_29: 1424190157
+      chestAndKey_updates_3: 932256311
+      chestAndKey_updates_30: 364311233
+      chestAndKey_updates_31: 166422772
+      chestAndKey_updates_32: -676271437
+      chestAndKey_updates_33: 2041136621
+      chestAndKey_updates_34: 1770834095
+      chestAndKey_updates_35: -1146754683
+      chestAndKey_updates_36: -1492786337
+      chestAndKey_updates_37: 544664758
+      chestAndKey_updates_38: -1651546351
+      chestAndKey_updates_39: 618807998
+      chestAndKey_updates_4: -1184749934
+      chestAndKey_updates_40: 780866997
+      chestAndKey_updates_41: 578346078
+      chestAndKey_updates_42: 1212229117
+      chestAndKey_updates_43: -1684128710
+      chestAndKey_updates_44: 1696715682
+      chestAndKey_updates_45: -685855095
+      chestAndKey_updates_46: -1144912382
+      chestAndKey_updates_47: -1790527718
+      chestAndKey_updates_48: 738568727
+      chestAndKey_updates_49: -1088246119
+      chestAndKey_updates_5: -1722636974
+      chestAndKey_updates_50: 403713120
+      chestAndKey_updates_51: -1782961977
+      chestAndKey_updates_52: 1271146420
+      chestAndKey_updates_53: 1943746559
+      chestAndKey_updates_54: -1628044271
+      chestAndKey_updates_55: -632731903
+      chestAndKey_updates_56: -199371832
+      chestAndKey_updates_57: 912719760
+      chestAndKey_updates_58: 942756761
+      chestAndKey_updates_59: -2047856016
+      chestAndKey_updates_6: 160087072
+      chestAndKey_updates_60: -1466787503
+      chestAndKey_updates_61: 1204242663
+      chestAndKey_updates_62: -304402970
+      chestAndKey_updates_63: 721642285
+      chestAndKey_updates_64: 950547130
+      chestAndKey_updates_65: -1838158311
+      chestAndKey_updates_66: -1088935806
+      chestAndKey_updates_67: 68426102
+      chestAndKey_updates_68: -253781932
+      chestAndKey_updates_69: 160771844
+      chestAndKey_updates_7: 1096839621
+      chestAndKey_updates_70: -1398443532
+      chestAndKey_updates_71: -258926477
+      chestAndKey_updates_72: 171954684
+      chestAndKey_updates_73: 1774545255
+      chestAndKey_updates_74: 1860827261
+      chestAndKey_updates_75: -2056242468
+      chestAndKey_updates_76: -1676759557
+      chestAndKey_updates_77: 297665365
+      chestAndKey_updates_78: -1312338027
+      chestAndKey_updates_79: 1001987397
+      chestAndKey_updates_8: -1982333958
+      chestAndKey_updates_80: 1229541872
+      chestAndKey_updates_81: 350402965
+      chestAndKey_updates_82: 431181916
+      chestAndKey_updates_83: -632360158
+      chestAndKey_updates_84: -93990050
+      chestAndKey_updates_85: 1944000382
+      chestAndKey_updates_86: -1738126666
+      chestAndKey_updates_87: 1769066625
+      chestAndKey_updates_88: 844110032
+      chestAndKey_updates_89: -69465728
+      chestAndKey_updates_9: 1233036880
+      chestAndKey_updates_90: 438016056
+      chestAndKey_updates_91: 857709026
+      chestAndKey_updates_92: -253862289
+      chestAndKey_updates_93: 626940080
+      chestAndKey_updates_94: 2016974587
+      chestAndKey_updates_95: -149601157
+      chestAndKey_updates_96: 654108067
+      chestAndKey_updates_97: 1957109398
+      chestAndKey_updates_98: 1349416011
+      chestAndKey_updates_99: 255687527
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

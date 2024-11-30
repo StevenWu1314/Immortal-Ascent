@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.Collections;
 using Unity.Mathematics;
 using Unity.VisualScripting;
@@ -14,6 +15,9 @@ public class Grid
     private Vector3 originPosition;
     private float cellSize;
     private int[,] gridArray;
+    public delegate void genLoot();
+    public static event genLoot chestOpen;
+
     
     public Grid(int width, int height, float cellSize, Vector3 originPosition)
     {
@@ -25,11 +29,11 @@ public class Grid
 
         for (int x = 0; x < gridArray.GetLength(0); x++)
         {
-            Debug.DrawLine(GetWorldPosition(x, 0), GetWorldPosition(x, height), Color.white, 100f);
+            //Debug.DrawLine(GetWorldPosition(x, 0), GetWorldPosition(x, height), Color.white, 100f);
         }
         for (int y = 0 ; y < gridArray.GetLength(1); y++)
         {
-            Debug.DrawLine(GetWorldPosition(0, y), GetWorldPosition(width, y), Color.white, 100f);
+            //Debug.DrawLine(GetWorldPosition(0, y), GetWorldPosition(width, y), Color.white, 100f);
                 
         }
     }
@@ -87,7 +91,7 @@ public class Grid
 
     }
 
-    public int move(Vector3 position, Vector2Int direction, Transform entity)
+    public int Move(Vector3 position, Vector2Int direction, Transform entity)
     {
         float worldx, worldy;
         worldx = position.x;
@@ -97,7 +101,7 @@ public class Grid
         int value = gridArray[x, y];
         Vector2Int targetDirection = new Vector2Int(x, y) + direction;
         int targetValue = gridArray[targetDirection.x, targetDirection.y];
-        if(targetValue == 0 || targetValue == 2)
+        if(targetValue == 0)
         {
             gridArray[targetDirection.x, targetDirection.y] = value;
             gridArray[x, y] = 0;
@@ -108,8 +112,36 @@ public class Grid
         {
             return 0;
         }
-        else{
+        else if (targetValue == 2 && entity.gameObject.GetComponent<Enemy>() != null) {
+            //initiate combat
+            Manager.player.attack("melee", entity.GetComponent<Enemy>());
+            return targetValue;
+        }
+        else if (targetValue == 3 && entity.gameObject.GetComponent<PlayerStats>() != null) {
+            //attack enemy
+            Collider2D[] targets = Physics2D.OverlapCircleAll(position + new Vector3(direction.x, direction.y), 1);
+            Enemy target = null;
+            foreach (Collider2D collider in targets)
+            {
+                
+                Debug.Log(collider);
+                if (collider.gameObject.GetComponent<Enemy>() != null) {
+                
+                    target = collider.gameObject.GetComponent<Enemy>();
+                }
+            }
             
+            entity.gameObject.GetComponent<PlayerStats>().attack("melee", target);
+            return 3;
+        }
+        else if (targetValue == 99)
+        {
+            chestOpen?.Invoke();
+            gridArray[targetDirection.x, targetDirection.y] = 0;
+            return 2;
+        }
+        else
+        {
             return targetValue;
         }
     }
@@ -146,17 +178,17 @@ public class Grid
         Vector2Int directionY = Vector2Int.RoundToInt(new Vector3(0, direction.y).normalized);
         if (math.abs(direction.x) >= Mathf.Abs(direction.y))
         {
-            if(move(currentPos, directionX, entity) == 0)
+            if(Move(currentPos, directionX, entity) == 0)
             {
-                move(currentPos, directionY, entity);
+                Move(currentPos, directionY, entity);
             }
             
         }
         else 
         {
-            if(move(currentPos, directionY, entity) == 0)
+            if(Move(currentPos, directionY, entity) == 0)
             {
-                move(currentPos, directionX, entity);
+                Move(currentPos, directionX, entity);
             }
         }
     }
