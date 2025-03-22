@@ -136,8 +136,8 @@ public class Grid
         }
         else if (targetValue == 99)
         {
-            chestOpen?.Invoke();
             gridArray[targetDirection.x, targetDirection.y] = 0;
+            chestOpen?.Invoke();
             return 2;
         }
         else
@@ -191,5 +191,35 @@ public class Grid
                 Move(currentPos, directionX, entity);
             }
         }
+    }
+
+    public Enemy detectEnemiesInALine(Vector3 position, Vector2Int direction, int range)
+    {
+        float worldx, worldy;
+        worldx = position.x;
+        worldy = position.y;
+        int x, y;
+        getXY(new Vector3(worldx, worldy), out x, out y);
+        for (int i = 0; i < range; i++)
+        {
+            x += direction.x;
+            y += direction.y;
+            int value = gridArray[x, y];
+            if (value == 3) {
+                Collider2D[] targets = Physics2D.OverlapCircleAll(position + new Vector3(i * direction.x, i * direction.y), 1);
+                Enemy target = null;
+                foreach (Collider2D collider in targets)
+                {
+                    Debug.Log(collider);
+                    if (collider.gameObject.GetComponent<Enemy>() != null) {
+                    
+                        target = collider.gameObject.GetComponent<Enemy>();
+                    }
+                }
+                return target;
+            }     
+        }
+        return null;
+        
     }
 }

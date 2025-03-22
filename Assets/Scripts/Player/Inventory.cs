@@ -13,15 +13,25 @@ public class Inventory : MonoBehaviour
     [SerializeField] private List<Item> items= new List<Item>();
     [SerializeField] private GameObject ItemContainer;
     [SerializeField] private ItemDisplay itemDisplay;
+    [SerializeField] private List<GameObject> oldContainers;
+
+
     public void updateInventory() {
+        foreach (GameObject container in oldContainers) {
+            Destroy(container);
+            
+            Debug.Log("destroyed a container");
+        }
+        oldContainers.Clear();
+        int i = 0;
         foreach (Item item in items){
             item.itemDisplay = itemDisplay;
-            Debug.Log(item.itemDisplay);
             GameObject itemBox = Instantiate(ItemContainer, new Vector3(0, 0, 0), quaternion.identity, inventoryContainer.transform);
             itemBox.GetComponentInChildren<TMP_Text>().text = item.getName();
             itemBox.GetComponent<Image>().sprite = item.getSprite();
             itemBox.GetComponent<ItemBox>().setItem(item);
             itemBox.GetComponent<ItemBox>().itemBox = itemBox;
+            oldContainers.Add(itemBox);
         }
     }
 
