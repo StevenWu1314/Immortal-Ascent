@@ -7,7 +7,7 @@ public class HealthPill : Consumables
     public HealthPill(int amount)
     {
         this.name = "Health Pill";
-        this.stackLimit = 0;
+        this.stackLimit = 10;
         this.description = "Heals you 10 hp";
         this.amount = amount;
     }
@@ -18,7 +18,7 @@ public class HealthPill : Consumables
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "heals", 10);
+        itemDisplay.setFields(name, description, image, "buff", 10);
     }
 
     public override void onUse()

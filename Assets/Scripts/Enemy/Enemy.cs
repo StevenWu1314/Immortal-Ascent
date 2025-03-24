@@ -8,15 +8,20 @@ public abstract class Enemy : MonoBehaviour
 {
     protected int health;
     protected int damage;
+    [SerializeField] protected int expValue;
+    private UIManager uiManager;
 
+    void OnEnable()
+    {
+        uiManager = GameObject.Find("Manager").GetComponent<UIManager>();
+    }
     public void takeDamage(int damage)
     {
         health -= damage;
-        TextMesh damageText = utilityFunction.createWorldText("-" + damage.ToString(), null, this.transform.position, 20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
-        StartCoroutine(FlowupDamageText(damageText));
+        uiManager.DrawFlowupDamageText(damage, this.transform.position);
         if(health <= 0)
         {
-            Destroy(damageText);
+            GameObject.Find("Player").GetComponent<PlayerStats>().gainExperience(expValue);
             Die();
         }
     }
