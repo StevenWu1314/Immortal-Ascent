@@ -27,8 +27,13 @@ public class Inventory : MonoBehaviour
         foreach (Item item in items){
             item.itemDisplay = itemDisplay;
             GameObject itemBox = Instantiate(ItemContainer, new Vector3(0, 0, 0), quaternion.identity, inventoryContainer.transform);
-            itemBox.GetComponentInChildren<TMP_Text>().text = item.getName();
-            itemBox.GetComponent<Image>().sprite = item.getSprite();
+            Image[] itemHolder = itemBox.GetComponentsInChildren<Image>();
+            foreach (Image holder in itemHolder){
+                if(holder.sprite == null)
+                {
+                    holder.sprite = item.getSprite();
+                }
+            }
             itemBox.GetComponent<ItemBox>().setItem(item);
             itemBox.GetComponent<ItemBox>().itemBox = itemBox;
             oldContainers.Add(itemBox);
