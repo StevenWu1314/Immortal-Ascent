@@ -19,6 +19,8 @@ public class EnemyBehavior : MonoBehaviour
     }
     private void OnDestroy() {
         Controls.onMoveEvent -= checkForPlayerInRoom;
+        Controls.onMoveEvent -= chasePlayer;
+        grid.SetValueAtWorldLocation(transform.position, 0);
     }
     void Start()
     {

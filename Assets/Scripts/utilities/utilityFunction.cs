@@ -4,7 +4,7 @@ using TMPro;
 using Unity.VisualScripting;
 
 
-public static class utilityFunction 
+public static class utilityFunction
 {
     public static TextMesh createWorldText(string text, Transform parent = null, Vector3 localposition = default(Vector3), int fontSize = 20, Color color = default(Color), TextAnchor textAnchor = TextAnchor.MiddleCenter, TextAlignment textAlignment = TextAlignment.Center, int sortingOrder = 0)
     {
@@ -27,4 +27,7 @@ public static class utilityFunction
         textMesh.GetComponent<MeshRenderer>().sortingOrder = sortingOrder;  
         return textMesh;
     }
+
+
+    
 }
