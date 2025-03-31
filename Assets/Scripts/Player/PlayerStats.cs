@@ -27,6 +27,10 @@ public class PlayerStats : MonoBehaviour{
         if(temporaryStatAdjustments[0, 1] > 0)
         {
             temporaryStatAdjustments[0, 1] -= 1;
+            if(temporaryStatAdjustments[0, 1] == 0)
+            {
+                strength -= temporaryStatAdjustments[0, 0];
+            }
         }
         else {
             temporaryStatAdjustments[0, 0] = 0;
@@ -34,9 +38,24 @@ public class PlayerStats : MonoBehaviour{
         if(temporaryStatAdjustments[1, 1] > 0)
         {
             temporaryStatAdjustments[1, 1] -= 1;
+            if(temporaryStatAdjustments[1, 1] == 0)
+            {
+                dexterity -= temporaryStatAdjustments[1, 0];
+            }
         }
         else {
             temporaryStatAdjustments[1, 0] = 0;
+        }
+        if(temporaryStatAdjustments[2, 1] > 0)
+        {
+            temporaryStatAdjustments[2, 1] -= 1;
+            if(temporaryStatAdjustments[2, 1] == 0)
+            {
+                MaxHealth -= temporaryStatAdjustments[2, 0];
+            }
+        }
+        else {
+            temporaryStatAdjustments[2, 0] = 0;
         }
     }
 
@@ -136,10 +155,17 @@ public class PlayerStats : MonoBehaviour{
             case "Strength":
                 temporaryStatAdjustments[0, 0] = amount;
                 temporaryStatAdjustments[0, 1] = duration;
+                strength += amount;
                 break;
             case "Dexterity":
                 temporaryStatAdjustments[1, 0] = amount;
                 temporaryStatAdjustments[1, 1] = duration;
+                dexterity += amount;
+                break;
+            case "Max Health":
+                temporaryStatAdjustments[2, 0] = amount;
+                temporaryStatAdjustments[2, 1] = duration;
+                MaxHealth += amount;
                 break;
         }
         

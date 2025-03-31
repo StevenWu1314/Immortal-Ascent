@@ -1,17 +1,16 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class StrPill : Consumables
+public class ConPill : Consumables
 {
 
-    public StrPill(int amount)
+    public ConPill(int amount)
     {
         this.name = "Strength Pill";
         this.stackLimit = 100;
-        this.effectStrength = 10;
-        this.description = "increase your strength by " + effectStrength + " for 50 turns";
+        this.effectStrength = 50;
+        this.description = "increase your MaxHealth by " + effectStrength + " for 50 turns";
         this.amount = amount;
-        
     }
     private void Awake() {
         itemDisplay = GameObject.Find("ItemInfoDisplay").GetComponent<ItemDisplay>();
@@ -25,7 +24,7 @@ public class StrPill : Consumables
 
     public override void onUse()
     {
-        Manager.player.increaseStatTemp("Strength", 10, 50);
+        Manager.player.increaseStatTemp("Max Health", 10, 50);
     }
     
 }

@@ -1,10 +1,10 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class StrPill : Consumables
+public class DexPill : Consumables
 {
 
-    public StrPill(int amount)
+    public DexPill(int amount)
     {
         this.name = "Strength Pill";
         this.stackLimit = 100;
@@ -25,7 +25,7 @@ public class StrPill : Consumables
 
     public override void onUse()
     {
-        Manager.player.increaseStatTemp("Strength", 10, 50);
+        Manager.player.increaseStatTemp("Dexterity", 10, 50);
     }
     
 }
