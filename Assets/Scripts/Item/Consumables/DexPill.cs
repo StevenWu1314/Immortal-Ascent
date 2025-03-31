@@ -20,7 +20,7 @@ public class DexPill : Consumables
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "strength", 10);
+        itemDisplay.setFields(name, description, image, "strength", 10, this);
     }
 
     public override void onUse()

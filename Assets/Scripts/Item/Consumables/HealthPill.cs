@@ -18,12 +18,13 @@ public class HealthPill : Consumables
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "buff", 10);
+        itemDisplay.setFields(name, description, image, "buff", 10, this);
     }
 
     public override void onUse()
     {
         Manager.player.heal(10);
+        Debug.Log("item Used");
     }
     
 }

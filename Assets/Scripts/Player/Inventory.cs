@@ -41,7 +41,7 @@ public class Inventory : MonoBehaviour
     }
 
     public void addItem(Item item) {
-        items.Add(item);
+    
         updateInventory();
     }
 

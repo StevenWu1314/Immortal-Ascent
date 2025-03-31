@@ -7,7 +7,7 @@ public class PlayerStats : MonoBehaviour{
     [SerializeField] int MaxHealth;
     [SerializeField] int strength;
     [SerializeField] int dexterity;
-    [SerializeField] int[,] temporaryStatAdjustments = new int[2, 2];
+    [SerializeField] int[,] temporaryStatAdjustments = new int[3, 2];
     [SerializeField] int currentExperience;
     [SerializeField] int currentLevel;
     [SerializeField] int levelCap;
