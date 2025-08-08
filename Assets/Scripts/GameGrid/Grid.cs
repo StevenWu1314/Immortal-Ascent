@@ -29,11 +29,11 @@ public class Grid
 
         for (int x = 0; x < gridArray.GetLength(0); x++)
         {
-            //Debug.DrawLine(GetWorldPosition(x, 0), GetWorldPosition(x, height), Color.white, 100f);
+            Debug.DrawLine(GetWorldPosition(x, 0), GetWorldPosition(x, height), Color.white, 100f);
         }
         for (int y = 0 ; y < gridArray.GetLength(1); y++)
         {
-            //Debug.DrawLine(GetWorldPosition(0, y), GetWorldPosition(width, y), Color.white, 100f);
+            Debug.DrawLine(GetWorldPosition(0, y), GetWorldPosition(width, y), Color.white, 100f);
                 
         }
     }

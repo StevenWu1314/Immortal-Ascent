@@ -25,6 +25,7 @@ public class HealthPill : Consumables
     {
         Manager.player.heal(10);
         Debug.Log("item Used");
+        this.amount -= 0;
     }
     
 }

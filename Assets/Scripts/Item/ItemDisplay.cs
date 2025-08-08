@@ -19,7 +19,7 @@ public class ItemDisplay : MonoBehaviour
         icon.sprite = sprite;
         this.typeValue.text = type + ": " + value;
         this.button.GetComponent<Button>().onClick.RemoveAllListeners();
-        this.button.GetComponent<Button>().onClick.AddListener(delegate {item.onUse();} );
+        this.button.GetComponent<Button>().onClick.AddListener(() => item.onUse());
     }
 
 

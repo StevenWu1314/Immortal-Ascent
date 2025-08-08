@@ -6,7 +6,7 @@ using UnityEngine.AI;
 
 public class EnemyBehavior : MonoBehaviour
 {
-    private Grid grid;
+    public Grid grid;
     private GameObject player;
     public BoundsInt detectionRadius;
     private bool playerDetected;
@@ -24,8 +24,7 @@ public class EnemyBehavior : MonoBehaviour
     }
     void Start()
     {
-        player = GameObject.FindWithTag("Player");
-        grid = GameObject.Find("Dungeon Generator").GetComponent<RoomFirstDungeonGenerator>().grid;
+        player = GameObject.FindWithTag("Player");  
         gridSetup(grid);
 
     }

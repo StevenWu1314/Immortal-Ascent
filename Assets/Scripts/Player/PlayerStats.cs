@@ -12,14 +12,32 @@ public class PlayerStats : MonoBehaviour{
     [SerializeField] int currentLevel;
     [SerializeField] int levelCap;
     [SerializeField] int experienceToNextLevel;
-    [SerializeField] Weapon weapon;
-    [SerializeField] Weapon rangedWeapon;
+    [SerializeField] Equipments equipments;
+    [SerializeField] AchievementManager achievementManager;
+    [SerializeField] float expMultiplier = 1;
     public static event Action<PlayerStats> onLevelUpEvent;
 
 
     void OnEnable()
     {
         Controls.onMoveEvent += tickDownBuffDuration;
+        ApplyAchievementBuffs();
+    }
+
+    private void ApplyAchievementBuffs()
+    {
+        if(achievementManager.bowKill)
+        {
+            dexterity += 5;
+        }
+        if(achievementManager.firstFloorCleared)
+        {
+            expMultiplier += 0.3f;
+        }
+        if(achievementManager.turtleKilled)
+        {
+            MaxHealth += 25;
+        }
     }
 
     private void tickDownBuffDuration(Controls controls)
@@ -65,11 +83,11 @@ public class PlayerStats : MonoBehaviour{
         Debug.Log(target);
         switch (form){
             case "melee":
-                target.takeDamage(strength + weapon.getDamage() + temporaryStatAdjustments[0, 0]);
+                target.takeDamage(strength + equipments.meleeWeapon.getDamage() + temporaryStatAdjustments[0, 0]);
                 target.attack(this);
                 break;
             case "range":
-                target.takeDamage(dexterity + weapon.getDamage() + temporaryStatAdjustments[1, 0]);
+                target.takeDamage(dexterity + equipments.rangeWeapon.getDamage() + temporaryStatAdjustments[1, 0]);
                 break;        
            }
     }
@@ -94,7 +112,7 @@ public class PlayerStats : MonoBehaviour{
 
     public void gainExperience(int amount)
     {
-        currentExperience += amount;
+        currentExperience += (int)(amount * expMultiplier);
         if(currentLevel < levelCap)
         {
             if (currentExperience >= experienceToNextLevel)

@@ -9,7 +9,7 @@ using UnityEngine.Rendering;
 public class Controls : MonoBehaviour
 {
     Transform self;
-    Grid grid;
+    public Grid grid;
     Vector2Int direction;
     [SerializeField] private float moveCooldown = 0.1f;
     [SerializeField] private float runningCooldown = 0;
@@ -20,11 +20,8 @@ public class Controls : MonoBehaviour
     void Start()
     {
         self = gameObject.transform;
-        grid = GameObject.Find("Dungeon Generator").GetComponent<RoomFirstDungeonGenerator>().grid;
-        Debug.Log(-0.5);
-        Debug.Log((int)-0.5);
-        Debug.Log((int)0.5);
-        Debug.Log(math.floor(-0.5));
+    
+        Debug.Log(grid);
         
         
     }

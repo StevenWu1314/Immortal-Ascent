@@ -29,7 +29,13 @@ public abstract class Item : MonoBehaviour
     {
         return image;
     }
-
+    public void increaseAmount(int a)
+    {
+        if (amount < stackLimit)
+        {
+            amount += a;
+        }
+    }
     public abstract void displaySelf();
     public abstract void onUse();
 }

@@ -41,8 +41,18 @@ public class Inventory : MonoBehaviour
     }
 
     public void addItem(Item item) {
-    
+        foreach(Item unsorteditem in items){
+            
+            if (nameof(item) == nameof(unsorteditem)) {
+                unsorteditem.increaseAmount(1);
+                updateInventory();
+                break;
+            }
+        }
+        items.Add(item);
         updateInventory();
+    
+        
     }
 
     private void Start() {
