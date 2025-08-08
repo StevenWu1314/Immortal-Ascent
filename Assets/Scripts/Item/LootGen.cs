@@ -20,6 +20,7 @@ public class LootGen : MonoBehaviour
     }
     public void rollTable()
     {
+        Debug.Log("rolling lootable");
         int loot = Random.Range(0, 100);
         if(loot <= lootDistribution[2])
         {

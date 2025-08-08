@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
@@ -12,36 +13,38 @@ public static class ProceduralGenerationAlgorithm
         Queue<BoundsInt> roomsQue = new Queue<BoundsInt>();
         List<BoundsInt> roomsList = new List<BoundsInt>();
         roomsQue.Enqueue(spaceToSplit);
-        while(roomsList.Count <= numberOfRooms)
+        while(roomsQue.Count > 0 && roomsList.Count <= numberOfRooms)
         {
-            var room = roomsQue.Dequeue();
-            if(room.size.y >= minHeight  && room.size.x >= minWidth)
-            {
-                roomsList.Add(room);
-                if(Random.value < 0.5f)
+            
+                var room = roomsQue.Dequeue();
+                if(room.size.y >= minHeight  && room.size.x >= minWidth)
                 {
-                    if(room.size.y >= minHeight *2)
+                    roomsList.Add(room);
+                    if(Random.value < 0.5f)
                     {
-                        splitHorizontally(minHeight,roomsQue, room, roomsList);
+                        if(room.size.y >= minHeight *2)
+                        {
+                            splitHorizontally(minHeight,roomsQue, room, roomsList);
+                        }
+                        else if(room.size.x >= minWidth *2)
+                        {
+                            splitVertically(minWidth, roomsQue, room, roomsList);
+                        }
                     }
-                    else if(room.size.x >= minWidth *2)
+                    else
                     {
-                        splitVertically(minWidth, roomsQue, room, roomsList);
+                        if(room.size.x >= minWidth *2)
+                        {
+                            splitVertically(minWidth, roomsQue, room, roomsList);
+                        } 
+                        else if(room.size.y >= minHeight *2)
+                        {
+                            splitHorizontally(minHeight,roomsQue, room, roomsList);
+                        }
                     }
+                    
                 }
-                else
-                {
-                    if(room.size.x >= minWidth *2)
-                    {
-                        splitVertically(minWidth, roomsQue, room, roomsList);
-                    }
-                    else if(room.size.y >= minHeight *2)
-                    {
-                        splitHorizontally(minHeight,roomsQue, room, roomsList);
-                    }
-                }
-                
-            }
+            
         }
         roomsList = resizeSpace(roomsList, 4);
         return roomsList;

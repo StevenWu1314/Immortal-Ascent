@@ -9,7 +9,7 @@ static class Manager {
     // that's exactly what you do in the static constructor here:
 
     static Manager() {
-        grid = safeFind("Grid").GetComponent<Grid>();
+        //grid = safeFind("Grid").GetComponent<Grid>();
         player = safeFind("Player").GetComponent<PlayerStats>(); // (some persistent object)
 
         // etc ..

@@ -10,19 +10,22 @@ using UnityEngine.UI;
 public class Equipments : MonoBehaviour
 {
     [SerializeField] private GameObject inventoryContainer;
-    [SerializeField] private Weapon meleeWeapon;
-    [SerializeField] private Weapon rangeWeapon;
+    [SerializeField] public Weapon meleeWeapon;
+    [SerializeField] public Weapon rangeWeapon;
     [SerializeField] private Item Armor;
     [SerializeField] private GameObject ItemContainer;
     [SerializeField] private ItemDisplay itemDisplay;
 
     
-    public void updateEquipment(String type, Item itemToEquip) {
+    public void updateEquipment(String type, Weapon itemToEquip) {
         switch (type) {
             case "Melee Weapon":
-                meleeWeapon = (Weapon) itemToEquip;
+                if (meleeWeapon != null) //meleeWeapon.equipedIcon.SetActive(false);
+                meleeWeapon = itemToEquip;
+                Debug.Log(meleeWeapon.getName());
                 break;
             case "Range Weapon":
+            if (rangeWeapon != null) //rangeWeapon.equipedIcon.SetActive(false);
                 rangeWeapon = (Weapon) itemToEquip;
                 break;
             case "Armor":

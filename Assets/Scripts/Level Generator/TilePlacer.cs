@@ -280,10 +280,12 @@ public class TilePlacer : MonoBehaviour
         Vector3Int current = Vector3Int.FloorToInt(position);
         bool up = false;
         bool right = false;
+        Vector3Int floorPos;
         while (current.y != destination.y)
         {
             bool alternate = (current.x + current.y) % 2 == 0;
-            Vector3Int floorPos = new Vector3Int((int)current.x, (int)current.y);
+            int wallsRanInto = 0;
+            floorPos = new Vector3Int((int)current.x, (int)current.y);
             /*
             if(walls.GetTile(floorPos-new Vector3Int(1, 0))==null && floor.GetTile(floorPos-new Vector3Int(1, 0))==null)
             {
@@ -294,11 +296,13 @@ public class TilePlacer : MonoBehaviour
                 walls.SetTile(floorPos+new Vector3Int(1, 0), alternate ? wallTileRight1 : wallTileRight2);
             }
             */
-            if(floor.GetTile(floorPos) == null)
+            corridor.SetTile(floorPos, floorTile);
+            if(walls.GetTile(floorPos) != null)
             {
-                corridor.SetTile(floorPos, floorTile);
+                walls.SetTile(floorPos, null);
+                wallsRanInto++;
             }
-            
+
             if (current.y > destination.y)
             {
                 current -= new Vector3Int(0, 1);
@@ -308,11 +312,20 @@ public class TilePlacer : MonoBehaviour
                 up = true;
                 current += new Vector3Int(0, 1);
             }
+            if(wallsRanInto > 3)
+            {
+                break;
+            }
         }
+            
+        corridor.SetTile(new Vector3Int((int)current.x, (int)current.y), floorTile);
+        walls.SetTile(new Vector3Int((int)current.x, (int)current.y), null);
         while (current.x != destination.x)
         {
             bool alternate = (current.x + current.y) % 2 == 0;
-            Vector3Int floorPos = new Vector3Int((int)current.x, (int)current.y);
+            int wallsRanInto = 0;
+
+            floorPos = new Vector3Int((int)current.x, (int)current.y);
             /*if(walls.GetTile(floorPos-new Vector3Int(0, 1))==null && floor.GetTile(floorPos-new Vector3Int(0, 1))==null )
             {
                 walls.SetTile(floorPos-new Vector3Int(0, 1), alternate ? wallTileBottom1 : wallTileBottom2);
@@ -322,10 +335,14 @@ public class TilePlacer : MonoBehaviour
                 walls.SetTile(floorPos+new Vector3Int(0, 1), alternate ? wallTileBottom1 : wallTileBottom2);
             }
             */
-            if(floor.GetTile(floorPos) == null)
+            
+            corridor.SetTile(floorPos, floorTile);
+            if(walls.GetTile(floorPos) != null)
             {
-                corridor.SetTile(floorPos, floorTile);
+                walls.SetTile(floorPos, null);
+                wallsRanInto++;
             }
+            
             if(current.x > destination.x)
             {
                 
@@ -335,7 +352,13 @@ public class TilePlacer : MonoBehaviour
             { 
                 current += new Vector3Int(1, 0);
             }
+            if(wallsRanInto > 3)
+            {
+                break;
+            }
         }
+        corridor.SetTile(new Vector3Int((int)current.x, (int)current.y), floorTile);
+        walls.SetTile(new Vector3Int((int)current.x, (int)current.y), null);
         //wallCorridor();
     }
     
@@ -578,6 +601,20 @@ public class TilePlacer : MonoBehaviour
         }
     }
 
+    public void randomWalkerCorridors(Rooms room, Grid grid)
+    {
+        int xsize = grid.GetSize(0)/2;
+        int ysize = grid.GetSize(1)/2;
+        bool right = room.rightConnected;
+        bool left = room.leftConnected;
+        bool up = room.upConnected;
+        bool down = room.downConnected;
+
+        if(right)
+        {
+
+        }
+    }
     public void generateLootTiles(List<BoundsInt> roomsSpace, Grid grid)
     {
         foreach (BoundsInt room in roomsSpace)

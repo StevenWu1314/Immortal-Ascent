@@ -22,8 +22,8 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
     
     void Start()
     {
-        
-        generateBranchingDungeon();
+        generateDungeon();
+        //generateBranchingDungeon();
         
         
     }
@@ -34,7 +34,7 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         List<BoundsInt> rooms = ProceduralGenerationAlgorithm.BinarySpacePartitioning(Space, minWidth, minHeight, numberOfRooms);
         tilePlacer.PlaceTiles(rooms, grid);    
         rooms = RoomConnector.SortRoomsByDistance(rooms);
-        Debug.Log(ProceduralGenerationAlgorithm.BrachingRooms(5, 10));
+        //Debug.Log(ProceduralGenerationAlgorithm.BrachingRooms(5, 10));
         tilePlacer.createCorridors(rooms);
     }
 

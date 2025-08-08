@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;
 public class Weapon : Item
 {
     [SerializeField] int damage;
-    [SerializeField] GameObject equipedIcon;
+    [SerializeField] public GameObject equipedIcon;
     [SerializeField] bool range;
     [SerializeField] Equipments equipments;
     public Weapon(int damage, bool range, string name, int id, string description, Sprite sprite) {
@@ -28,18 +28,20 @@ public class Weapon : Item
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "Damage", damage);
+        itemDisplay.setFields(name, description, image, "Damage", damage, this);
     }
     public override void onUse()
     {
-        equipedIcon.SetActive(!equipedIcon.activeInHierarchy);
+        equipments = GameObject.Find("Player").GetComponent<Equipments>();
+       // equipedIcon.SetActive(!equipedIcon.activeInHierarchy);
         if(range)
         {
             equipments.updateEquipment("Range Weapon", this);
         }
         else
         {
-            equipments.updateEquipment("Melee Weapon", this);
+            equipments.meleeWeapon = this;
+            Debug.Log("attempting to update weapon");
         }
     }
 
