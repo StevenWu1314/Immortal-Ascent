@@ -9,7 +9,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine.UIElements;
-public class perlinnoisemap : MonoBehaviour
+public class PerlinNoiseMap : MonoBehaviour
 {
     Dictionary<int, Tile> terrainElements;
     Dictionary<int, Tile> vegetations;
@@ -37,6 +37,12 @@ public class perlinnoisemap : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        GenerateMap();
+
+    }
+
+    public void GenerateMap()
+    {
         InitializeGame();
         xOffset = Random.Range(-100, 100);
         yOffset = Random.Range(-100, 100);
@@ -47,9 +53,7 @@ public class perlinnoisemap : MonoBehaviour
         spawnEntities();
         if (debugMode)
             grid.printGrid();
-
     }
-
     private void InitializeGame()
     {
         grid = new Grid(map_width, map_height, 1, new Vector3(0, 0, 0));
@@ -178,4 +182,6 @@ public class perlinnoisemap : MonoBehaviour
         }
         return Mathf.FloorToInt(scalePerlin);
     }
+
+    
 }
