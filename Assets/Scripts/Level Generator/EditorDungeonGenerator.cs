@@ -14,22 +14,30 @@ public class EditorDungeonGenerator : Editor
     public int minHeight;
     public int numberOfRooms;
     RoomFirstDungeonGenerator generator;
+    public PerlinNoiseMap perlinNoiseMap;
 
-    void Awake() {
+    void Awake()
+    {
         generator = (RoomFirstDungeonGenerator)target;
+        perlinNoiseMap = (PerlinNoiseMap)target;
     }
-    
+
 
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        if(GUILayout.Button("Create Dungeon"))
+        if (GUILayout.Button("Create Dungeon"))
         {
             generator.generateDungeon();
         }
-        if(GUILayout.Button("Create Branching Dungeon"))
+        if (GUILayout.Button("Create Branching Dungeon"))
         {
             generator.generateBranchingDungeon();
+        }
+        
+        if (GUILayout.Button("Create Perlin Noise Map"))
+        {
+            perlinNoiseMap.GenerateMap();
         }
     }
     

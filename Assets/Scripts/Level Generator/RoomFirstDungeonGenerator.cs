@@ -76,7 +76,6 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
                 float x = Random.Range(room.xMin+3, room.xMax-3);
                 float y = Random.Range(room.yMin+3, room.yMax-3);
                 GameObject newEnemy = Instantiate(enemies[type], new Vector3(x, y), quaternion.identity);
-                newEnemy.GetComponent<EnemyBehavior>().detectionRadius = room;
             }
             else if(amountToSpawn > 8)
             {
@@ -84,11 +83,9 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
                 float x = Random.Range(room.xMin+3, room.xMax-3);
                 float y = Random.Range(room.yMin+3, room.yMax-3);
                 GameObject newEnemy = Instantiate(enemies[type], new Vector3(x, y), quaternion.identity);
-                newEnemy.GetComponent<EnemyBehavior>().detectionRadius = room;
                 x = Random.Range(room.xMin+1, room.xMax-1);
                 y = Random.Range(room.yMin+1, room.yMax-1);
                 newEnemy = Instantiate(enemies[type], new Vector3(x, y), quaternion.identity);
-                newEnemy.GetComponent<EnemyBehavior>().detectionRadius = room;
             }
         }
     }

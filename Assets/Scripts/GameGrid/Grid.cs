@@ -27,15 +27,16 @@ public class Grid
         this.originPosition = originPosition;
         gridArray = new int[width, height];
 
-        for (int x = 0; x < gridArray.GetLength(0); x++)
-        {
-            Debug.DrawLine(GetWorldPosition(x, 0), GetWorldPosition(x, height), Color.white, 100f);
-        }
-        for (int y = 0 ; y < gridArray.GetLength(1); y++)
-        {
-            Debug.DrawLine(GetWorldPosition(0, y), GetWorldPosition(width, y), Color.white, 100f);
+
+        // for (int x = 0; x < gridArray.GetLength(0); x++)
+        // {
+        //     Debug.DrawLine(GetWorldPosition(x, 0), GetWorldPosition(x, height), Color.white, 100f);
+        // }
+        // for (int y = 0 ; y < gridArray.GetLength(1); y++)
+        // {
+        //     Debug.DrawLine(GetWorldPosition(0, y), GetWorldPosition(width, y), Color.white, 100f);
                 
-        }
+        // }
     }
 
     private Vector3 GetWorldPosition(int x, int y)
@@ -158,8 +159,6 @@ public class Grid
             {
                 if(gridArray[x, y] != 0)
                 {
-                    
-                    
                     utilityFunction.createWorldText(gridArray[x, y].ToString(), null, GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f, 20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
                 }
                 
