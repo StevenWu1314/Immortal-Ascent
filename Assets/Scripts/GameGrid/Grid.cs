@@ -1,9 +1,4 @@
-using System.Numerics;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Unity.Collections;
 using Unity.Mathematics;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
@@ -102,38 +97,13 @@ public class Grid
         int value = gridArray[x, y];
         Vector2Int targetDirection = new Vector2Int(x, y) + direction;
         int targetValue = gridArray[targetDirection.x, targetDirection.y];
-        if(targetValue == 0)
-        {
-            gridArray[targetDirection.x, targetDirection.y] = value;
-            gridArray[x, y] = 0;
-            entity.position += new Vector3(direction.x, direction.y);
-            return 1;
-        }
-        else if (targetValue == 1)
+        if (targetValue == 1 || targetValue == 2)
         {
             return 0;
         }
         else if (targetValue == 2 && entity.gameObject.GetComponent<Enemy>() != null) {
             //initiate combat
-            Manager.player.attack("melee", entity.GetComponent<Enemy>());
             return targetValue;
-        }
-        else if (targetValue == 3 && entity.gameObject.GetComponent<PlayerStats>() != null) {
-            //attack enemy
-            Collider2D[] targets = Physics2D.OverlapCircleAll(position + new Vector3(direction.x, direction.y), 1);
-            Enemy target = null;
-            foreach (Collider2D collider in targets)
-            {
-                
-                Debug.Log(collider);
-                if (collider.gameObject.GetComponent<Enemy>() != null) {
-                
-                    target = collider.gameObject.GetComponent<Enemy>();
-                }
-            }
-            
-            entity.gameObject.GetComponent<PlayerStats>().attack("melee", target);
-            return 3;
         }
         else if (targetValue == 99)
         {
@@ -143,7 +113,9 @@ public class Grid
         }
         else
         {
-            return targetValue;
+            gridArray[targetDirection.x, targetDirection.y] = value;
+            gridArray[x, y] = 0;
+            return 1;
         }
     }
 
@@ -166,31 +138,6 @@ public class Grid
         }
     }
 
-    public void pathFind(Vector3 currentPos, Vector3 targetPos, Transform entity)
-    {
-        int currentx, currenty, targetx, targety;
-        getXY(currentPos, out currentx, out currenty);
-        getXY(targetPos, out targetx, out targety);
-        Vector2 direction = new Vector2(targetx - currentx, targety - currenty);
-        Debug.Log(direction);
-        Vector2Int directionX = Vector2Int.RoundToInt(new Vector3(direction.x, 0).normalized);
-        Vector2Int directionY = Vector2Int.RoundToInt(new Vector3(0, direction.y).normalized);
-        if (math.abs(direction.x) >= Mathf.Abs(direction.y))
-        {
-            if(Move(currentPos, directionX, entity) == 0)
-            {
-                Move(currentPos, directionY, entity);
-            }
-            
-        }
-        else 
-        {
-            if(Move(currentPos, directionY, entity) == 0)
-            {
-                Move(currentPos, directionX, entity);
-            }
-        }
-    }
 
     public Enemy detectEnemiesInALine(Vector3 position, Vector2Int direction, int range)
     {

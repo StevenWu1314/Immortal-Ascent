@@ -42,7 +42,7 @@ public abstract class Enemy : MonoBehaviour
 
     private void Die()
     {
-        
+        EntityManager.Instance.UnregisterEntity(this.gameObject, Vector2Int.FloorToInt(transform.position));
         Destroy(gameObject);
     }
 

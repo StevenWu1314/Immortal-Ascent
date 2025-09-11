@@ -32,31 +32,41 @@ public class Controls : MonoBehaviour
         if(runningCooldown <= 0)
         {
             runningCooldown = moveCooldown;
+            Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
+            
             if(Input.GetKey(KeyCode.W)) 
             {
                 direction = new Vector2Int(0, 1);
-                grid.Move(transform.position, direction, gameObject.transform);
+                Vector2Int nextCell = currentCell + direction;
+                EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
+                grid.Move(transform.position, direction, transform);
                 onMoveEvent(this);
                 
             }
             else if(Input.GetKey(KeyCode.S))
             {
                 direction = new Vector2Int(0, -1);
-                grid.Move(transform.position, direction, gameObject.transform);
+                Vector2Int nextCell = currentCell + direction;
+                EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
+                grid.Move(transform.position, direction, transform);
                 onMoveEvent(this);
                 
             }
             else if(Input.GetKey(KeyCode.D))
             {
                 direction = new Vector2Int(1, 0);
-                grid.Move(transform.position, direction, gameObject.transform);
+                Vector2Int nextCell = currentCell + direction;
+                EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
+                grid.Move(transform.position, direction, transform);
                 onMoveEvent(this);
                 
             }
             else if(Input.GetKey(KeyCode.A))
             {
                 direction = new Vector2Int(-1, 0);
-                grid.Move(transform.position, direction, gameObject.transform);
+                Vector2Int nextCell = currentCell + direction;
+                EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
+                grid.Move(transform.position, direction, transform);
                 onMoveEvent(this);
                 
             }     
