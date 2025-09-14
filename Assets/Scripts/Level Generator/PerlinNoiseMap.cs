@@ -64,6 +64,7 @@ public class PerlinNoiseMap : MonoBehaviour
     // --- Unity lifecycle ---
     private void Start()
     {
+        grid = Manager.grid;
         GenerateMap();
     }
 

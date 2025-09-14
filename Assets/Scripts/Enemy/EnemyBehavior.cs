@@ -16,7 +16,7 @@ public class EnemyBehavior : MonoBehaviour
     
     private void OnEnable() {
         Controls.onMoveEvent += checkForPlayerInRoom;
-        
+        grid = Manager.grid;
     }
     private void OnDestroy() {
         Controls.onMoveEvent -= checkForPlayerInRoom;
@@ -24,6 +24,7 @@ public class EnemyBehavior : MonoBehaviour
     }
     void Start()
     {
+
         player = GameObject.FindWithTag("Player");
 
     }

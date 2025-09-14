@@ -25,7 +25,11 @@ public class HealthPill : Consumables
     {
         Manager.player.heal(10);
         Debug.Log("item Used");
-        this.amount -= 0;
+        this.amount -= 1;
+        if (this.amount <= 0)
+        {
+            Destroy(this.gameObject);
+        }
     }
     
 }

@@ -10,12 +10,24 @@ using Random = UnityEngine.Random;
 public class LootGen : MonoBehaviour 
 {
     [SerializeField]private int[] lootDistribution = new int[3] {100, 30, 0};
-    [SerializeField]private Item[] commonItem = new Item[3];
-    [SerializeField]private Item[] rareItem = new Item[3];
-    [SerializeField]private Item[] epicItem = new Item[3];
+    [SerializeField]private Item[] commonItem = new Item[0];
+    [SerializeField]private Item[] rareItem = new Item[0];
+    [SerializeField]private Item[] epicItem = new Item[0];
     [SerializeField] private Inventory playerInventory;
-    
-    private void Start() {
+    public static LootGen Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    private void Start()
+    {
         Grid.chestOpen += rollTable;
     }
     public void rollTable()
@@ -28,7 +40,7 @@ public class LootGen : MonoBehaviour
         }
         else if(loot <= lootDistribution[1])
         {
-            playerInventory.addItem(epicItem[Random.Range(0, rareItem.Count()-1)]);
+            playerInventory.addItem(rareItem[Random.Range(0, rareItem.Count()-1)]);
         }
         else
         {
