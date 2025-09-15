@@ -564,6 +564,7 @@ public class PerlinNoiseMap : MonoBehaviour
         bool horizontal = start.y == end.y;
         bool vertical = start.x == end.x;
         
+        
         if (bridgeTiles == null || bridgeTiles.Length == 0 || bridgeTiles[0] == null)
         {
             Debug.LogWarning("No bridgeTiles configured; skipping bridge placement.");
@@ -651,26 +652,49 @@ public class PerlinNoiseMap : MonoBehaviour
                 }
             }
 
-            // --- Optional: corners for L-shaped bridges ---
-            if ((hasUp && hasRight) && IsWater(pos + Vector3Int.up + Vector3Int.right))
+            
+        }
+
+        //pass 3 add railings
+        foreach(var pos in bridgeCells)
+        {
+            Vector3Int left = pos + Vector3Int.left;
+            Vector3Int right = pos + Vector3Int.right;
+            Vector3Int up = pos + Vector3Int.up;
+            Vector3Int down = pos + Vector3Int.down;
+
+            bool hasLeft = tilemap.GetTile(left) == bridgeTiles[0];
+            bool hasRight = tilemap.GetTile(right) == bridgeTiles[0];
+            bool hasUp = tilemap.GetTile(up) == bridgeTiles[0];
+            bool hasDown = tilemap.GetTile(down) == bridgeTiles[0];
+
+            if (hasUp && hasRight)
             {
-                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.right, bridgeTiles[5]);
-            }
-            if ((hasUp && hasLeft) && IsWater(pos + Vector3Int.up + Vector3Int.left))
-            {
-                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.left, bridgeTiles[5]);
-            }
-            if ((hasDown && hasRight) && IsWater(pos + Vector3Int.down + Vector3Int.right))
-            {
-                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.right, bridgeTiles[5]);
-            }
-            if ((hasDown && hasLeft) && IsWater(pos + Vector3Int.down + Vector3Int.left))
-            {
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.right, bridgeTiles[9]);
                 tilemap.SetTile(pos + Vector3Int.down + Vector3Int.left, bridgeTiles[5]);
             }
+
+            if (hasUp && hasLeft)
+            {
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.left, bridgeTiles[10]);
+                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.right, bridgeTiles[6]);
+            }
+
+
+            if (hasDown && hasRight)
+            {
+                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.right, bridgeTiles[11]);
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.left, bridgeTiles[7]);
+            }
+                
+            if (hasDown && hasLeft)
+            {
+                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.left, bridgeTiles[12]);
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.right, bridgeTiles[8]);
+            }  
         }
         // Widen both ends of the bridge
-        if(IsLand(start)) EnsureLandMatchesBridge(start, horizontal);
+        if (IsLand(start)) EnsureLandMatchesBridge(start, horizontal);
         if(IsLand(end))EnsureLandMatchesBridge(end, horizontal);
     }
 
