@@ -9,7 +9,7 @@ using Random = UnityEngine.Random;
 
 public class LootGen : MonoBehaviour 
 {
-    [SerializeField]private int[] lootDistribution = new int[3] {100, 30, 0};
+    [SerializeField]private int[] lootDistribution = new int[3] {100, 30, -1};
     [SerializeField]private Item[] commonItem = new Item[0];
     [SerializeField]private Item[] rareItem = new Item[0];
     [SerializeField]private Item[] epicItem = new Item[0];

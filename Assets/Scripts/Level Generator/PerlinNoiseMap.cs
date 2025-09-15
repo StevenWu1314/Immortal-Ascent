@@ -537,7 +537,7 @@ public class PerlinNoiseMap : MonoBehaviour
                 if (IsWater(pos))
                 {
                     tilemap.SetTile(pos, terrainTiles[0]); // land
-                    grid.SetValueAtLocation(pos.x, pos.y, 1);
+                    grid.SetValueAtLocation(pos.x, pos.y, 0);
                 }
             }
         }
@@ -552,7 +552,7 @@ public class PerlinNoiseMap : MonoBehaviour
                 if (IsWater(pos))
                 {
                     tilemap.SetTile(pos, terrainTiles[0]); // land
-                    grid.SetValueAtLocation(pos.x, pos.y, 1);
+                    grid.SetValueAtLocation(pos.x, pos.y, 0);
                 }
             }
         }
@@ -583,7 +583,7 @@ public class PerlinNoiseMap : MonoBehaviour
                 if (IsWater(pos) || bridgeTiles.Contains<TileBase>(tilemap.GetTile(pos)))
                 {
                     tilemap.SetTile(pos, bridgeTiles[0]); // bridge floor
-                    grid.SetValueAtLocation(pos.x, pos.y, 5);
+                    grid.SetValueAtLocation(pos.x, pos.y, 0);
                     bridgeCells.Add(pos);
                 }
             }
@@ -643,12 +643,12 @@ public class PerlinNoiseMap : MonoBehaviour
                 if (IsWater(up))
                 {
                     tilemap.SetTile(up, bridgeTiles[3]); // top railing
-                    grid.SetValueAtLocation(up.x, up.y, 6);
+                    grid.SetValueAtLocation(up.x, up.y, 1);
                 }
                 if (IsWater(down))
                 {
                     tilemap.SetTile(down, bridgeTiles[4]); // bottom railing
-                    grid.SetValueAtLocation(down.x, down.y, 6);
+                    grid.SetValueAtLocation(down.x, down.y, 1);
                 }
             }
 
@@ -672,12 +672,16 @@ public class PerlinNoiseMap : MonoBehaviour
             {
                 tilemap.SetTile(pos + Vector3Int.up + Vector3Int.right, bridgeTiles[9]);
                 tilemap.SetTile(pos + Vector3Int.down + Vector3Int.left, bridgeTiles[5]);
+                grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.right).x, (pos + Vector3Int.up + Vector3Int.right).y, 1);
+                grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.left).x, (pos + Vector3Int.down + Vector3Int.left).y, 1);
             }
 
             if (hasUp && hasLeft)
             {
                 tilemap.SetTile(pos + Vector3Int.up + Vector3Int.left, bridgeTiles[10]);
                 tilemap.SetTile(pos + Vector3Int.down + Vector3Int.right, bridgeTiles[6]);
+                grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.left).x, (pos + Vector3Int.up + Vector3Int.left).y, 1);
+                grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.right).x, (pos + Vector3Int.down + Vector3Int.right).y, 1);
             }
 
 
@@ -685,12 +689,16 @@ public class PerlinNoiseMap : MonoBehaviour
             {
                 tilemap.SetTile(pos + Vector3Int.down + Vector3Int.right, bridgeTiles[11]);
                 tilemap.SetTile(pos + Vector3Int.up + Vector3Int.left, bridgeTiles[7]);
+                grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.right).x, (pos + Vector3Int.down + Vector3Int.right).y, 1);
+                grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.left).x, (pos + Vector3Int.up + Vector3Int.left).y, 1);
             }
-                
+
             if (hasDown && hasLeft)
             {
                 tilemap.SetTile(pos + Vector3Int.down + Vector3Int.left, bridgeTiles[12]);
                 tilemap.SetTile(pos + Vector3Int.up + Vector3Int.right, bridgeTiles[8]);
+                grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.left).x, (pos + Vector3Int.down + Vector3Int.left).y, 1);
+                grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.right).x, (pos + Vector3Int.up + Vector3Int.right).y, 1);
             }  
         }
         // Widen both ends of the bridge
@@ -754,7 +762,7 @@ public class PerlinNoiseMap : MonoBehaviour
                 {
                     var tile = collidablePlants[UnityEngine.Random.Range(0, collidablePlants.Length)];
                     tilemap.SetTile(new Vector3Int(x, y, 0), tile);
-                    grid.SetValueAtLocation(x, y, 4); // 4 -> collidable plant (tree)
+                    grid.SetValueAtLocation(x, y, 1); // 4 -> collidable plant (tree)
                     noiseGrid[x][y] = 4;
                 }
                 // Otherwise try non-collidable plants (flowers), using threshold shifted by t
@@ -762,7 +770,7 @@ public class PerlinNoiseMap : MonoBehaviour
                 {
                     var tile = nonCollidablePlants[UnityEngine.Random.Range(0, nonCollidablePlants.Length)];
                     tilemap.SetTile(new Vector3Int(x, y, 0), tile);
-                    grid.SetValueAtLocation(x, y, 3); // 3 -> non-collidable (flower)
+                    grid.SetValueAtLocation(x, y, 0); // 3 -> non-collidable (flower)
                     noiseGrid[x][y] = 3;
                 }
             }

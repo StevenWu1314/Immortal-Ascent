@@ -87,7 +87,7 @@ public class Grid
 
     }
 
-    public int Move(Vector3 position, Vector2Int direction, Transform entity)
+    public bool Move(Vector3 position, Vector2Int direction, Transform entity)
     {
         float worldx, worldy;
         worldx = position.x;
@@ -97,25 +97,13 @@ public class Grid
         int value = gridArray[x, y];
         Vector2Int targetDirection = new Vector2Int(x, y) + direction;
         int targetValue = gridArray[targetDirection.x, targetDirection.y];
-        if (targetValue == 1 || targetValue == 2)
+        if (targetValue == 0)
         {
-            return 0;
+            return true;
         }
-        else if (targetValue == 2 && entity.gameObject.GetComponent<Enemy>() != null) {
-            //initiate combat
-            return targetValue;
-        }
-        else if (targetValue == 99)
+        else 
         {
-            gridArray[targetDirection.x, targetDirection.y] = 0;
-            chestOpen?.Invoke();
-            return 2;
-        }
-        else
-        {
-            gridArray[targetDirection.x, targetDirection.y] = value;
-            gridArray[x, y] = 0;
-            return 1;
+            return false;
         }
     }
 
