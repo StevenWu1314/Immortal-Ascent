@@ -9,18 +9,26 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private GameObject levelUpMenu;
+    public static event Action<UIManager> openMenu;
     
-    private void Awake() {
+    private void Awake()
+    {
         PlayerStats.onLevelUpEvent += toggleLevelUpMenu;
     }
 
     private void toggleLevelUpMenu(PlayerStats stats)
     {
         levelUpMenu.SetActive(true);
+        openMenu(this);
     }
 
-    private void Update() {
-        
+    public void Menu()
+    {
+        openMenu(this);
+    }
+    private void Update()
+    {
+
     }
 
     public void DrawFlowupDamageText(int damage, Vector3 position)
