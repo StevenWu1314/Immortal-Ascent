@@ -13,71 +13,76 @@ public class Controls : MonoBehaviour
     Vector2Int direction;
     [SerializeField] private float moveCooldown = 0.1f;
     [SerializeField] private float runningCooldown = 0;
+    [SerializeField] private bool MenuIsOpen;
     [SerializeField] private PlayerStats playerStats;
     public static event Action<Controls> onMoveEvent;
     public static event UnityAction onShootEvent;
     // Start is called before the first frame update
     void Start()
     {
+        UIManager.openMenu += detectMenu;
         self = gameObject.transform;
-    
         Debug.Log(grid);
-        
-        
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(runningCooldown <= 0)
+        if (MenuIsOpen == false)
         {
-            runningCooldown = moveCooldown;
-            if(Input.GetKey(KeyCode.W)) 
+            if (runningCooldown <= 0)
             {
-                direction = new Vector2Int(0, 1);
-                grid.Move(transform.position, direction, gameObject.transform);
-                onMoveEvent(this);
-                
+                direction = Vector2Int.zero;
+                if (Input.GetKey(KeyCode.W))
+                {
+                    direction = Vector2Int.up;
+                }
+                else if (Input.GetKey(KeyCode.S))
+                {
+                    direction = Vector2Int.down;
+                }
+                else if (Input.GetKey(KeyCode.D))
+                {
+                    direction = Vector2Int.right;
+                }
+                else if (Input.GetKey(KeyCode.A))
+                {
+                    direction = Vector2Int.left;
+                }
+
+                if (direction != Vector2Int.zero)
+                {
+                    runningCooldown = moveCooldown;
+                    Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
+                    Vector2Int nextCell = currentCell + direction;
+                    if (grid.Move(transform.position, direction, transform))
+                    {
+                        EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
+                    }
+                    onMoveEvent(this);
+                    direction = Vector2Int.zero;
+                }
             }
-            else if(Input.GetKey(KeyCode.S))
+            else
             {
-                direction = new Vector2Int(0, -1);
-                grid.Move(transform.position, direction, gameObject.transform);
-                onMoveEvent(this);
-                
+                runningCooldown -= Time.deltaTime;
             }
-            else if(Input.GetKey(KeyCode.D))
-            {
-                direction = new Vector2Int(1, 0);
-                grid.Move(transform.position, direction, gameObject.transform);
-                onMoveEvent(this);
-                
-            }
-            else if(Input.GetKey(KeyCode.A))
-            {
-                direction = new Vector2Int(-1, 0);
-                grid.Move(transform.position, direction, gameObject.transform);
-                onMoveEvent(this);
-                
-            }     
         }
-        else
-        {
-            runningCooldown -= Time.deltaTime;
-        }
+
         if (Input.GetKeyUp(KeyCode.Space))
         {
             grid.printGrid();
         }
-        if(Input.GetKey(KeyCode.J))
-        {   
-            aim();
-            runningCooldown = 0.3f;
-        }
-    }   
+        // if(Input.GetKey(KeyCode.J))
+        // {   
+        //     aim();
+        //     runningCooldown = 0.3f;
+        // }
+    }
 
-    private void aim() {
-        if(Input.GetKeyDown(KeyCode.W)) 
+    private void aim()
+    {
+        if (Input.GetKeyDown(KeyCode.W))
         {
             print("up");
             Enemy target = grid.detectEnemiesInALine(transform.position, new Vector2Int(0, 1), 5);
@@ -85,12 +90,12 @@ public class Controls : MonoBehaviour
             {
                 playerStats.attack("range", target);
             }
-            else 
+            else
             {
                 print("no target found");
             }
         }
-        else if(Input.GetKey(KeyCode.S))
+        else if (Input.GetKey(KeyCode.S))
         {
             print("down");
             Enemy target = grid.detectEnemiesInALine(transform.position, new Vector2Int(0, -1), 5);
@@ -98,12 +103,12 @@ public class Controls : MonoBehaviour
             {
                 playerStats.attack("range", target);
             }
-            else 
+            else
             {
                 print("no target found");
             }
         }
-        else if(Input.GetKey(KeyCode.D))
+        else if (Input.GetKey(KeyCode.D))
         {
             print("right");
             Enemy target = grid.detectEnemiesInALine(transform.position, new Vector2Int(1, 0), 5);
@@ -111,12 +116,12 @@ public class Controls : MonoBehaviour
             {
                 playerStats.attack("range", target);
             }
-            else 
+            else
             {
                 print("no target found");
             }
         }
-        else if(Input.GetKey(KeyCode.A))
+        else if (Input.GetKey(KeyCode.A))
         {
             print("left");
             Enemy target = grid.detectEnemiesInALine(transform.position, new Vector2Int(-1, 0), 5);
@@ -124,11 +129,17 @@ public class Controls : MonoBehaviour
             {
                 playerStats.attack("range", target);
             }
-            else 
+            else
             {
                 print("no target found");
             }
-        } 
-      
+        }
+
     }
+
+    private void detectMenu(UIManager uIManager)
+    {
+        MenuIsOpen = !MenuIsOpen;
+    }
+
 }

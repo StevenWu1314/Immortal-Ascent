@@ -28,7 +28,7 @@ public class Weapon : Item
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "Damage", damage, this);
+        itemDisplay.setFields(name, description, image, "Damage", damage, 1, this);
     }
     public override void onUse()
     {

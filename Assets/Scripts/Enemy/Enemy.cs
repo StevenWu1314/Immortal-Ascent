@@ -3,11 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq.Expressions;
+using UnityEngine.Rendering;
 
 public abstract class Enemy : MonoBehaviour
 {
-    protected int health;
-    protected int damage;
+    [SerializeField] protected int health;
+    [SerializeField] protected int damage;
     [SerializeField] protected int expValue;
     private UIManager uiManager;
 
@@ -21,7 +22,7 @@ public abstract class Enemy : MonoBehaviour
         uiManager.DrawFlowupDamageText(damage, this.transform.position);
         if(health <= 0)
         {
-            GameObject.Find("Player").GetComponent<PlayerStats>().gainExperience(expValue);
+            Manager.player.gainExperience(expValue);
             Die();
         }
     }
@@ -42,8 +43,11 @@ public abstract class Enemy : MonoBehaviour
 
     private void Die()
     {
-        
+        EntityManager.Instance.UnregisterEntity(this.gameObject, Vector2Int.FloorToInt(transform.position));
+        LootGen.Instance.rollTable();
+        Debug.Log("enemy eliminated");
         Destroy(gameObject);
+        
     }
 
 }

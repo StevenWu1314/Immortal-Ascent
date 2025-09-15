@@ -84,7 +84,6 @@ public class PlayerStats : MonoBehaviour{
         switch (form){
             case "melee":
                 target.takeDamage(strength + equipments.meleeWeapon.getDamage() + temporaryStatAdjustments[0, 0]);
-                target.attack(this);
                 break;
             case "range":
                 target.takeDamage(dexterity + equipments.rangeWeapon.getDamage() + temporaryStatAdjustments[1, 0]);
@@ -119,7 +118,7 @@ public class PlayerStats : MonoBehaviour{
             {
                 currentExperience -= experienceToNextLevel;
                 currentLevel++;
-                experienceToNextLevel = (int)(experienceToNextLevel * 1.1f);
+                experienceToNextLevel = (int)(experienceToNextLevel * 1.5f);
                 onLevelUpEvent(this);
             }
         }
