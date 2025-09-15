@@ -118,7 +118,7 @@ public class PlayerStats : MonoBehaviour{
             {
                 currentExperience -= experienceToNextLevel;
                 currentLevel++;
-                experienceToNextLevel = (int)(experienceToNextLevel * 1.1f);
+                experienceToNextLevel = (int)(experienceToNextLevel * 1.5f);
                 onLevelUpEvent(this);
             }
         }

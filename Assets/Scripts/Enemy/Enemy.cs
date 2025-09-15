@@ -8,7 +8,7 @@ using UnityEngine.Rendering;
 public abstract class Enemy : MonoBehaviour
 {
     [SerializeField] protected int health;
-    protected int damage;
+    [SerializeField] protected int damage;
     [SerializeField] protected int expValue;
     private UIManager uiManager;
 

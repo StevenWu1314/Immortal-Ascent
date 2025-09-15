@@ -111,7 +111,7 @@ public class PerlinNoiseMap : MonoBehaviour
         {
             foreach (var go in tileGroups.Values)
             {
-                if (go != null) Destroy(go);
+                if (go != null) DestroyImmediate(go);
             }
             tileGroups.Clear();
         }
@@ -796,17 +796,6 @@ public class PerlinNoiseMap : MonoBehaviour
             }
         }
 
-        if (grassCoords.Count == 0)
-        {
-            Debug.LogWarning("No grass cells found for player spawn.");
-        }
-        else if (player != null)
-        {
-            var spawn = grassCoords[UnityEngine.Random.Range(0, grassCoords.Count)];
-            player.transform.position = spawn;
-            EntityManager.Instance.RegisterEntity(player, Vector2Int.FloorToInt(spawn));
-        }
-
         // Spawn enemies on grass with probability enemyFrequency
         for (int i = 0; i < grassCoords.Count; i++)
         {
@@ -819,6 +808,16 @@ public class PerlinNoiseMap : MonoBehaviour
                 var eb = newEnemy.GetComponent<EnemyBehavior>();
                 if (eb != null) eb.grid = grid;
             }
+        }
+        if (grassCoords.Count == 0)
+        {
+            Debug.LogWarning("No grass cells found for player spawn.");
+        }
+        else if (player != null)
+        {
+            var spawn = grassCoords[UnityEngine.Random.Range(0, grassCoords.Count)];
+            player.transform.position = spawn;
+            EntityManager.Instance.RegisterEntity(player, Vector2Int.FloorToInt(spawn));
         }
     }
 
