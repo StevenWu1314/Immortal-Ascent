@@ -20,12 +20,14 @@ public class DexPill : Consumables
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "strength", 10, this);
+        itemDisplay.setFields(name, description, image, "Dexterity", 10, amount, this);
     }
 
     public override void onUse()
     {
         Manager.player.increaseStatTemp("Dexterity", 10, 50);
+        displaySelf();
+        base.onUse();
     }
     
 }

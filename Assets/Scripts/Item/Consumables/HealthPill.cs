@@ -18,14 +18,14 @@ public class HealthPill : Consumables
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "buff", 10, this);
+        itemDisplay.setFields(name, description, image, "Heal", 10, amount, this);
     }
 
     public override void onUse()
     {
         Manager.player.heal(10);
-        Debug.Log("item Used");
-        this.amount -= 0;
+        displaySelf();
+        base.onUse();
     }
     
 }
