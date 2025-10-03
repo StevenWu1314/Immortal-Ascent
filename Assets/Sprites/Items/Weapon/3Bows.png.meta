@@ -34,7 +34,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -113,12 +113,12 @@ TextureImporter:
       name: 3Bows_0
       rect:
         serializedVersion: 2
-        x: 284
-        y: 247
-        width: 639
-        height: 1959
+        x: 0
+        y: 253
+        width: 1300
+        height: 2000
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -134,12 +134,12 @@ TextureImporter:
       name: 3Bows_1
       rect:
         serializedVersion: 2
-        x: 1685
+        x: 825
         y: 1942
-        width: 419
-        height: 1946
+        width: 2000
+        height: 2000
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -155,12 +155,12 @@ TextureImporter:
       name: 3Bows_2
       rect:
         serializedVersion: 2
-        x: 2959
+        x: 2422
         y: 257
-        width: 698
+        width: 1578
         height: 1998
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []

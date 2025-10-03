@@ -29,6 +29,7 @@ public class LootGen : MonoBehaviour
     private void Start()
     {
         Grid.chestOpen += rollTable;
+        playerInventory = Inventory.Instance;
     }
     public void rollTable()
     {
@@ -36,15 +37,15 @@ public class LootGen : MonoBehaviour
         int loot = Random.Range(0, 100);
         if(loot <= lootDistribution[2])
         {
-            playerInventory.addItem(epicItem[Random.Range(0, epicItem.Count()-1)]);
+            playerInventory.addItem(epicItem[Random.Range(0, epicItem.Count())]);
         }
         else if(loot <= lootDistribution[1])
         {
-            playerInventory.addItem(rareItem[Random.Range(0, rareItem.Count()-1)]);
+            playerInventory.addItem(rareItem[Random.Range(0, rareItem.Count())]);
         }
         else
         {
-            playerInventory.addItem(commonItem[Random.Range(0, commonItem.Count()-1)]);
+            playerInventory.addItem(commonItem[Random.Range(0, commonItem.Count())]);
         }
     }
 

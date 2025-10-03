@@ -47,7 +47,7 @@ MonoBehaviour:
   id: 0
   name: Dex Pill
   description: Increase your dexterity
-  image: {fileID: 0}
-  amount: 1
+  image: {fileID: -817780971, guid: 70e4db85413024f2abc4a504c03d8fde, type: 3}
+  amount: 0
   stackLimit: 10
   itemDisplay: {fileID: 0}

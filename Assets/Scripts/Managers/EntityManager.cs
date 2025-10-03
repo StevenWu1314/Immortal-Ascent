@@ -46,14 +46,8 @@ public class EntityManager : MonoBehaviour
                 {
                     entityGrid.TryGetValue(newCell, out var enemy);
                     if (enemy.GetComponent<Enemy>() != null)
-                        Manager.player.attack("melee", enemy.GetComponent<Enemy>());
+                        entity.GetComponent<PlayerStats>().attack("melee", enemy.GetComponent<Enemy>());
 
-                }
-                else if (entity.GetComponent<Enemy>() != null)
-                {
-                    entityGrid.TryGetValue(newCell, out var player);
-                    if (player.GetComponent<PlayerStats>() != null)
-                        entity.GetComponent<Enemy>().attack(player.GetComponent<PlayerStats>());
                 }
             }
             else
