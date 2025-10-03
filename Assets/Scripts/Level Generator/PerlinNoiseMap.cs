@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Tilemaps;
 // NOTE: Removed all Editor-only namespaces to avoid player build issues.
 
@@ -59,12 +61,15 @@ public class PerlinNoiseMap : MonoBehaviour
     private int xOffset;
     private int yOffset;
 
+    [SerializeField] GameObject player;
+
     private List<List<int>> noiseGrid = new List<List<int>>();
 
     // --- Unity lifecycle ---
     private void Start()
     {
-        grid = Manager.grid;
+        grid = new Grid(map_width, map_height, 1, new Vector3(0, 0, 0));
+        Debug.Log(grid);
         GenerateMap();
     }
 
@@ -123,19 +128,12 @@ public class PerlinNoiseMap : MonoBehaviour
         magnification = Mathf.Max(0.0001f, magnification);
 
         // Construct your gameplay grid (custom class in your project)
-        grid = new Grid(map_width, map_height, 1, new Vector3(0, 0, 0));
+        
 
         // Wire the player to the grid if present
-        var player = GameObject.Find("Player");
-        if (player != null)
-        {
+
             var controls = player.GetComponent<Controls>();
             if (controls != null) controls.grid = grid;
-        }
-        else
-        {
-            Debug.LogWarning("Player not found in scene.");
-        }
     }
 
     private void CreateTileSet()
@@ -781,7 +779,6 @@ public class PerlinNoiseMap : MonoBehaviour
     // --- Entities ---
     private void SpawnEntities()
     {
-        var player = GameObject.Find("Player");
         var grassCoords = new List<Vector2>();
 
         for (int x = 0; x < map_width; x++)
@@ -816,7 +813,10 @@ public class PerlinNoiseMap : MonoBehaviour
         else if (player != null)
         {
             var spawn = grassCoords[UnityEngine.Random.Range(0, grassCoords.Count)];
-            player.transform.position = spawn;
+            while(EntityManager.Instance.GetEntityAt(Vector2Int.FloorToInt(spawn)) != null)
+                spawn = grassCoords[UnityEngine.Random.Range(0, grassCoords.Count)];
+            player = Instantiate(player, spawn, quaternion.identity);
+            player.GetComponent<Controls>().grid = grid;
             EntityManager.Instance.RegisterEntity(player, Vector2Int.FloorToInt(spawn));
         }
     }

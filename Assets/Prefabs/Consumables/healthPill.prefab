@@ -47,7 +47,7 @@ MonoBehaviour:
   id: 0
   name: Health Pill
   description: Heals you
-  image: {fileID: 739107864, guid: 987c0190194334b459ec1eb6ed73ffe0, type: 3}
-  amount: 1
+  image: {fileID: 1352562484, guid: 31258fd920648491fadb2176abce4b25, type: 3}
+  amount: 0
   stackLimit: 10
   itemDisplay: {fileID: 0}

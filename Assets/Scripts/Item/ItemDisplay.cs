@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +23,11 @@ public class ItemDisplay : MonoBehaviour
         this.amount.text = "Amount: " + amount;
         this.button.GetComponent<Button>().onClick.RemoveAllListeners();
         this.button.GetComponent<Button>().onClick.AddListener(() => item.onUse());
+    }
+
+    void OnEnable()
+    {
+        Inventory.Instance.setItemDisplay(this);
     }
 
 

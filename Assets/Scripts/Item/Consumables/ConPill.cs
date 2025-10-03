@@ -25,8 +25,8 @@ public class ConPill : Consumables
     public override void onUse()
     {
         Manager.player.increaseStatTemp("Max Health", 10, 50);
-        displaySelf();
         base.onUse();
+        displaySelf();
     }
     
 }

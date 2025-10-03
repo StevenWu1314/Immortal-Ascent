@@ -1,17 +1,10 @@
-using System;
-using Microsoft.Unity.VisualStudio.Editor;
-using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
-
-
+using Unity;
 public class Weapon : Item
 {
     [SerializeField] int damage;
     [SerializeField] public GameObject equipedIcon;
     [SerializeField] bool range;
-    [SerializeField] Equipments equipments;
     public Weapon(int damage, bool range, string name, int id, string description, Sprite sprite) {
     this.damage = damage;
     this.range = range;
@@ -32,15 +25,14 @@ public class Weapon : Item
     }
     public override void onUse()
     {
-        equipments = GameObject.Find("Player").GetComponent<Equipments>();
        // equipedIcon.SetActive(!equipedIcon.activeInHierarchy);
         if(range)
         {
-            equipments.updateEquipment("Range Weapon", this);
+            Equipments.Instance.updateEquipment("Range Weapon", this);
         }
         else
         {
-            equipments.meleeWeapon = this;
+            Equipments.Instance.updateEquipment("Melee Weapon", this);
             Debug.Log("attempting to update weapon");
         }
     }

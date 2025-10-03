@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,10 +8,10 @@ public class Inventory : MonoBehaviour
 {
     [SerializeField] private GameObject inventoryContainer; // parent with 24 slot children
     [SerializeField] private List<Item> items = new List<Item>();
+    [SerializeField] private List<Item> StarterItems;
     [SerializeField] private ItemDisplay itemDisplay;
-    
+    public static Inventory instance { get { return instance; } }
     private ItemBox[] slots; // fixed slots
-
     public static Inventory Instance;
 
     private void Awake()
@@ -25,9 +26,19 @@ public class Inventory : MonoBehaviour
 
     private void Start()
     {
+        inventoryContainer = GameObject.Find("UIManager").transform.Find("Inventory").transform.Find("itemholder").gameObject;
         // cache references to all slot ItemBox components
+        items.Clear();
         slots = inventoryContainer.GetComponentsInChildren<ItemBox>();
+        addStarterItems();
         updateInventory();
+    }
+
+    private void addStarterItems()
+    {
+        foreach (Item item in StarterItems)
+            addItem(Instantiate(item));
+
     }
 
     public void updateInventory()
@@ -74,6 +85,12 @@ public class Inventory : MonoBehaviour
     public void removeItem(Item item)
     {
         items.Remove(item);
+        updateInventory();
+    }
+
+    public void setItemDisplay(ItemDisplay itemDisplay)
+    {
+        this.itemDisplay = itemDisplay;
         updateInventory();
     }
 }

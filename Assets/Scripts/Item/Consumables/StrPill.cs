@@ -13,8 +13,8 @@ public class StrPill : Consumables
         this.amount = amount;
         
     }
-    private void Awake() {
-        itemDisplay = GameObject.Find("ItemInfoDisplay").GetComponent<ItemDisplay>();
+    private void Start() {
+        itemDisplay = FindObjectOfType<ItemDisplay>();
         Debug.Log("trying to find itemDisplay");
     }
 
@@ -25,9 +25,9 @@ public class StrPill : Consumables
 
     public override void onUse()
     {
-        Manager.player.increaseStatTemp("Strength", 10, 50);
-        displaySelf();
+        PlayerStats.Instance.increaseStatTemp("Strength", 10, 50);
         base.onUse();
+        displaySelf();
     }
     
 }

@@ -14,7 +14,7 @@ public abstract class Enemy : MonoBehaviour
 
     void OnEnable()
     {
-        uiManager = GameObject.Find("Manager").GetComponent<UIManager>();
+        uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
     }
     public void takeDamage(int damage)
     {
@@ -22,7 +22,7 @@ public abstract class Enemy : MonoBehaviour
         uiManager.DrawFlowupDamageText(damage, this.transform.position);
         if(health <= 0)
         {
-            Manager.player.gainExperience(expValue);
+            PlayerStats.Instance.gainExperience(expValue);
             Die();
         }
     }

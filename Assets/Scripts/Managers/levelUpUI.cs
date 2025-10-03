@@ -4,6 +4,7 @@ using System.Drawing;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class levelUpUI : MonoBehaviour
@@ -16,15 +17,18 @@ public class levelUpUI : MonoBehaviour
     [SerializeField] private TMP_Text pointsLeft;
     [SerializeField] private int points;
 
+
     private Vector3Int pointsAssigned;
     // Start is called before the first frame update
     private void OnEnable()
     {
+        
         pointsAssigned = new Vector3Int(0, 0, 0);
         addButtons[0] = GameObject.Find("str").GetComponentInChildren<Button>();
         addButtons[1] = GameObject.Find("dex").GetComponentInChildren<Button>();
         addButtons[2] = GameObject.Find("health").GetComponentInChildren<Button>();
         points = 5;
+        playerStats = PlayerStats.Instance;
     }
     private void OnDisable() {
         pointsAssigned = new Vector3Int(0, 0, 0);
@@ -57,17 +61,20 @@ public class levelUpUI : MonoBehaviour
     public void recordStr()
     {
         pointsAssigned.x++;
+        playerStats.increaseStrength();
         points--;
     }
 
     public void recordDex()
     {
         pointsAssigned.y++;
+        playerStats.increaseDexterity();
         points--;
     }
     public void recordHealth()
     {
         pointsAssigned.z += 10;
+        playerStats.increaseMaxHealth();
         points--;
     }
 
@@ -83,7 +90,7 @@ public class levelUpUI : MonoBehaviour
         }
         for(int i = 0; i < pointsAssigned.z; i++)
         {
-            playerStats.decreaseMaxHealth();
+            playerStats.decreaseMaxHealth(1);
         }
         pointsAssigned = new Vector3Int(0, 0, 0);
         points = 5;

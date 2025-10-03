@@ -9,8 +9,8 @@ static class Manager {
     // that's exactly what you do in the static constructor here:
 
     static Manager() {
-        //grid = safeFind("Grid").GetComponent<Grid>();
-        player = safeFind("Player").GetComponent<PlayerStats>(); // (some persistent object)
+        //grid = new Grid(100, 100, 1, new Vector3(0, 0, 0));
+        //player = safeFind("Player").GetComponent<PlayerStats>(); // (some persistent object)
 
         // etc ..
         // (you could use just the one persistent game object, or many - irrelevant)

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -11,12 +12,13 @@ public class EnemyBehavior : MonoBehaviour
     private GameObject player;
     public float detectionRadius;
     private bool playerDetected;
-    
 
-    
-    private void OnEnable() {
+
+
+    private void OnEnable()
+    {
         Controls.onMoveEvent += checkForPlayerInRoom;
-        grid = Manager.grid;
+        grid = FindObjectOfType<PerlinNoiseMap>().grid;
     }
     private void OnDestroy() {
         Controls.onMoveEvent -= checkForPlayerInRoom;
@@ -26,6 +28,13 @@ public class EnemyBehavior : MonoBehaviour
     {
 
         player = GameObject.FindWithTag("Player");
+        // for (int i = 0; i < 100; i++)
+        // {
+        //     for (int k = 0; k < 100; k++)
+        //     {
+        //         Debug.Log(grid.GetValueAtLocation(i, k));
+        //     }
+        // }
 
     }
     private void checkForPlayerInRoom(Controls controls)
@@ -37,7 +46,6 @@ public class EnemyBehavior : MonoBehaviour
         if (objectInRange.Contains(player.GetComponent<Collider2D>()))
         {
             Controls.onMoveEvent -= checkForPlayerInRoom;
-            Debug.Log("player detected");
             Controls.onMoveEvent += chasePlayer;
         }
         
@@ -80,7 +88,6 @@ public class EnemyBehavior : MonoBehaviour
         foreach (var step in steps)
         {
             Vector2Int nextCell = enemyCell + step;
-
             // Step 1: check static grid
             int terrain = grid.GetValueAtLocation(nextCell.x, nextCell.y);
             bool walkable = (terrain == 0 || terrain == 5); // grass or bridge
@@ -94,7 +101,7 @@ public class EnemyBehavior : MonoBehaviour
 
                 if (other.CompareTag("Player"))
                 {
-                    this.GetComponent<Enemy>().attack(Manager.player);
+                    this.GetComponent<Enemy>().attack(player.GetComponent<PlayerStats>());
 
                 }
             }

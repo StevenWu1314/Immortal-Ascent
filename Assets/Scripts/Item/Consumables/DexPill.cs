@@ -13,8 +13,8 @@ public class DexPill : Consumables
         this.amount = amount;
         
     }
-    private void Awake() {
-        itemDisplay = GameObject.Find("ItemInfoDisplay").GetComponent<ItemDisplay>();
+    private void Start() {
+        itemDisplay = FindObjectOfType<ItemDisplay>();
         Debug.Log("trying to find itemDisplay");
     }
 
@@ -25,9 +25,9 @@ public class DexPill : Consumables
 
     public override void onUse()
     {
-        Manager.player.increaseStatTemp("Dexterity", 10, 50);
-        displaySelf();
+        PlayerStats.Instance.increaseStatTemp("Dexterity", 10, 50);
         base.onUse();
+        displaySelf();
     }
     
 }

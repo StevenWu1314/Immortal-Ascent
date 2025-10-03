@@ -1,9 +1,4 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
-using Unity.PlasticSCM.Editor.WebApi;
-using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using Random=UnityEngine.Random;
 public static class ProceduralGenerationAlgorithm
