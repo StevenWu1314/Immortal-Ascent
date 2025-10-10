@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
+
 
 public class Inventory : MonoBehaviour
 {
@@ -10,7 +10,6 @@ public class Inventory : MonoBehaviour
     [SerializeField] private List<Item> items = new List<Item>();
     [SerializeField] private List<Item> StarterItems;
     [SerializeField] private ItemDisplay itemDisplay;
-    public static Inventory instance { get { return instance; } }
     private ItemBox[] slots; // fixed slots
     public static Inventory Instance;
 

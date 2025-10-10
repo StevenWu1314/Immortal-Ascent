@@ -16,7 +16,8 @@ public class PerlinNoiseMap : MonoBehaviour
     [SerializeField] private Tilemap tilemap;
     [SerializeField] private Tile[] terrainTiles;   // 0 = grass, 1 = water, 2 = deepwater
     [SerializeField] private Tile[] nonCollidablePlants; // e.g. flowers
-    [SerializeField] private Tile[] collidablePlants;    // e.g. trees, bamboo
+    [SerializeField] private Tile[] collectableTiles;    // e.g. trees, bamboo
+    [SerializeField] private Collectables[] collectableItems;
     [SerializeField] private Tile[] bridgeTiles;
 
     [Header("Entities")]
@@ -723,8 +724,8 @@ public class PerlinNoiseMap : MonoBehaviour
     {
         // If no plant arrays, just return
         bool haveNonColl = nonCollidablePlants != null && nonCollidablePlants.Length > 0;
-        bool haveCollidable = collidablePlants != null && collidablePlants.Length > 0;
-        if (!haveNonColl && !haveCollidable)
+        bool haveCollectable = collectableTiles != null && collectableTiles.Length > 0;
+        if (!haveNonColl && !haveCollectable)
             return;
 
         // clamp requested densities
@@ -733,7 +734,7 @@ public class PerlinNoiseMap : MonoBehaviour
 
         // IMPORTANT: if the corresponding plant arrays are missing,
         // zero out their probability so their thresholds are not used.
-        if (!haveCollidable) t = 0f;
+        if (!haveCollectable) t = 0f;
         if (!haveNonColl) f = 0f;
 
         // Normalize only if the combined probability would exceed 1.
@@ -755,12 +756,15 @@ public class PerlinNoiseMap : MonoBehaviour
 
                 float r = UnityEngine.Random.value;
 
-                // First attempt collidable plants (trees/bamboo) when in threshold AND available
-                if (r < t && haveCollidable)
+                // First attempt collectable objects (plants/minerals) when in threshold AND available
+                if (r < t && haveCollectable)
                 {
-                    var tile = collidablePlants[UnityEngine.Random.Range(0, collidablePlants.Length)];
+                    int index = UnityEngine.Random.Range(0, collectableTiles.Length);
+                    Tile tile = collectableTiles[index];
+                    Collectables collectable = collectableItems[index];
                     tilemap.SetTile(new Vector3Int(x, y, 0), tile);
                     grid.SetValueAtLocation(x, y, 1); // 4 -> collidable plant (tree)
+                    CollectableMap.Instance.registerCollectable(collectable, new Vector2Int(x, y));
                     noiseGrid[x][y] = 4;
                 }
                 // Otherwise try non-collidable plants (flowers), using threshold shifted by t
@@ -830,7 +834,7 @@ public class PerlinNoiseMap : MonoBehaviour
         // grass is terrainTiles[0]; bridges and collidable plants count as land for floodfill
         bool isGrass = terrainTiles != null && terrainTiles.Length > 0 && t == terrainTiles[0];
         bool isBridge = bridgeTiles != null && bridgeTiles.Any(bt => bt != null && t == bt);
-        bool isCollidablePlant = collidablePlants != null && collidablePlants.Any(pt => pt != null && t == pt);
+        bool isCollidablePlant = collectableTiles != null && collectableTiles.Any(pt => pt != null && t == pt);
 
         return isGrass || isBridge || isCollidablePlant;
     }
