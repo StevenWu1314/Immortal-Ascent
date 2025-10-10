@@ -1,11 +1,8 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using TreeEditor;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 public class Controls : MonoBehaviour
 {
@@ -17,6 +14,8 @@ public class Controls : MonoBehaviour
     [SerializeField] private float runningCooldown = 0;
     [SerializeField] private bool MenuIsOpen;
     [SerializeField] private PlayerStats playerStats;
+    Collectables collectable;
+    public GameObject CollectButton;
     public static event Action<Controls> onMoveEvent;
     public static event UnityAction onShootEvent;
     // Start is called before the first frame update
@@ -26,6 +25,9 @@ public class Controls : MonoBehaviour
         self = gameObject.transform;
         grid = FindAnyObjectByType<PerlinNoiseMap>().grid;
         Debug.Log(grid);
+        onMoveEvent += checkForCollectables;
+        CollectButton = GameObject.Find("Collect");
+        CollectButton.SetActive(false);
     }
 
     // Update is called once per frame
@@ -81,7 +83,7 @@ public class Controls : MonoBehaviour
         // {
         //     grid.printGrid();
         // }
-        
+
     }
     IEnumerator WaitforKeyPress(Action<KeyCode> callback)
     {
@@ -136,10 +138,32 @@ public class Controls : MonoBehaviour
         aiming = false;
         runningCooldown = 0.5f;
     }
-
     private void detectMenu(UIManager uIManager)
     {
         MenuIsOpen = !MenuIsOpen;
     }
 
+    private void checkForCollectables(Controls controls)
+    {
+        Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
+        Vector2Int LookingAt = currentCell + direction;
+        if (collectable != null)
+        {
+            removeCollectable();
+        }
+        collectable = CollectableMap.Instance.GetCollectableAt(LookingAt);
+        if (collectable != null)
+        {
+            CollectButton.SetActive(true);
+            CollectButton.GetComponent<Button>().onClick.AddListener(collectable.collectThis);
+            //CollectButton.GetComponent<Button>().onClick.AddListener(removeCollectable);
+        }
+    }
+
+    public void removeCollectable()
+    {
+        CollectButton.GetComponent<Button>().onClick.RemoveListener(collectable.collectThis);
+        collectable = null;
+        CollectButton.SetActive(false);
+    }
 }
