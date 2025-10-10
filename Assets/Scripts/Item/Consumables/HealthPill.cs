@@ -11,21 +11,21 @@ public class HealthPill : Consumables
         this.description = "Heals you 10 hp";
         this.amount = amount;
     }
-    private void Awake() {
-        itemDisplay = GameObject.Find("ItemInfoDisplay").GetComponent<ItemDisplay>();
+    private void Start() {
+        itemDisplay = FindObjectOfType<ItemDisplay>();
         Debug.Log("trying to find itemDisplay");
     }
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "buff", 10, this);
+        itemDisplay.setFields(name, description, image, "Heal", 10, amount, this);
     }
 
     public override void onUse()
     {
-        Manager.player.heal(10);
-        Debug.Log("item Used");
-        this.amount -= 0;
+        PlayerStats.Instance.heal(10);
+        base.onUse();
+        displaySelf();
     }
     
 }

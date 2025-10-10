@@ -31,10 +31,8 @@ public abstract class Item : MonoBehaviour
     }
     public void increaseAmount(int a)
     {
-        if (amount < stackLimit)
-        {
-            amount += a;
-        }
+        amount += a;
+        
     }
     public abstract void displaySelf();
     public abstract void onUse();

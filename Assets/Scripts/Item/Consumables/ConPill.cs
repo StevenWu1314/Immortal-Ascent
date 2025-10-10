@@ -19,12 +19,14 @@ public class ConPill : Consumables
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "strength", 10, this);
+        itemDisplay.setFields(name, description, image, "Constitution", 10, amount, this);
     }
 
     public override void onUse()
     {
         Manager.player.increaseStatTemp("Max Health", 10, 50);
+        base.onUse();
+        displaySelf();
     }
     
 }

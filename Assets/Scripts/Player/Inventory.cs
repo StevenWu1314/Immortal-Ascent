@@ -1,61 +1,96 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using TMPro;
-using Unity.Mathematics;
-using Unity.VisualScripting.ReorderableList;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class Inventory : MonoBehaviour
 {
-    [SerializeField] private GameObject inventoryContainer;
-    [SerializeField] private List<Item> items= new List<Item>();
-    [SerializeField] private GameObject ItemContainer;
+    [SerializeField] private GameObject inventoryContainer; // parent with 24 slot children
+    [SerializeField] private List<Item> items = new List<Item>();
+    [SerializeField] private List<Item> StarterItems;
     [SerializeField] private ItemDisplay itemDisplay;
-    [SerializeField] private List<GameObject> oldContainers;
+    public static Inventory instance { get { return instance; } }
+    private ItemBox[] slots; // fixed slots
+    public static Inventory Instance;
 
-
-    public void updateInventory() {
-        foreach (GameObject container in oldContainers) {
-            Destroy(container);
-            
-            Debug.Log("destroyed a container");
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
         }
-        oldContainers.Clear();
-        int i = 0;
-        foreach (Item item in items){
-            item.itemDisplay = itemDisplay;
-            GameObject itemBox = Instantiate(ItemContainer, new Vector3(0, 0, 0), quaternion.identity, inventoryContainer.transform);
-            Image[] itemHolder = itemBox.GetComponentsInChildren<Image>();
-            foreach (Image holder in itemHolder){
-                if(holder.sprite == null)
-                {
-                    holder.sprite = item.getSprite();
-                }
+        Instance = this;
+    }
+
+    private void Start()
+    {
+        inventoryContainer = GameObject.Find("UIManager").transform.Find("Inventory").transform.Find("itemholder").gameObject;
+        // cache references to all slot ItemBox components
+        items.Clear();
+        slots = inventoryContainer.GetComponentsInChildren<ItemBox>();
+        addStarterItems();
+        updateInventory();
+    }
+
+    private void addStarterItems()
+    {
+        foreach (Item item in StarterItems)
+            addItem(Instantiate(item));
+
+    }
+
+    public void updateInventory()
+    {
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (i < items.Count)
+            {
+                Item item = items[i];
+                item.itemDisplay = itemDisplay;
+                slots[i].setItem(item);
             }
-            itemBox.GetComponent<ItemBox>().setItem(item);
-            itemBox.GetComponent<ItemBox>().itemBox = itemBox;
-            oldContainers.Add(itemBox);
+            else
+            {
+                slots[i].clearSlot(); // custom method to empty a slot
+            }
         }
     }
 
-    public void addItem(Item item) {
-        foreach(Item unsorteditem in items){
-            
-            if (nameof(item) == nameof(unsorteditem)) {
+    public void addItem(Item item)
+    {
+        foreach (Item unsorteditem in items)
+        {
+            if (item.getName() == unsorteditem.getName())
+            {
                 unsorteditem.increaseAmount(1);
                 updateInventory();
-                break;
+                return; // don't add duplicate to the list
             }
         }
-        items.Add(item);
-        updateInventory();
-    
-        
+
+        if (items.Count < slots.Length)
+        {
+            items.Add(item);
+            item.increaseAmount(1);
+            updateInventory();
+        }
+        else
+        {
+            Debug.Log("Inventory full!");
+        }
     }
 
-    private void Start() {
+    public void removeItem(Item item)
+    {
+        items.Remove(item);
+        updateInventory();
+    }
+
+    public void setItemDisplay(ItemDisplay itemDisplay)
+    {
+        this.itemDisplay = itemDisplay;
         updateInventory();
     }
 }
