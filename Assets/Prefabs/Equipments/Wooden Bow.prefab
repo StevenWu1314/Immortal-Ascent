@@ -45,14 +45,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  name: Wooden Bow
+  ItemName: Wooden Bow
   description: A simple bow, not the greatest thing ever, but probably better than
     using a sword right now
   image: {fileID: -394736272, guid: a9bc9b4b48c2240ec87895e3d3bf8dbb, type: 3}
-  amount: 1
+  amount: 0
   stackLimit: 1
   itemDisplay: {fileID: 0}
   damage: 10
   equipedIcon: {fileID: 0}
   range: 1
-  equipments: {fileID: 0}

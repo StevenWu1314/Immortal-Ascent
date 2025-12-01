@@ -45,9 +45,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  name: 
-  description: 
+  ItemName: Con Elixir
+  description: Increase your constitution
   image: {fileID: 0}
-  amount: 0
-  stackLimit: 0
+  amount: 1
+  stackLimit: 100
   itemDisplay: {fileID: 0}

@@ -1,0 +1,4 @@
+=== Recipe Start ===
+ResultName: Iron Sword
+Iron: 1
+=== Recipe End ===

@@ -8,7 +8,7 @@ public class Weapon : Item
     public Weapon(int damage, bool range, string name, int id, string description, Sprite sprite) {
     this.damage = damage;
     this.range = range;
-    this.name = name;
+    this.ItemName = name;
     this.id = id;
     this.description = description;
     stackLimit = 1;
@@ -21,7 +21,7 @@ public class Weapon : Item
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "Damage", damage, 1, this);
+        itemDisplay.setFields(ItemName, description, image, "Damage", damage, 1, this);
     }
     public override void onUse()
     {

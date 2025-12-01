@@ -43,4 +43,9 @@ public class CollectableMap : MonoBehaviour
         }
         
     }
+
+    public void Reset()
+    {
+        collectibleGrid = new();
+    }
 }
