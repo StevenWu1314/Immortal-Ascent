@@ -19,7 +19,10 @@ public class ItemDisplay : MonoBehaviour
         itemName.text = name;
         this.description.text = description;
         icon.sprite = sprite;
-        this.typeValue.text = type + ": " + value;
+        if(type != "")
+            this.typeValue.text = type + ": " + value;
+        else 
+            this.typeValue.text = "";
         this.amount.text = "Amount: " + amount;
         this.button.GetComponent<Button>().onClick.RemoveAllListeners();
         this.button.GetComponent<Button>().onClick.AddListener(() => item.onUse());

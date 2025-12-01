@@ -114,7 +114,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 50
-  damage: 5
+  damage: 10
   expValue: 10
 --- !u!58 &-7594236510293803726
 CircleCollider2D:

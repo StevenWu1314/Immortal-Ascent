@@ -36,8 +36,10 @@ public class Inventory : MonoBehaviour
     private void addStarterItems()
     {
         foreach (Item item in StarterItems)
-            addItem(Instantiate(item));
-
+        {
+            addItem((Instantiate(item)));
+        }
+        updateInventory();
     }
 
     public void updateInventory()
@@ -71,8 +73,9 @@ public class Inventory : MonoBehaviour
 
         if (items.Count < slots.Length)
         {
-            items.Add(item);
-            item.increaseAmount(1);
+
+            items.Add(item.clone());
+            Debug.Log("add: " + item.name);
             updateInventory();
         }
         else
@@ -87,9 +90,23 @@ public class Inventory : MonoBehaviour
         updateInventory();
     }
 
+    public void removeItem(Item item, int amount)
+    {
+        items[items.IndexOf(item)].subtractAmount(amount);
+        if(items[items.IndexOf(item)].getAmount() <= 0)
+        {
+            items.Remove(item);
+            updateInventory();
+        }
+    }
     public void setItemDisplay(ItemDisplay itemDisplay)
     {
         this.itemDisplay = itemDisplay;
         updateInventory();
+    }
+
+    public List<Item> getItems()
+    {
+        return items;
     }
 }

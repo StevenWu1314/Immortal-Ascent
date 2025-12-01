@@ -14,5 +14,11 @@ public abstract class Collectables : Item
         {
             Inventory.Instance.addItem(this);
         }
+        
     }
+    public override void displaySelf()
+    {
+        itemDisplay.setFields(ItemName, description, image, "", 0, amount, this);
+    }
+
 }

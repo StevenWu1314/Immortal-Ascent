@@ -146,24 +146,20 @@ public class Controls : MonoBehaviour
     private void checkForCollectables(Controls controls)
     {
         Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
-        Vector2Int LookingAt = currentCell + direction;
         if (collectable != null)
         {
-            removeCollectable();
+            collectable = null;
         }
-        collectable = CollectableMap.Instance.GetCollectableAt(LookingAt);
+        collectable = CollectableMap.Instance.GetCollectableAt(currentCell);
         if (collectable != null)
         {
-            CollectButton.SetActive(true);
-            CollectButton.GetComponent<Button>().onClick.AddListener(collectable.collectThis);
-            //CollectButton.GetComponent<Button>().onClick.AddListener(removeCollectable);
+            collectable.collectThis();
+            CollectableMap.Instance.unregisterCollectable(currentCell);
+            CollectButton.SetActive(false);
+            PerlinNoiseMap map = GameObject.Find("map generator").GetComponent<PerlinNoiseMap>();
+            map.setToGrass(currentCell);
+
         }
     }
 
-    public void removeCollectable()
-    {
-        CollectButton.GetComponent<Button>().onClick.RemoveListener(collectable.collectThis);
-        collectable = null;
-        CollectButton.SetActive(false);
-    }
 }

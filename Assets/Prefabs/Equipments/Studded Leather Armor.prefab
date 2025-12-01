@@ -45,12 +45,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  name: Studded Leather Armor
+  ItemName: 
   description: Something to keep you safe
   image: {fileID: 21300000, guid: 88aac9959c84a4ee2aaff2acdb211d99, type: 3}
-  amount: 1
+  amount: 0
   stackLimit: 1
   itemDisplay: {fileID: 0}
   Health: 50
   equipedIcon: {fileID: 0}
-  equipments: {fileID: 0}
