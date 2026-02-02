@@ -24,9 +24,9 @@ public class UIManager : MonoBehaviour
     {
         openMenu(this);
     }
-    private void Update()
+    public void CloseMenu()
     {
-
+        GameObject.FindGameObjectWithTag("Player").GetComponent<Controls>().MenuIsOpen = false;
     }
 
     public void DrawFlowupDamageText(int damage, Vector3 position)

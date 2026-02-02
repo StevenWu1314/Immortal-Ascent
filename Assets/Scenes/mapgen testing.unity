@@ -4471,7 +4471,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 1514833730}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: Menu
+        m_MethodName: CloseMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -9373,7 +9373,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 1514833730}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: Menu
+        m_MethodName: CloseMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -12036,7 +12036,7 @@ MonoBehaviour:
   enemies:
   - {fileID: 4491772018395455330, guid: 38530b514ce2d4737ac2b67c89f29127, type: 3}
   - {fileID: 1363082926110395293, guid: 3e1d33bf9a53f474f83f98e2ae9f0535, type: 3}
-  enemyFrequency: 0.012
+  enemyFrequency: 0.302
   map_width: 100
   map_height: 100
   waterThreshold: 0.311
@@ -12050,6 +12050,9 @@ MonoBehaviour:
   minPerpendicularDepth: 2
   maxBridgesPerWaterBody: 2
   player: {fileID: 6165602403732954943, guid: 6c63376dec7ae44b2a8c16c129b2eb57, type: 3}
+  numResourceClusters: 5
+  minClusterRadius: 4
+  maxClusterRadius: 10
 --- !u!224 &483323911 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8399735315334616252, guid: 3f5a4a7dc312242998c2a93364128efe, type: 3}
@@ -38307,7 +38310,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 1514833730}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: Menu
+        m_MethodName: CloseMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

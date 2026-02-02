@@ -3,72 +3,21 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Tilemaps;
 
-public class EnemyBehavior : MonoBehaviour
+public class RangeEnemyBehavior : EnemyBehavior
 {
-    public Grid grid;
-    protected GameObject player;
-    public float detectionRadius;
-    protected bool playerDetected;
-
-    public Vector3 spawnPos;
-    [SerializeField] protected int chaseRange;
-
-    public enum state {Idle, Chase, Return}
-    public state currentstate;
-
-    protected void OnEnable()
-    {
-        Controls.onMoveEvent += checkForPlayerInRoom;
-        Controls.onMoveEvent += takeTurn;
-        grid = FindObjectOfType<PerlinNoiseMap>().grid;
-        spawnPos = this.transform.position;
-    }
-    protected void OnDestroy() {
-        Controls.onMoveEvent -= checkForPlayerInRoom;
-        Controls.onMoveEvent -= takeTurn;
-    }
-    protected void Start()
-    {
-
-        player = GameObject.FindWithTag("Player");
-        currentstate = state.Idle;
-
-    }
-    protected void checkForPlayerInRoom(Controls controls)
-    {
-        // Debug.Log("checking for player");
-        // Debug.Log(detectionRadius + " contains: " + new Vector3Int((int)player.transform.position.x, (int)player.transform.position.y));
-        // Debug.Log(detectionRadius.Contains(new Vector3Int((int)player.transform.position.x, (int)player.transform.position.y)));
-        Collider2D[] objectInRange = Physics2D.OverlapCircleAll(transform.position, detectionRadius);
-        if (objectInRange.Contains(player.GetComponent<Collider2D>()))
-        {
-            Controls.onMoveEvent -= checkForPlayerInRoom;
-            currentstate = state.Chase;
-            notifyNearbyEnemies();
-        }
-    }
-
-    protected void notifyNearbyEnemies()
-    {
-        Collider2D[] objectInRange = Physics2D.OverlapCircleAll(transform.position, detectionRadius/2);
-        List<EnemyBehavior> others = (from unit in objectInRange where unit.GetComponent<EnemyBehavior>() != null select unit.GetComponent<EnemyBehavior>()).ToList();
-        foreach(EnemyBehavior other in others)
-        {
-            other.becomeAlerted();
-            
-        }
-    }
-
-    public void becomeAlerted()
-    {
-        Controls.onMoveEvent -= checkForPlayerInRoom;
-        currentstate = state.Chase;
-    }
-    protected virtual void takeTurn(Controls controls)
+    [SerializeField] protected int range;
+    [SerializeField] private GameObject attackIndicator;
+    private GameObject existingAttackIndicator;
+    [SerializeField] private Vector3 lastAttackPos;
+    private bool attacking;
+    [SerializeField] int rangeAttackCooldown;
+    protected override void takeTurn(Controls controls)
     {
         if (currentstate == state.Idle)
         {
@@ -92,7 +41,7 @@ public class EnemyBehavior : MonoBehaviour
             }
         }
     }
-    protected virtual void chasePlayer()
+    protected override void chasePlayer()
     {
         Vector2Int enemyCell = new Vector2Int(
             Mathf.FloorToInt(transform.position.x),
@@ -144,6 +93,32 @@ public class EnemyBehavior : MonoBehaviour
 
                 }
             }
+            else if (math.distance(transform.position, player.transform.position) < range)
+            {
+                if(attacking)
+                {
+                    if(player.transform.position == lastAttackPos)
+                    {
+                        this.GetComponent<Enemy>().Attack(player.GetComponent<PlayerStats>());
+                    }
+                    attacking = false;
+                    rangeAttackCooldown--;
+                    Destroy(existingAttackIndicator);
+                    lastAttackPos = new Vector3(-10000, -10000);
+                    return;
+                }       
+                if(rangeAttackCooldown <= 0)
+                {
+                    Debug.Log("trying to range attack");        
+                    existingAttackIndicator = Instantiate(attackIndicator, player.transform.position, quaternion.identity, transform);
+                    Debug.Log(existingAttackIndicator);
+                    attacking = true;
+                    rangeAttackCooldown = 2;
+                    lastAttackPos = player.transform.position;
+                    return;
+                }
+                rangeAttackCooldown--;
+            }
             else
             {
                 // Move and update entity manager
@@ -155,7 +130,7 @@ public class EnemyBehavior : MonoBehaviour
         }
     }
     
-    protected virtual void returnToSpawn()
+    protected override void returnToSpawn()
     {
         Vector2Int enemyCell = new Vector2Int(
             Mathf.FloorToInt(transform.position.x),

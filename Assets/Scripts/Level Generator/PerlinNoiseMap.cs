@@ -66,11 +66,17 @@ public class PerlinNoiseMap : MonoBehaviour
 
     private List<List<int>> noiseGrid = new List<List<int>>();
     [SerializeField] int numResourceClusters;
+    
+    // number of resource nodes
+    private List<Vector3Int> resourceClusterCenters;
+    
+    [SerializeField] int minClusterRadius = 4;
+    [SerializeField] int maxClusterRadius = 10;
 
-    // --- Unity lifecycle ---
     private void Start()
     {
         grid = new Grid(map_width, map_height, 1, new Vector3(0, 0, 0));
+        resourceClusterCenters = new List<Vector3Int>();    
         Debug.Log(grid);
         GenerateMap();
     }
@@ -835,14 +841,12 @@ public class PerlinNoiseMap : MonoBehaviour
         {
             return;
         }
-        // number of resource nodes
-        int minClusterRadius = 4;
-        int maxClusterRadius = 10;
 
         for (int i = 0; i < numResourceClusters; i++)
         {
             // Pick a random grass location as the cluster center
             Vector3Int center = FindRandomLandTile();
+            resourceClusterCenters.Add(center);
             int radius = UnityEngine.Random.Range(minClusterRadius, maxClusterRadius);
 
             // Each cluster can be a different resource type
@@ -866,9 +870,10 @@ public class PerlinNoiseMap : MonoBehaviour
                     {
                         // place resource
                         tilemap.SetTile(new Vector3Int(x, y, 0), resourceTile);
-
                         // register it in your CollectableMap
                         CollectableMap.Instance.registerCollectable(collectableItems[resourceIndex], new Vector2Int(x, y));
+                        grid.SetValueAtLocation(x, y, 0); // 4 -> collidable plant (tree)
+                        noiseGrid[x][y] = 4;
                     }
                 }
             }
@@ -895,54 +900,56 @@ public class PerlinNoiseMap : MonoBehaviour
     // --- Entities ---
     private void SpawnEntities()
     {
-        var grassCoords = new List<Vector2>();
-
-        for (int x = 0; x < map_width; x++)
+        
+        // Spawn enemies on ResourceClusters with probability enemyFrequency
+        foreach (var center in resourceClusterCenters)
         {
-            for (int y = 0; y < map_height; y++)
+            int radius = UnityEngine.Random.Range(minClusterRadius, maxClusterRadius);
+            for (int x = center.x - radius; x <= center.x + radius; x++)
             {
-                // Treat only *pure* grass (0) as spawnable (plants are marked 3 or 4)
-                if (grid.GetValueAtLocation(x, y) == 0)
+                for (int y = center.y - radius; y <= center.y + radius; y++)
                 {
-                    grassCoords.Add(new Vector2(x, y));
+                    if (!InBounds(x, y)) continue;
+
+                    float dist = Vector2.Distance(new Vector2(x, y), new Vector2(center.x, center.y));
+                    if (dist > radius) continue;
+
+                    // falloff — less dense near edge
+                    float chance = Mathf.InverseLerp(radius, 0, dist) * enemyFrequency;
+
+                    if (IsLand(new Vector3Int(x, y, 0)) && UnityEngine.Random.value < chance)
+                    {
+                        int type = UnityEngine.Random.Range(0, enemies.Length);
+                        var pos = new Vector3(x, y);
+                        var newEnemy = Instantiate(enemies[type], pos, quaternion.identity);
+                        EntityManager.Instance.RegisterEntity(newEnemy, Vector2Int.RoundToInt(pos));
+                        var eb = newEnemy.GetComponent<EnemyBehavior>();
+                        if (eb != null) eb.grid = grid;
+                    }
                 }
             }
         }
-
-        // Spawn enemies on grass with probability enemyFrequency
-        for (int i = 0; i < grassCoords.Count; i++)
-        {
-            if (UnityEngine.Random.value <= enemyFrequency && enemies != null && enemies.Length > 0)
-            {
-                int type = UnityEngine.Random.Range(0, enemies.Length);
-                var pos = grassCoords[i]; // center in cell
-                var newEnemy = Instantiate(enemies[type], pos, quaternion.identity);
-                EntityManager.Instance.RegisterEntity(newEnemy, Vector2Int.RoundToInt(pos));
-                var eb = newEnemy.GetComponent<EnemyBehavior>();
-                if (eb != null) eb.grid = grid;
-            }
-        }
-        if (grassCoords.Count == 0)
+        if (resourceClusterCenters.Count == 0)
         {
             Debug.LogWarning("No grass cells found for player spawn.");
         }
         else if (player != null )
         {
-            var spawn = grassCoords[UnityEngine.Random.Range(0, grassCoords.Count)];
-            while (EntityManager.Instance.GetEntityAt(Vector2Int.FloorToInt(spawn)) != null)
-                    spawn = grassCoords[UnityEngine.Random.Range(0, grassCoords.Count)];
+            var spawn = FindRandomLandTile();
+            while (EntityManager.Instance.GetEntityAt(new Vector2Int(spawn.x, spawn.y)) != null)
+                    spawn = FindRandomLandTile();
             if(PlayerStats.Instance == null)
             {
                 player = Instantiate(player, spawn, quaternion.identity);
                 player.GetComponent<Controls>().grid = grid;
-                EntityManager.Instance.RegisterEntity(player, Vector2Int.FloorToInt(spawn));
+                EntityManager.Instance.RegisterEntity(player, new Vector2Int(spawn.x, spawn.y));
             }
             else
             {
                 player = PlayerStats.Instance.gameObject;
                 player.transform.position = spawn;
                 player.GetComponent<Controls>().grid = grid;
-                EntityManager.Instance.RegisterEntity(player, Vector2Int.FloorToInt(spawn));
+                EntityManager.Instance.RegisterEntity(player, new Vector2Int(spawn.x, spawn.y));
             }
             
         }
