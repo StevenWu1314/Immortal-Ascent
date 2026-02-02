@@ -45,9 +45,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  name: Health Pill
+  ItemName: Health Elixir
   description: Heals you
   image: {fileID: 1352562484, guid: 31258fd920648491fadb2176abce4b25, type: 3}
-  amount: 0
-  stackLimit: 10
+  amount: 1
+  stackLimit: 100
   itemDisplay: {fileID: 0}

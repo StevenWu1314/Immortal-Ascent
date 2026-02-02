@@ -45,13 +45,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 1
-  name: Sword
+  ItemName: Iron Sword
   description: Just a sword
   image: {fileID: 21300000, guid: f0d58f5efe45b4d7ab9e3e954622a56d, type: 3}
-  amount: 17
+  amount: 0
   stackLimit: 1
   itemDisplay: {fileID: 0}
   damage: 15
   equipedIcon: {fileID: 0}
   range: 0
-  equipments: {fileID: 0}

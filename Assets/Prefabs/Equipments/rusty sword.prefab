@@ -45,13 +45,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 1
-  name: Rusty Sword
+  ItemName: Rusty Sword
   description: 'Why would you use this thing '
   image: {fileID: 21300000, guid: 88c2045674b6a49db9e7483d4d2533e8, type: 3}
-  amount: 1
+  amount: 0
   stackLimit: 1
   itemDisplay: {fileID: 0}
   damage: 10
   equipedIcon: {fileID: 0}
   range: 0
-  equipments: {fileID: 0}

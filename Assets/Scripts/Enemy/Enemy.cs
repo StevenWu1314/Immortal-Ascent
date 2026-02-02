@@ -27,7 +27,7 @@ public abstract class Enemy : MonoBehaviour
         }
     }
 
-    public void attack(PlayerStats target)
+    public virtual void Attack(PlayerStats target)
     {
         target.takeDamage(damage);
     }

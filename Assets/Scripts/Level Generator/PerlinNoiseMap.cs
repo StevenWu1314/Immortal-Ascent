@@ -18,7 +18,7 @@ public class PerlinNoiseMap : MonoBehaviour
     [SerializeField] private Tile[] nonCollidablePlants; // e.g. flowers
     [SerializeField] private Tile[] collectableTiles;    // e.g. trees, bamboo
     [SerializeField] private Collectables[] collectableItems;
-    [SerializeField] private Tile[] bridgeTiles;
+    [SerializeField] private RuleTile[] bridgeTiles;
 
     [Header("Entities")]
     [SerializeField] private GameObject[] enemies;
@@ -29,7 +29,7 @@ public class PerlinNoiseMap : MonoBehaviour
     public int map_height = 120;
 
     [Header("Water / Land Balance")]
-    [Range(0f, 1f)] public float waterThreshold = 0.4f; 
+    [Range(0f, 1f)] public float waterThreshold = 0.4f;
     [Tooltip("Of the tiles that are water, what fraction should be deep water (0..1).")]
     [Range(0f, 1f)] public float deepWaterRatio = 0.25f;
     // Lower waterThreshold = more land; raise to create more water.
@@ -65,11 +65,18 @@ public class PerlinNoiseMap : MonoBehaviour
     [SerializeField] GameObject player;
 
     private List<List<int>> noiseGrid = new List<List<int>>();
+    [SerializeField] int numResourceClusters;
+    
+    // number of resource nodes
+    private List<Vector3Int> resourceClusterCenters;
+    
+    [SerializeField] int minClusterRadius = 4;
+    [SerializeField] int maxClusterRadius = 10;
 
-    // --- Unity lifecycle ---
     private void Start()
     {
         grid = new Grid(map_width, map_height, 1, new Vector3(0, 0, 0));
+        resourceClusterCenters = new List<Vector3Int>();    
         Debug.Log(grid);
         GenerateMap();
     }
@@ -90,10 +97,10 @@ public class PerlinNoiseMap : MonoBehaviour
         CreateOrRefreshTileGroups();
 
         GenerateTerrain();
-        PlaceBridge();
         AddPlants();
         SpawnEntities();
-
+        PlaceBridge();
+        tilemap.RefreshAllTiles();
         if (debugMode)
         {
             try { grid.printGrid(); } catch { /* ignore if not implemented */ }
@@ -103,6 +110,9 @@ public class PerlinNoiseMap : MonoBehaviour
     // --- Setup / teardown ---
     private void ClearPreviousState()
     {
+        // Clear grids
+        EntityManager.Instance.Reset();
+        CollectableMap.Instance.Reset();
         // Clear lists
         noiseGrid.Clear();
 
@@ -129,12 +139,12 @@ public class PerlinNoiseMap : MonoBehaviour
         magnification = Mathf.Max(0.0001f, magnification);
 
         // Construct your gameplay grid (custom class in your project)
-        
+
 
         // Wire the player to the grid if present
 
-            var controls = player.GetComponent<Controls>();
-            if (controls != null) controls.grid = grid;
+        var controls = player.GetComponent<Controls>();
+        if (controls != null) controls.grid = grid;
     }
 
     private void CreateTileSet()
@@ -537,6 +547,10 @@ public class PerlinNoiseMap : MonoBehaviour
                 {
                     tilemap.SetTile(pos, terrainTiles[0]); // land
                     grid.SetValueAtLocation(pos.x, pos.y, 0);
+                    tilemap.SetTile(pos + new Vector3Int(0, -1), terrainTiles[0]); // land
+                    grid.SetValueAtLocation(pos.x, pos.y-1, 0);
+                    tilemap.SetTile(pos + new Vector3Int(0, 1), terrainTiles[0]); // land
+                    grid.SetValueAtLocation(pos.x, pos.y+1, 0);
                 }
             }
         }
@@ -552,6 +566,10 @@ public class PerlinNoiseMap : MonoBehaviour
                 {
                     tilemap.SetTile(pos, terrainTiles[0]); // land
                     grid.SetValueAtLocation(pos.x, pos.y, 0);
+                    tilemap.SetTile(pos + new Vector3Int(-1, 0), terrainTiles[0]); // land
+                    grid.SetValueAtLocation(pos.x-1, pos.y, 0);
+                    tilemap.SetTile(pos + new Vector3Int(+1, 0), terrainTiles[0]); // land
+                    grid.SetValueAtLocation(pos.x+1, pos.y, 0);
                 }
             }
         }
@@ -562,8 +580,8 @@ public class PerlinNoiseMap : MonoBehaviour
     {
         bool horizontal = start.y == end.y;
         bool vertical = start.x == end.x;
-        
-        
+
+
         if (bridgeTiles == null || bridgeTiles.Length == 0 || bridgeTiles[0] == null)
         {
             Debug.LogWarning("No bridgeTiles configured; skipping bridge placement.");
@@ -572,10 +590,32 @@ public class PerlinNoiseMap : MonoBehaviour
 
         List<Vector3Int> bridgeCells = new List<Vector3Int>();
 
-        if (start.x == end.x) // vertical bridge
+        if (vertical) // vertical bridge
         {
             int y0 = Mathf.Min(start.y, end.y);
             int y1 = Mathf.Max(start.y, end.y);
+            int landcount = 0;
+            if(IsLand(new Vector3Int(start.x, y0)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(start.x, y0))) landcount++;
+            if(IsLand(new Vector3Int(start.x-1, y0)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(start.x-1, y0))) landcount++;
+            if(IsLand(new Vector3Int(start.x+1, y0)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(start.x+1, y0))) landcount++;
+            if(landcount == 1)
+            {
+                tilemap.SetTile(new Vector3Int(start.x, y0), terrainTiles[1]);
+                tilemap.SetTile(new Vector3Int(start.x-1, y0), terrainTiles[1]);
+                tilemap.SetTile(new Vector3Int(start.x+1, y0), terrainTiles[1]);
+                grid.SetValueAtLocation(start.x, y0, 1);
+                grid.SetValueAtLocation(start.x-1, y0, 1);
+                grid.SetValueAtLocation(start.x+1, y0, 1);
+            }
+            else if (landcount > 1)
+            {
+                tilemap.SetTile(new Vector3Int(start.x, y0), terrainTiles[0]);
+                tilemap.SetTile(new Vector3Int(start.x-1, y0), terrainTiles[0]);
+                tilemap.SetTile(new Vector3Int(start.x+1, y0), terrainTiles[0]);
+                grid.SetValueAtLocation(start.x, y0, 0);
+                grid.SetValueAtLocation(start.x-1, y0, 0);
+                grid.SetValueAtLocation(start.x+1, y0, 0);
+            }
             for (int y = y0; y <= y1; y++)
             {
                 var pos = new Vector3Int(start.x, y, 0);
@@ -587,10 +627,32 @@ public class PerlinNoiseMap : MonoBehaviour
                 }
             }
         }
-        else if (start.y == end.y) // horizontal bridge
+        else if (horizontal) // horizontal bridge
         {
             int x0 = Mathf.Min(start.x, end.x);
             int x1 = Mathf.Max(start.x, end.x);
+            int landcount = 0;
+            if(IsLand(new Vector3Int(x0, start.y)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(x0, start.y))) landcount++;
+            if(IsLand(new Vector3Int(x0, start.y-1)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(x0, start.y-1))) landcount++;
+            if(IsLand(new Vector3Int(x0, start.y+1)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(x0, start.y+1))) landcount++;
+            if(landcount == 1)
+            {
+                tilemap.SetTile(new Vector3Int(x0, start.y), terrainTiles[1]);
+                tilemap.SetTile(new Vector3Int(x0, start.y-1), terrainTiles[1]);
+                tilemap.SetTile(new Vector3Int(x0, start.y+1), terrainTiles[1]);
+                grid.SetValueAtLocation(x0, start.y, 1);
+                grid.SetValueAtLocation(x0, start.y-1, 1);
+                grid.SetValueAtLocation(x0, start.y+1, 1);
+            }
+            else if (landcount > 1)
+            {
+                tilemap.SetTile(new Vector3Int(x0, start.y), terrainTiles[0]);
+                tilemap.SetTile(new Vector3Int(x0, start.y-1), terrainTiles[0]);
+                tilemap.SetTile(new Vector3Int(x0, start.y+1), terrainTiles[0]);
+                grid.SetValueAtLocation(x0, start.y, 0);
+                grid.SetValueAtLocation(x0, start.y-1, 0);
+                grid.SetValueAtLocation(x0, start.y+1, 0);
+            }
             for (int x = x0; x <= x1; x++)
             {
                 var pos = new Vector3Int(x, start.y, 0);
@@ -622,40 +684,30 @@ public class PerlinNoiseMap : MonoBehaviour
             bool hasDown = tilemap.GetTile(down) == bridgeTiles[0];
 
             // --- Vertical bridge: put railings on left & right ---
-            if (hasUp || hasDown) // connected vertically
+            if (hasUp && hasDown) // connected vertically
             {
-                if (IsWater(left))
-                {
-                    tilemap.SetTile(left, bridgeTiles[1]); // left railing
-                    grid.SetValueAtLocation(left.x, left.y, 1);
-                }
-                if (IsWater(right))
-                {
-                    tilemap.SetTile(right, bridgeTiles[2]); // right railing
-                    grid.SetValueAtLocation(right.x, right.y, 1);
-                }
+                tilemap.SetTile(left, bridgeTiles[0]); // left railing
+                grid.SetValueAtLocation(left.x, left.y, 1);
+            
+                tilemap.SetTile(right, bridgeTiles[0]); // right railing
+                grid.SetValueAtLocation(right.x, right.y, 1);
             }
 
             // --- Horizontal bridge: put railings on top & bottom ---
-            if (hasLeft || hasRight) // connected horizontally
+            if (hasLeft && hasRight) // connected horizontally
             {
-                if (IsWater(up))
-                {
-                    tilemap.SetTile(up, bridgeTiles[3]); // top railing
-                    grid.SetValueAtLocation(up.x, up.y, 1);
-                }
-                if (IsWater(down))
-                {
-                    tilemap.SetTile(down, bridgeTiles[4]); // bottom railing
-                    grid.SetValueAtLocation(down.x, down.y, 1);
-                }
+                tilemap.SetTile(up, bridgeTiles[0]); // top railing
+                grid.SetValueAtLocation(up.x, up.y, 1);
+
+                tilemap.SetTile(down, bridgeTiles[0]); // bottom railing
+                grid.SetValueAtLocation(down.x, down.y, 1);
             }
 
-            
+
         }
 
-        //pass 3 add railings
-        foreach(var pos in bridgeCells)
+        //pass 3 add Corners
+        foreach (var pos in bridgeCells)
         {
             Vector3Int left = pos + Vector3Int.left;
             Vector3Int right = pos + Vector3Int.right;
@@ -669,16 +721,16 @@ public class PerlinNoiseMap : MonoBehaviour
 
             if (hasUp && hasRight)
             {
-                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.right, bridgeTiles[9]);
-                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.left, bridgeTiles[5]);
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.right, bridgeTiles[0]);
+                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.left, bridgeTiles[0]);
                 grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.right).x, (pos + Vector3Int.up + Vector3Int.right).y, 1);
                 grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.left).x, (pos + Vector3Int.down + Vector3Int.left).y, 1);
             }
 
             if (hasUp && hasLeft)
             {
-                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.left, bridgeTiles[10]);
-                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.right, bridgeTiles[6]);
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.left, bridgeTiles[0]);
+                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.right, bridgeTiles[0]);
                 grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.left).x, (pos + Vector3Int.up + Vector3Int.left).y, 1);
                 grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.right).x, (pos + Vector3Int.down + Vector3Int.right).y, 1);
             }
@@ -686,23 +738,53 @@ public class PerlinNoiseMap : MonoBehaviour
 
             if (hasDown && hasRight)
             {
-                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.right, bridgeTiles[11]);
-                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.left, bridgeTiles[7]);
+                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.right, bridgeTiles[0]);
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.left, bridgeTiles[0]);
                 grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.right).x, (pos + Vector3Int.down + Vector3Int.right).y, 1);
                 grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.left).x, (pos + Vector3Int.up + Vector3Int.left).y, 1);
             }
 
             if (hasDown && hasLeft)
             {
-                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.left, bridgeTiles[12]);
-                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.right, bridgeTiles[8]);
+                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.left, bridgeTiles[0]);
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.right, bridgeTiles[0]);
                 grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.left).x, (pos + Vector3Int.down + Vector3Int.left).y, 1);
                 grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.right).x, (pos + Vector3Int.up + Vector3Int.right).y, 1);
-            }  
+            }
         }
         // Widen both ends of the bridge
         if (IsLand(start)) EnsureLandMatchesBridge(start, horizontal);
-        if(IsLand(end))EnsureLandMatchesBridge(end, horizontal);
+        if (IsLand(end)) EnsureLandMatchesBridge(end, horizontal);
+        
+        if (vertical) // vertical bridge
+        {
+            int y0 = Mathf.Min(start.y, end.y);
+            int y1 = Mathf.Max(start.y, end.y);
+            var pos = new Vector3Int(start.x, y1, 0);
+            
+            tilemap.SetTile(pos, bridgeTiles[0]); // bridge floor
+            grid.SetValueAtLocation(pos.x, pos.y, 0);
+            bridgeCells.Add(pos);
+            if (IsWater(pos + Vector3Int.up))
+            {
+                tilemap.SetTile(pos + Vector3Int.up, bridgeTiles[0]);
+            }
+        }
+        else if (horizontal) // horizontal bridge
+        {
+            int x0 = Mathf.Min(start.x, end.x);
+            int x1 = Mathf.Max(start.x, end.x);
+            var pos = new Vector3Int(x1, start.y, 0);
+        
+            tilemap.SetTile(pos, bridgeTiles[0]); // bridge floor
+            grid.SetValueAtLocation(pos.x, pos.y, 0);
+            bridgeCells.Add(pos);
+            if (IsWater(pos + Vector3Int.right))
+            {
+                tilemap.SetTile(pos + Vector3Int.right, bridgeTiles[0]);
+            }
+            
+        }
     }
 
     private class BridgeCandidate
@@ -722,106 +804,154 @@ public class PerlinNoiseMap : MonoBehaviour
     // --- Vegetation ---
     private void AddPlants()
     {
-        // If no plant arrays, just return
+        // flowers and random non-collectable plants
+        AddRandomFlowers();
+
+        // clustered collectable resources
+        PlaceResourceClusters();
+    }
+    private void AddRandomFlowers()
+    {
         bool haveNonColl = nonCollidablePlants != null && nonCollidablePlants.Length > 0;
-        bool haveCollectable = collectableTiles != null && collectableTiles.Length > 0;
-        if (!haveNonColl && !haveCollectable)
-            return;
-
-        // clamp requested densities
-        float t = Mathf.Clamp01(treeDensity);
-        float f = Mathf.Clamp01(flowerDensity);
-
-        // IMPORTANT: if the corresponding plant arrays are missing,
-        // zero out their probability so their thresholds are not used.
-        if (!haveCollectable) t = 0f;
-        if (!haveNonColl) f = 0f;
-
-        // Normalize only if the combined probability would exceed 1.
-        // This keeps the intended relative proportions while preventing overlap.
-        float sum = t + f;
-        if (sum > 1f && sum > 0f)
+        if (!haveNonColl)
         {
-            t = t / sum;
-            f = f / sum;
-            // now t + f == 1
+            return;
         }
-
         for (int x = 0; x < map_width; x++)
         {
             for (int y = 0; y < map_height; y++)
             {
-                // only consider pure grass tiles (tileId 0) for vegetation
-                if (noiseGrid[x][y] != 0) continue;
-
-                float r = UnityEngine.Random.value;
-
-                // First attempt collectable objects (plants/minerals) when in threshold AND available
-                if (r < t && haveCollectable)
+                if (noiseGrid[x][y] == 0) // grass only
                 {
-                    int index = UnityEngine.Random.Range(0, collectableTiles.Length);
-                    Tile tile = collectableTiles[index];
-                    Collectables collectable = collectableItems[index];
-                    tilemap.SetTile(new Vector3Int(x, y, 0), tile);
-                    grid.SetValueAtLocation(x, y, 1); // 4 -> collidable plant (tree)
-                    CollectableMap.Instance.registerCollectable(collectable, new Vector2Int(x, y));
-                    noiseGrid[x][y] = 4;
-                }
-                // Otherwise try non-collidable plants (flowers), using threshold shifted by t
-                else if (r < t + f && haveNonColl)
-                {
-                    var tile = nonCollidablePlants[UnityEngine.Random.Range(0, nonCollidablePlants.Length)];
-                    tilemap.SetTile(new Vector3Int(x, y, 0), tile);
-                    grid.SetValueAtLocation(x, y, 0); // 3 -> non-collidable (flower)
-                    noiseGrid[x][y] = 3;
+                    if (UnityEngine.Random.value < flowerDensity)
+                    {
+                        int id = UnityEngine.Random.Range(0, nonCollidablePlants.Length);
+                        tilemap.SetTile(new Vector3Int(x, y, 0), nonCollidablePlants[id]);
+                    }
                 }
             }
         }
     }
 
 
-    // --- Entities ---
-    private void SpawnEntities()
+    private void PlaceResourceClusters()
     {
-        var grassCoords = new List<Vector2>();
-
-        for (int x = 0; x < map_width; x++)
+        bool haveCollectable = collectableTiles != null && collectableTiles.Length > 0;
+        if (!haveCollectable)
         {
-            for (int y = 0; y < map_height; y++)
+            return;
+        }
+
+        for (int i = 0; i < numResourceClusters; i++)
+        {
+            // Pick a random grass location as the cluster center
+            Vector3Int center = FindRandomLandTile();
+            resourceClusterCenters.Add(center);
+            int radius = UnityEngine.Random.Range(minClusterRadius, maxClusterRadius);
+
+            // Each cluster can be a different resource type
+            int resourceIndex = UnityEngine.Random.Range(0, collectableTiles.Length);
+            Tile resourceTile = collectableTiles[resourceIndex];
+
+            // Fill the cluster
+            for (int x = center.x - radius; x <= center.x + radius; x++)
             {
-                // Treat only *pure* grass (0) as spawnable (plants are marked 3 or 4)
-                if (grid.GetValueAtLocation(x, y) == 0)
+                for (int y = center.y - radius; y <= center.y + radius; y++)
                 {
-                    grassCoords.Add(new Vector2(x, y));
+                    if (!InBounds(x, y)) continue;
+
+                    float dist = Vector2.Distance(new Vector2(x, y), new Vector2(center.x, center.y));
+                    if (dist > radius) continue;
+
+                    // falloff — less dense near edge
+                    float chance = Mathf.InverseLerp(radius, 0, dist) * 0.9f;
+
+                    if (IsLand(new Vector3Int(x, y, 0)) && UnityEngine.Random.value < chance)
+                    {
+                        // place resource
+                        tilemap.SetTile(new Vector3Int(x, y, 0), resourceTile);
+                        // register it in your CollectableMap
+                        CollectableMap.Instance.registerCollectable(collectableItems[resourceIndex], new Vector2Int(x, y));
+                        grid.SetValueAtLocation(x, y, 0); // 4 -> collidable plant (tree)
+                        noiseGrid[x][y] = 4;
+                    }
                 }
             }
         }
+    }
 
-        // Spawn enemies on grass with probability enemyFrequency
-        for (int i = 0; i < grassCoords.Count; i++)
+    private bool InBounds(int x, int y)
+    {
+        return x >= 0 && x < map_width && y >= 0 && y < map_height;
+    }
+
+    private Vector3Int FindRandomLandTile()
+    {
+        while (true)
         {
-            if (UnityEngine.Random.value <= enemyFrequency && enemies != null && enemies.Length > 0)
+            int x = UnityEngine.Random.Range(0, map_width);
+            int y = UnityEngine.Random.Range(0, map_height);
+
+            if (noiseGrid[x][y] == 0) // land tile
+                return new Vector3Int(x, y, 0);
+        }
+    }
+
+    // --- Entities ---
+    private void SpawnEntities()
+    {
+        
+        // Spawn enemies on ResourceClusters with probability enemyFrequency
+        foreach (var center in resourceClusterCenters)
+        {
+            int radius = UnityEngine.Random.Range(minClusterRadius, maxClusterRadius);
+            for (int x = center.x - radius; x <= center.x + radius; x++)
             {
-                int type = UnityEngine.Random.Range(0, enemies.Length);
-                var pos = grassCoords[i]; // center in cell
-                var newEnemy = Instantiate(enemies[type], pos, quaternion.identity);
-                EntityManager.Instance.RegisterEntity(newEnemy, Vector2Int.RoundToInt(pos));
-                var eb = newEnemy.GetComponent<EnemyBehavior>();
-                if (eb != null) eb.grid = grid;
+                for (int y = center.y - radius; y <= center.y + radius; y++)
+                {
+                    if (!InBounds(x, y)) continue;
+
+                    float dist = Vector2.Distance(new Vector2(x, y), new Vector2(center.x, center.y));
+                    if (dist > radius) continue;
+
+                    // falloff — less dense near edge
+                    float chance = Mathf.InverseLerp(radius, 0, dist) * enemyFrequency;
+
+                    if (IsLand(new Vector3Int(x, y, 0)) && UnityEngine.Random.value < chance)
+                    {
+                        int type = UnityEngine.Random.Range(0, enemies.Length);
+                        var pos = new Vector3(x, y);
+                        var newEnemy = Instantiate(enemies[type], pos, quaternion.identity);
+                        EntityManager.Instance.RegisterEntity(newEnemy, Vector2Int.RoundToInt(pos));
+                        var eb = newEnemy.GetComponent<EnemyBehavior>();
+                        if (eb != null) eb.grid = grid;
+                    }
+                }
             }
         }
-        if (grassCoords.Count == 0)
+        if (resourceClusterCenters.Count == 0)
         {
             Debug.LogWarning("No grass cells found for player spawn.");
         }
-        else if (player != null)
+        else if (player != null )
         {
-            var spawn = grassCoords[UnityEngine.Random.Range(0, grassCoords.Count)];
-            while(EntityManager.Instance.GetEntityAt(Vector2Int.FloorToInt(spawn)) != null)
-                spawn = grassCoords[UnityEngine.Random.Range(0, grassCoords.Count)];
-            player = Instantiate(player, spawn, quaternion.identity);
-            player.GetComponent<Controls>().grid = grid;
-            EntityManager.Instance.RegisterEntity(player, Vector2Int.FloorToInt(spawn));
+            var spawn = FindRandomLandTile();
+            while (EntityManager.Instance.GetEntityAt(new Vector2Int(spawn.x, spawn.y)) != null)
+                    spawn = FindRandomLandTile();
+            if(PlayerStats.Instance == null)
+            {
+                player = Instantiate(player, spawn, quaternion.identity);
+                player.GetComponent<Controls>().grid = grid;
+                EntityManager.Instance.RegisterEntity(player, new Vector2Int(spawn.x, spawn.y));
+            }
+            else
+            {
+                player = PlayerStats.Instance.gameObject;
+                player.transform.position = spawn;
+                player.GetComponent<Controls>().grid = grid;
+                EntityManager.Instance.RegisterEntity(player, new Vector2Int(spawn.x, spawn.y));
+            }
+            
         }
     }
 
@@ -860,6 +990,13 @@ public class PerlinNoiseMap : MonoBehaviour
             if (!IsWater(pos)) return false;
         }
         return true;
+    }
+
+    public void setToGrass(Vector2 position)
+    {
+        Vector3Int newPosition = new Vector3Int((int)position.x, (int)position.y, 0);
+        tilemap.SetTile(newPosition, terrainTiles[0]);
+        grid.SetValueAtLocation(newPosition.x, newPosition.y, 0);
     }
 }
 

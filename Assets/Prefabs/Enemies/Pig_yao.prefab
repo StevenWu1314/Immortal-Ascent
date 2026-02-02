@@ -100,7 +100,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da510d2a12cd14d4da2c7ff97d14c109, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectionRadius: 20
+  detectionRadius: 10
+  spawnPos: {x: 0, y: 0, z: 0}
+  chaseRange: 20
+  currentstate: 0
 --- !u!114 &5485841303718966773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -114,7 +117,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 50
-  damage: 5
+  damage: 10
   expValue: 10
 --- !u!58 &-7594236510293803726
 CircleCollider2D:
