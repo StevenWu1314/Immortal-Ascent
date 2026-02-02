@@ -1,13 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
 public abstract class Item : MonoBehaviour
 {
     [SerializeField] protected int id;
-    [SerializeField] protected string name;
+    [SerializeField] protected string ItemName;
     [SerializeField] protected string description;
     [SerializeField] protected Sprite image;
     [SerializeField] protected int amount;
@@ -18,7 +19,7 @@ public abstract class Item : MonoBehaviour
     
     public string getName()
     {
-        return name;
+        return ItemName;
     }
 
     public string getDescription()
@@ -31,11 +32,34 @@ public abstract class Item : MonoBehaviour
     }
     public void increaseAmount(int a)
     {
-        if (amount < stackLimit)
+        amount += a;
+
+    }
+    public int getAmount()
+    {
+        return amount;
+    }
+    public void subtractAmount(int a)
+    {
+        if (amount >= a)
         {
-            amount += a;
+            amount -= a;
+        }
+        else
+        {
+            Debug.Log("Trying to consume more than what you have");
         }
     }
     public abstract void displaySelf();
     public abstract void onUse();
+    private void Start()
+    {
+        itemDisplay = GameObject.Find("ItemInfoDisplay").GetComponent<ItemDisplay>();
+        Debug.Log("trying to find itemDisplay");
+    }
+    
+    public Item clone()
+    {
+        return (Item)this.MemberwiseClone();
+    }
 }

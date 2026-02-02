@@ -3,7 +3,7 @@ guid: d971328ec442863419eb93c294034e4b
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -43,12 +43,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 160
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -95,7 +95,322 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_0
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 320
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f0a10c1b5068349e498d960d23c959f4
+      internalID: 982060896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_1
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 320
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dd423f1bf0b434dd5ad9cec6752e47f6
+      internalID: -937975800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_2
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 320
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 697d02b75ec164d2e8e6bda3a59d6904
+      internalID: 517470119
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_3
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 320
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 001e62eea7ea043938c818d1926156c6
+      internalID: 525012052
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_4
+      rect:
+        serializedVersion: 2
+        x: 720
+        y: 320
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4e7401b05736447428b17e2e1bba3fa3
+      internalID: -240370798
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_5
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 160
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8df1252f0025c438690e28918203fb79
+      internalID: 534941854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_6
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 160
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 628ffe322149c4b22b327bfa66e545c7
+      internalID: -1911533568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_7
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 160
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 03b7b6b0cd4a547a893faf7e7cb20194
+      internalID: -1982432237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_8
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 160
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a9c6e3cb7415c4762a49e0c7393b28fb
+      internalID: -376247292
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_9
+      rect:
+        serializedVersion: 2
+        x: 720
+        y: 160
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bcaeb284818aa4f9c9e16d773b8c1f68
+      internalID: 1388669624
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_10
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 0
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7390a08f2f07a4829a300d9694ad34ac
+      internalID: -1149946219
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_11
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 0
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c0ac31156bc8d4eb59e59ea3ca806aec
+      internalID: -607396249
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_12
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 0
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4eb90a2c645154228a1d9f8aa98653ee
+      internalID: -1856407936
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_13
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 0
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1474cc5d2a18d46f8b22c2217e6cea3a
+      internalID: -60283208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bridge-hd-example-with-water_14
+      rect:
+        serializedVersion: 2
+        x: 720
+        y: 0
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fe3556a9dcc27440c91ca93d7bdabe32
+      internalID: -163701707
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -106,7 +421,22 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      bridge-hd-example-with-water_0: 982060896
+      bridge-hd-example-with-water_1: -937975800
+      bridge-hd-example-with-water_10: -1149946219
+      bridge-hd-example-with-water_11: -607396249
+      bridge-hd-example-with-water_12: -1856407936
+      bridge-hd-example-with-water_13: -60283208
+      bridge-hd-example-with-water_14: -163701707
+      bridge-hd-example-with-water_2: 517470119
+      bridge-hd-example-with-water_3: 525012052
+      bridge-hd-example-with-water_4: -240370798
+      bridge-hd-example-with-water_5: 534941854
+      bridge-hd-example-with-water_6: -1911533568
+      bridge-hd-example-with-water_7: -1982432237
+      bridge-hd-example-with-water_8: -376247292
+      bridge-hd-example-with-water_9: 1388669624
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

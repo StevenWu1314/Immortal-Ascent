@@ -45,9 +45,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  name: Strength Pill
+  ItemName: Strength Elixir
   description: increase your strength by 10 for 50 turns
-  image: {fileID: 0}
+  image: {fileID: -1924347245, guid: d59a8692024da42069b371d8f55f6b9e, type: 3}
   amount: 1
   stackLimit: 100
   itemDisplay: {fileID: 0}

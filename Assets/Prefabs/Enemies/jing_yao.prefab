@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 3997995276445527074}
   - component: {fileID: 1993709893107872653}
-  - component: {fileID: 4732529935639559756}
   - component: {fileID: 5191128439240020904}
   - component: {fileID: 1024056904359554167}
   - component: {fileID: 2413480427557253531}
+  - component: {fileID: 7325254153722871514}
   m_Layer: 0
   m_Name: jing_yao
   m_TagString: Enemy
@@ -88,21 +88,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 1
---- !u!114 &4732529935639559756
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4491772018395455330}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da510d2a12cd14d4da2c7ff97d14c109, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  detectionRadius:
-    m_Position: {x: -39, y: -7, z: -10}
-    m_Size: {x: 17, y: 19, z: 20}
 --- !u!50 &5191128439240020904
 Rigidbody2D:
   serializedVersion: 4
@@ -177,4 +162,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6574a381f7834ee1b85e9ba08b8d891, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: 30
+  damage: 10
   expValue: 10
+--- !u!114 &7325254153722871514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4491772018395455330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d0207e711d6b45afa3a9195ec82f692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  detectionRadius: 10
+  spawnPos: {x: 0, y: 0, z: 0}
+  chaseRange: 10
+  currentstate: 0
+  range: 5
+  attackIndicator: {fileID: 8378511737871769424, guid: 182d0ef67710546f7ae2b12c917063da, type: 3}
+  lastAttackPos: {x: 0, y: 0, z: 0}
+  rangeAttackCooldown: 0

@@ -1,134 +1,166 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Rendering;
+using UnityEngine.Tilemaps;
+using UnityEngine.UI;
 
 public class Controls : MonoBehaviour
 {
     Transform self;
     public Grid grid;
     Vector2Int direction;
+    bool aiming = false;
     [SerializeField] private float moveCooldown = 0.1f;
     [SerializeField] private float runningCooldown = 0;
+    [SerializeField] public bool MenuIsOpen;
     [SerializeField] private PlayerStats playerStats;
+    Collectables collectable;
+    public GameObject CollectButton;
     public static event Action<Controls> onMoveEvent;
     public static event UnityAction onShootEvent;
     // Start is called before the first frame update
     void Start()
     {
+        UIManager.openMenu += detectMenu;
         self = gameObject.transform;
-    
+        grid = FindAnyObjectByType<PerlinNoiseMap>().grid;
         Debug.Log(grid);
-        
-        
+        onMoveEvent += checkForCollectables;
+        CollectButton = GameObject.Find("Collect");
+        CollectButton.SetActive(false);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(runningCooldown <= 0)
+        if (MenuIsOpen) return;
+
+        if (aiming)
         {
-            runningCooldown = moveCooldown;
-            if(Input.GetKey(KeyCode.W)) 
+            if (Input.GetKeyDown(KeyCode.J))
             {
-                direction = new Vector2Int(0, 1);
-                grid.Move(transform.position, direction, gameObject.transform);
-                onMoveEvent(this);
-                
+                aiming = false;
+                transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
+                print("exiting aiming mode");
+                return;
             }
-            else if(Input.GetKey(KeyCode.S))
+            else if(Input.GetMouseButtonDown(0))
             {
-                direction = new Vector2Int(0, -1);
-                grid.Move(transform.position, direction, gameObject.transform);
-                onMoveEvent(this);
-                
+                Debug.Log("leftClickDetected");
+                aim();
             }
-            else if(Input.GetKey(KeyCode.D))
+            return;
+        }
+
+        // --- Normal movement mode ---
+        if (runningCooldown <= 0)
+        {
+            direction = Vector2Int.zero;
+            if (Input.GetKey(KeyCode.W)) direction = Vector2Int.up;
+            else if (Input.GetKey(KeyCode.S)) direction = Vector2Int.down;
+            else if (Input.GetKey(KeyCode.D)) direction = Vector2Int.right;
+            else if (Input.GetKey(KeyCode.A)) direction = Vector2Int.left;
+
+            if (direction != Vector2Int.zero)
             {
-                direction = new Vector2Int(1, 0);
-                grid.Move(transform.position, direction, gameObject.transform);
+                runningCooldown = moveCooldown;
+                Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
+                Vector2Int nextCell = currentCell + direction;
+                if (grid.Move(transform.position, direction, transform))
+                {
+                    EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
+                }
                 onMoveEvent(this);
-                
+                direction = Vector2Int.zero;
             }
-            else if(Input.GetKey(KeyCode.A))
+
+            if (Input.GetKeyDown(KeyCode.J))
             {
-                direction = new Vector2Int(-1, 0);
-                grid.Move(transform.position, direction, gameObject.transform);
-                onMoveEvent(this);
-                
-            }     
+                aiming = true;
+                transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
+                print("Entered aiming mode");
+            }
         }
         else
         {
             runningCooldown -= Time.deltaTime;
         }
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-            grid.printGrid();
-        }
-        if(Input.GetKey(KeyCode.J))
-        {   
-            aim();
-            runningCooldown = 0.3f;
-        }
-    }   
 
-    private void aim() {
-        if(Input.GetKeyDown(KeyCode.W)) 
+        // if (Input.GetKeyUp(KeyCode.Space))
+        // {
+        //     grid.printGrid();
+        // }
+
+    }
+    IEnumerator WaitforKeyPress(Action<KeyCode> callback)
+    {
+        KeyCode pressedKey = KeyCode.None;
+
+        while (pressedKey == KeyCode.None)
         {
-            print("up");
-            Enemy target = grid.detectEnemiesInALine(transform.position, new Vector2Int(0, 1), 5);
-            if (target != null)
+            if (Input.GetKeyDown(KeyCode.W)) pressedKey = KeyCode.W;
+            else if (Input.GetKeyDown(KeyCode.A)) pressedKey = KeyCode.A;
+            else if (Input.GetKeyDown(KeyCode.S)) pressedKey = KeyCode.S;
+            else if (Input.GetKeyDown(KeyCode.D)) pressedKey = KeyCode.D;
+            else if (Input.GetKeyDown(KeyCode.L)) pressedKey = KeyCode.L;
+            yield return null; // Wait for next frame
+        }
+        callback?.Invoke(pressedKey);
+    }
+    private void aim()
+    {
+        GameObject target = null;
+        Tilemap rangeIndicator =  transform.GetComponentInChildren<RangeAttackTilemap>().tilemap;
+        Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3Int clickCell = rangeIndicator.WorldToCell(worldPoint);
+        Vector3 cellcenter = rangeIndicator.GetCellCenterWorld(clickCell);
+        if(transform.GetComponentInChildren<RangeAttackTilemap>().InRange(clickCell))
+        {
+            Collider2D hit = Physics2D.OverlapCircle(cellcenter, 0.1f);
+            Debug.Log(cellcenter);
+            if(hit != null)
             {
-                playerStats.attack("range", target);
-            }
-            else 
-            {
-                print("no target found");
+                Debug.Log("Target Found");
+                target = hit.gameObject;
             }
         }
-        else if(Input.GetKey(KeyCode.S))
+        if (target != null)
         {
-            print("down");
-            Enemy target = grid.detectEnemiesInALine(transform.position, new Vector2Int(0, -1), 5);
-            if (target != null)
-            {
-                playerStats.attack("range", target);
-            }
-            else 
-            {
-                print("no target found");
-            }
+            playerStats.attack("range", target.GetComponent<Enemy>());
+            onMoveEvent(this);
         }
-        else if(Input.GetKey(KeyCode.D))
+        aiming = false;
+        transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
+        runningCooldown = 0.5f;
+    }
+    private void detectMenu(UIManager uIManager)
+    {
+        MenuIsOpen = !MenuIsOpen;
+    }
+
+    private void checkForCollectables(Controls controls)
+    {
+        Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
+        if (collectable != null)
         {
-            print("right");
-            Enemy target = grid.detectEnemiesInALine(transform.position, new Vector2Int(1, 0), 5);
-            if (target != null)
-            {
-                playerStats.attack("range", target);
-            }
-            else 
-            {
-                print("no target found");
-            }
+            collectable = null;
         }
-        else if(Input.GetKey(KeyCode.A))
+        collectable = CollectableMap.Instance.GetCollectableAt(currentCell);
+        if (collectable != null)
         {
-            print("left");
-            Enemy target = grid.detectEnemiesInALine(transform.position, new Vector2Int(-1, 0), 5);
-            if (target != null)
-            {
-                playerStats.attack("range", target);
-            }
-            else 
-            {
-                print("no target found");
-            }
-        } 
-      
+            collectable.collectThis();
+            CollectableMap.Instance.unregisterCollectable(currentCell);
+            CollectButton.SetActive(false);
+            PerlinNoiseMap map = GameObject.Find("map generator").GetComponent<PerlinNoiseMap>();
+            map.setToGrass(currentCell);
+
+        }
+    }
+
+    private void OnDestroy()
+    {
+        onMoveEvent -= checkForCollectables;
+        UIManager.openMenu -= detectMenu;
     }
 }

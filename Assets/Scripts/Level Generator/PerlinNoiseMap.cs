@@ -1,0 +1,1002 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Unity.Mathematics;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Tilemaps;
+// NOTE: Removed all Editor-only namespaces to avoid player build issues.
+
+public class PerlinNoiseMap : MonoBehaviour
+{
+    // --- Serialized fields / config ---
+    [Header("Tilemaps & Tiles")]
+    [SerializeField] private Tilemap tilemap;
+    [SerializeField] private Tile[] terrainTiles;   // 0 = grass, 1 = water, 2 = deepwater
+    [SerializeField] private Tile[] nonCollidablePlants; // e.g. flowers
+    [SerializeField] private Tile[] collectableTiles;    // e.g. trees, bamboo
+    [SerializeField] private Collectables[] collectableItems;
+    [SerializeField] private RuleTile[] bridgeTiles;
+
+    [Header("Entities")]
+    [SerializeField] private GameObject[] enemies;
+    [SerializeField, Range(0f, 1f)] private float enemyFrequency = 0.003f; // fraction of grass cells
+
+    [Header("Map Size")]
+    public int map_width = 120;
+    public int map_height = 120;
+
+    [Header("Water / Land Balance")]
+    [Range(0f, 1f)] public float waterThreshold = 0.4f;
+    [Tooltip("Of the tiles that are water, what fraction should be deep water (0..1).")]
+    [Range(0f, 1f)] public float deepWaterRatio = 0.25f;
+    // Lower waterThreshold = more land; raise to create more water.
+
+    [Header("Vegetation Density")]
+    [Tooltip("Chance a grass tile becomes a collidable plant (tree/bamboo).")]
+    [Range(0f, 1f)] public float treeDensity = 0.1f;   // collidable
+    [Tooltip("Chance a grass tile becomes a non-collidable plant (flower).")]
+    [Range(0f, 1f)] public float flowerDensity = 0.05f; // non-collidable
+
+    [Tooltip("Bigger = smoother. Must be > 0.")]
+    public float magnification = 7f; // 4-20 typically
+    public bool debugMode = false;
+
+    [Header("Bridges")]
+    public int maxBridgeLength = 30;
+    public int minBridgeLength = 6;
+    public int minPerpendicularDepth = 2;
+    public int maxBridgesPerWaterBody = 1;
+
+    // --- Runtime data ---
+    private Dictionary<int, Tile> terrainElements;
+    private Dictionary<int, Tile> vegetations; // kept for compatibility (flowers earlier)
+    private Dictionary<int, GameObject> tileGroups;
+
+    // NOTE: If you also use UnityEngine.Grid in your project,
+    // consider renaming your custom Grid to avoid ambiguity.
+    public Grid grid;
+
+    private int xOffset;
+    private int yOffset;
+
+    [SerializeField] GameObject player;
+
+    private List<List<int>> noiseGrid = new List<List<int>>();
+    [SerializeField] int numResourceClusters;
+    
+    // number of resource nodes
+    private List<Vector3Int> resourceClusterCenters;
+    
+    [SerializeField] int minClusterRadius = 4;
+    [SerializeField] int maxClusterRadius = 10;
+
+    private void Start()
+    {
+        grid = new Grid(map_width, map_height, 1, new Vector3(0, 0, 0));
+        resourceClusterCenters = new List<Vector3Int>();    
+        Debug.Log(grid);
+        GenerateMap();
+    }
+
+    // --- Public API ---
+    public void GenerateMap()
+    {
+        // Reset previous state if regenerating
+        ClearPreviousState();
+
+        InitializeGame();
+
+        // Randomize noise offsets
+        xOffset = UnityEngine.Random.Range(-100, 100);
+        yOffset = UnityEngine.Random.Range(-100, 100);
+
+        CreateTileSet();
+        CreateOrRefreshTileGroups();
+
+        GenerateTerrain();
+        AddPlants();
+        SpawnEntities();
+        PlaceBridge();
+        tilemap.RefreshAllTiles();
+        if (debugMode)
+        {
+            try { grid.printGrid(); } catch { /* ignore if not implemented */ }
+        }
+    }
+
+    // --- Setup / teardown ---
+    private void ClearPreviousState()
+    {
+        // Clear grids
+        EntityManager.Instance.Reset();
+        CollectableMap.Instance.Reset();
+        // Clear lists
+        noiseGrid.Clear();
+
+        // Clear tilemap
+        if (tilemap != null)
+        {
+            tilemap.ClearAllTiles();
+        }
+
+        // Remove old groups if we created any
+        if (tileGroups != null)
+        {
+            foreach (var go in tileGroups.Values)
+            {
+                if (go != null) DestroyImmediate(go);
+            }
+            tileGroups.Clear();
+        }
+    }
+
+    private void InitializeGame()
+    {
+        // Guard magnification
+        magnification = Mathf.Max(0.0001f, magnification);
+
+        // Construct your gameplay grid (custom class in your project)
+
+
+        // Wire the player to the grid if present
+
+        var controls = player.GetComponent<Controls>();
+        if (controls != null) controls.grid = grid;
+    }
+
+    private void CreateTileSet()
+    {
+        terrainElements = new Dictionary<int, Tile>(capacity: terrainTiles != null ? terrainTiles.Length : 0);
+        if (terrainTiles != null)
+        {
+            for (int i = 0; i < terrainTiles.Length; i++)
+            {
+                if (terrainTiles[i] == null)
+                    Debug.LogWarning($"terrainTiles[{i}] is null.");
+                terrainElements[i] = terrainTiles[i];
+            }
+        }
+
+        vegetations = new Dictionary<int, Tile>(capacity: nonCollidablePlants != null ? nonCollidablePlants.Length : 0);
+        if (nonCollidablePlants != null)
+        {
+            for (int i = 0; i < nonCollidablePlants.Length; i++)
+            {
+                if (nonCollidablePlants[i] == null)
+                    Debug.LogWarning($"nonCollidablePlants[{i}] is null.");
+                vegetations[i] = nonCollidablePlants[i];
+            }
+        }
+    }
+
+    private void CreateOrRefreshTileGroups()
+    {
+        tileGroups = new Dictionary<int, GameObject>();
+
+        // Terrain groups
+        if (terrainElements != null)
+        {
+            foreach (var kv in terrainElements)
+            {
+                var tile = kv.Value;
+                var go = new GameObject(tile != null ? tile.name : $"Terrain_{kv.Key}");
+                go.transform.SetParent(transform, false);
+                tileGroups.Add(kv.Key, go);
+            }
+        }
+
+        // Vegetation groups after terrain (offset keys to avoid collisions)
+        int offset = terrainElements != null ? terrainElements.Count : 0;
+        if (vegetations != null)
+        {
+            foreach (var kv in vegetations)
+            {
+                var tile = kv.Value;
+                var go = new GameObject(tile != null ? tile.name : $"Vegetation_{kv.Key}");
+                go.transform.SetParent(transform, false);
+                tileGroups.Add(kv.Key + offset, go);
+            }
+        }
+
+        // Optional: collidablePlants don't need groups, but you can add them too if desired.
+    }
+
+    // --- Terrain generation ---
+    private void GenerateTerrain()
+    {
+        // Precompute thresholds for water split
+        float totalWater = Mathf.Clamp01(waterThreshold);
+        float deepWaterPortion = Mathf.Clamp01(deepWaterRatio);
+        float deepWaterThreshold = totalWater * deepWaterPortion;   // v < deepWaterThreshold => deep water
+        float shallowWaterThreshold = totalWater;                   // deepWaterThreshold <= v < shallowWaterThreshold => shallow
+
+        for (int x = 0; x < map_width; x++)
+        {
+            noiseGrid.Add(new List<int>(map_height));
+            for (int y = 0; y < map_height; y++)
+            {
+                int tileId = GetIdUsingPerlinAsBiome(x, y, deepWaterThreshold, shallowWaterThreshold);
+
+                noiseGrid[x].Add(tileId);
+
+                // Safety: make sure the tileId exists in terrainElements
+                if (!terrainElements.TryGetValue(tileId, out var tile) || tile == null)
+                {
+                    Debug.LogWarning($"Tile ID {tile} not found in terrainElements. Using tile 0.");
+                    tile = terrainElements.ContainsKey(0) ? terrainElements[0] : null;
+                }
+
+                tilemap.SetTile(new Vector3Int(x, y, 0), tile);
+                grid.SetValueAtLocation(x, y, tileId); // grid values: 0 grass, 1 shallow water, 2 deep water
+            }
+        }
+    }
+
+    /// <summary>
+    /// Maps Perlin/simplex noise (v in [0,1]) to explicit biome tile IDs:
+    /// 0 = grass, 1 = shallow water, 2 = deep water
+    /// Uses the thresholds precomputed in GenerateTerrain.
+    /// </summary>
+    private int GetIdUsingPerlinAsBiome(int x, int y, float deepWaterThreshold, float shallowWaterThreshold)
+    {
+        float fx = (x - xOffset) / magnification;
+        float fy = (y - yOffset) / magnification;
+
+        // Use simplex noise, properly remapped to [0,1]
+        float s = noise.snoise(new float2(fx, fy)); // [-1,1]
+        float v = Mathf.Clamp01((s + 1f) * 0.5f);   // [0,1]
+
+        // Map explicitly to biome based on thresholds:
+        // v < deepWaterThreshold -> deep water (2)
+        // deepWaterThreshold <= v < shallowWaterThreshold -> shallow water (1)
+        // else -> grass/land (0)
+        if (v < deepWaterThreshold)
+            return 2;
+        if (v < shallowWaterThreshold)
+            return 1;
+        return 0;
+    }
+
+    // --- Bridge placement (unchanged aside from defensive checks) ---
+    public void PlaceBridge()
+    {
+        int width = map_width;
+        int height = map_height;
+
+        // Step 1: land clusters
+        int[,] landCluster = new int[width, height];
+        int currentClusterId = 1;
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                var pos = new Vector3Int(x, y, 0);
+                if (IsLand(pos) && landCluster[x, y] == 0)
+                {
+                    FloodFill(pos, currentClusterId, landCluster, width, height, isLand: true);
+                    currentClusterId++;
+                }
+            }
+        }
+
+        // Step 2: water bodies
+        int[,] waterRegion = new int[width, height];
+        int currentWaterId = 1;
+        Dictionary<int, List<Vector3Int>> waterBodies = new Dictionary<int, List<Vector3Int>>();
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                var pos = new Vector3Int(x, y, 0);
+                if (IsWater(pos) && waterRegion[x, y] == 0)
+                {
+                    var region = FloodFill(pos, currentWaterId, waterRegion, width, height, isLand: false);
+                    waterBodies[currentWaterId] = region;
+                    currentWaterId++;
+                }
+            }
+        }
+
+        // Step 3: per water body decide bridges
+        foreach (var kv in waterBodies)
+        {
+            var waterTiles = kv.Value;
+
+            // Skip tiny puddles
+            if (waterTiles.Count < 20) continue;
+
+            BoundsInt bounds = GetBoundsOfRegion(waterTiles);
+            bool isRiver = (Mathf.Max(bounds.size.x, bounds.size.y) / (float)Mathf.Min(bounds.size.x, bounds.size.y)) > 3f;
+
+            List<BridgeCandidate> candidates = isRiver
+                ? FindRiverBridges(waterTiles, landCluster)
+                : FindLakeBridges(waterTiles, landCluster);
+
+            // Rank & place
+            candidates.Sort((a, b) => b.score.CompareTo(a.score));
+            int bridgesPlaced = 0;
+            List<Vector3Int> usedMidpoints = new List<Vector3Int>();
+
+            foreach (var bridge in candidates)
+            {
+                if (bridgesPlaced >= maxBridgesPerWaterBody) break;
+
+                var mid = new Vector3Int(
+                    (bridge.start.x + bridge.end.x) / 2,
+                    (bridge.start.y + bridge.end.y) / 2, 0
+                );
+                if (usedMidpoints.Any(m => Vector3Int.Distance(m, mid) < 10))
+                    continue;
+
+                PlaceBridgeTiles(bridge.start, bridge.end);
+                usedMidpoints.Add(mid);
+                bridgesPlaced++;
+            }
+        }
+    }
+
+    private BoundsInt GetBoundsOfRegion(List<Vector3Int> region)
+    {
+        int minX = int.MaxValue, maxX = int.MinValue;
+        int minY = int.MaxValue, maxY = int.MinValue;
+        foreach (var p in region)
+        {
+            if (p.x < minX) minX = p.x;
+            if (p.x > maxX) maxX = p.x;
+            if (p.y < minY) minY = p.y;
+            if (p.y > maxY) maxY = p.y;
+        }
+        return new BoundsInt(minX, minY, 0, maxX - minX + 1, maxY - minY + 1, 1);
+    }
+
+    private List<BridgeCandidate> FindRiverBridges(List<Vector3Int> waterTiles, int[,] landCluster)
+    {
+        var candidates = new List<BridgeCandidate>();
+        var reservedSpots = new HashSet<Vector3Int>();
+
+        foreach (var waterTilePos in waterTiles)
+        {
+            // Horizontal check (left land → right scan)
+            if (IsLand(waterTilePos + Vector3Int.left) && !IsLand(waterTilePos + Vector3Int.right))
+            {
+                Vector3Int leftLand = waterTilePos + Vector3Int.left;
+                int clusterA = landCluster[leftLand.x, leftLand.y];
+                int length = 0;
+                var p = waterTilePos;
+
+                while (IsWater(p) && length <= maxBridgeLength)
+                {
+                    length++;
+                    p += Vector3Int.right;
+                }
+
+                if (IsLand(p))
+                {
+                    int clusterB = landCluster[p.x, p.y];
+                    if (clusterA != clusterB && clusterA > 0 && clusterB > 0 &&
+                        length >= minBridgeLength && length <= maxBridgeLength)
+                    {
+                        var midPoint = waterTilePos + Vector3Int.right * (length / 2);
+                        if (!reservedSpots.Contains(midPoint))
+                        {
+                            int perpDepth = MeasurePerpendicularDepth(midPoint, Vector3Int.up);
+                            if (perpDepth >= minPerpendicularDepth)
+                            {
+                                candidates.Add(new BridgeCandidate
+                                {
+                                    start = leftLand,
+                                    end = p,
+                                    length = length,
+                                    score = (perpDepth * 2) - (length * 0.5f)
+                                });
+                                reservedSpots.Add(midPoint);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Vertical check (down land → up scan)
+            if (IsLand(waterTilePos + Vector3Int.down) && !IsLand(waterTilePos + Vector3Int.up))
+            {
+                Vector3Int downLand = waterTilePos + Vector3Int.down;
+                int clusterA = landCluster[downLand.x, downLand.y];
+                int length = 0;
+                var p = waterTilePos;
+
+                while (IsWater(p) && length <= maxBridgeLength)
+                {
+                    length++;
+                    p += Vector3Int.up;
+                }
+
+                if (IsLand(p))
+                {
+                    int clusterB = landCluster[p.x, p.y];
+                    if (clusterA != clusterB && clusterA > 0 && clusterB > 0 &&
+                        length >= minBridgeLength && length <= maxBridgeLength)
+                    {
+                        var midPoint = waterTilePos + Vector3Int.up * (length / 2);
+                        if (!reservedSpots.Contains(midPoint))
+                        {
+                            int perpDepth = MeasurePerpendicularDepth(midPoint, Vector3Int.right);
+                            if (perpDepth >= minPerpendicularDepth)
+                            {
+                                candidates.Add(new BridgeCandidate
+                                {
+                                    start = downLand,
+                                    end = p,
+                                    length = length,
+                                    score = (perpDepth * 2) - (length * 0.5f)
+                                });
+                                reservedSpots.Add(midPoint);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return candidates;
+    }
+
+    private List<BridgeCandidate> FindLakeBridges(List<Vector3Int> waterTiles, int[,] landCluster)
+    {
+        var candidates = new List<BridgeCandidate>();
+
+        // centroid
+        Vector3 avg = Vector3.zero;
+        foreach (var t in waterTiles) avg += (Vector3)t;
+        avg /= waterTiles.Count;
+        Vector3Int center = new Vector3Int(Mathf.RoundToInt(avg.x), Mathf.RoundToInt(avg.y), 0);
+
+        foreach (var dir in new[] { Vector3Int.left, Vector3Int.right, Vector3Int.up, Vector3Int.down })
+        {
+            var p = center;
+            int length = 0;
+
+            while (IsWater(p) && length <= maxBridgeLength)
+            {
+                length++;
+                p += dir;
+            }
+
+            if (IsLand(p) && length >= minBridgeLength && length <= maxBridgeLength)
+            {
+                candidates.Add(new BridgeCandidate
+                {
+                    start = center,
+                    end = p,
+                    length = length,
+                    score = -length // prefer shorter
+                });
+            }
+        }
+
+        return candidates;
+    }
+
+    private int MeasurePerpendicularDepth(Vector3Int pos, Vector3Int perpDir)
+    {
+        int depth = 0;
+        var checkPos = pos;
+        while (IsWater(checkPos))
+        {
+            depth++;
+            checkPos += perpDir;
+        }
+        checkPos = pos;
+        while (IsWater(checkPos))
+        {
+            depth++;
+            checkPos -= perpDir;
+        }
+        return depth / 2; // average both sides
+    }
+
+    private List<Vector3Int> FloodFill(Vector3Int start, int id, int[,] regionMap, int width, int height, bool isLand)
+    {
+        List<Vector3Int> region = new List<Vector3Int>();
+        Queue<Vector3Int> q = new Queue<Vector3Int>();
+        q.Enqueue(start);
+        regionMap[start.x, start.y] = id;
+
+        // 4-neighbors
+        Vector3Int[] dirs = {
+            new Vector3Int( 1, 0, 0), new Vector3Int(-1, 0, 0),
+            new Vector3Int( 0, 1, 0), new Vector3Int( 0,-1, 0)
+        };
+
+        while (q.Count > 0)
+        {
+            var p = q.Dequeue();
+            region.Add(p);
+
+            foreach (var dir in dirs)
+            {
+                var n = p + dir;
+                if (n.x >= 0 && n.x < width && n.y >= 0 && n.y < height && regionMap[n.x, n.y] == 0)
+                {
+                    if (isLand ? IsLand(n) : IsWater(n))
+                    {
+                        regionMap[n.x, n.y] = id;
+                        q.Enqueue(n);
+                    }
+                }
+            }
+        }
+        return region;
+    }
+    private void EnsureLandMatchesBridge(Vector3Int bridgeEnd, bool horizontal, int bridgeWidth = 3)
+    {
+        int half = bridgeWidth / 2;
+
+        if (horizontal)
+        {
+            for (int dy = -half; dy <= half; dy++)
+            {
+                Vector3Int pos = new Vector3Int(bridgeEnd.x, bridgeEnd.y + dy, 0);
+
+                // Skip if this position is part of a bridge already
+                if (tilemap.GetTile(pos) == bridgeTiles[0]) continue;
+
+                if (IsWater(pos))
+                {
+                    tilemap.SetTile(pos, terrainTiles[0]); // land
+                    grid.SetValueAtLocation(pos.x, pos.y, 0);
+                    tilemap.SetTile(pos + new Vector3Int(0, -1), terrainTiles[0]); // land
+                    grid.SetValueAtLocation(pos.x, pos.y-1, 0);
+                    tilemap.SetTile(pos + new Vector3Int(0, 1), terrainTiles[0]); // land
+                    grid.SetValueAtLocation(pos.x, pos.y+1, 0);
+                }
+            }
+        }
+        else
+        {
+            for (int dx = -half; dx <= half; dx++)
+            {
+                Vector3Int pos = new Vector3Int(bridgeEnd.x + dx, bridgeEnd.y, 0);
+
+                if (tilemap.GetTile(pos) == bridgeTiles[0]) continue;
+
+                if (IsWater(pos))
+                {
+                    tilemap.SetTile(pos, terrainTiles[0]); // land
+                    grid.SetValueAtLocation(pos.x, pos.y, 0);
+                    tilemap.SetTile(pos + new Vector3Int(-1, 0), terrainTiles[0]); // land
+                    grid.SetValueAtLocation(pos.x-1, pos.y, 0);
+                    tilemap.SetTile(pos + new Vector3Int(+1, 0), terrainTiles[0]); // land
+                    grid.SetValueAtLocation(pos.x+1, pos.y, 0);
+                }
+            }
+        }
+    }
+
+
+    private void PlaceBridgeTiles(Vector3Int start, Vector3Int end)
+    {
+        bool horizontal = start.y == end.y;
+        bool vertical = start.x == end.x;
+
+
+        if (bridgeTiles == null || bridgeTiles.Length == 0 || bridgeTiles[0] == null)
+        {
+            Debug.LogWarning("No bridgeTiles configured; skipping bridge placement.");
+            return;
+        }
+
+        List<Vector3Int> bridgeCells = new List<Vector3Int>();
+
+        if (vertical) // vertical bridge
+        {
+            int y0 = Mathf.Min(start.y, end.y);
+            int y1 = Mathf.Max(start.y, end.y);
+            int landcount = 0;
+            if(IsLand(new Vector3Int(start.x, y0)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(start.x, y0))) landcount++;
+            if(IsLand(new Vector3Int(start.x-1, y0)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(start.x-1, y0))) landcount++;
+            if(IsLand(new Vector3Int(start.x+1, y0)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(start.x+1, y0))) landcount++;
+            if(landcount == 1)
+            {
+                tilemap.SetTile(new Vector3Int(start.x, y0), terrainTiles[1]);
+                tilemap.SetTile(new Vector3Int(start.x-1, y0), terrainTiles[1]);
+                tilemap.SetTile(new Vector3Int(start.x+1, y0), terrainTiles[1]);
+                grid.SetValueAtLocation(start.x, y0, 1);
+                grid.SetValueAtLocation(start.x-1, y0, 1);
+                grid.SetValueAtLocation(start.x+1, y0, 1);
+            }
+            else if (landcount > 1)
+            {
+                tilemap.SetTile(new Vector3Int(start.x, y0), terrainTiles[0]);
+                tilemap.SetTile(new Vector3Int(start.x-1, y0), terrainTiles[0]);
+                tilemap.SetTile(new Vector3Int(start.x+1, y0), terrainTiles[0]);
+                grid.SetValueAtLocation(start.x, y0, 0);
+                grid.SetValueAtLocation(start.x-1, y0, 0);
+                grid.SetValueAtLocation(start.x+1, y0, 0);
+            }
+            for (int y = y0; y <= y1; y++)
+            {
+                var pos = new Vector3Int(start.x, y, 0);
+                if (IsWater(pos) || bridgeTiles.Contains<TileBase>(tilemap.GetTile(pos)))
+                {
+                    tilemap.SetTile(pos, bridgeTiles[0]); // bridge floor
+                    grid.SetValueAtLocation(pos.x, pos.y, 0);
+                    bridgeCells.Add(pos);
+                }
+            }
+        }
+        else if (horizontal) // horizontal bridge
+        {
+            int x0 = Mathf.Min(start.x, end.x);
+            int x1 = Mathf.Max(start.x, end.x);
+            int landcount = 0;
+            if(IsLand(new Vector3Int(x0, start.y)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(x0, start.y))) landcount++;
+            if(IsLand(new Vector3Int(x0, start.y-1)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(x0, start.y-1))) landcount++;
+            if(IsLand(new Vector3Int(x0, start.y+1)) && bridgeTiles[0] != tilemap.GetTile(new Vector3Int(x0, start.y+1))) landcount++;
+            if(landcount == 1)
+            {
+                tilemap.SetTile(new Vector3Int(x0, start.y), terrainTiles[1]);
+                tilemap.SetTile(new Vector3Int(x0, start.y-1), terrainTiles[1]);
+                tilemap.SetTile(new Vector3Int(x0, start.y+1), terrainTiles[1]);
+                grid.SetValueAtLocation(x0, start.y, 1);
+                grid.SetValueAtLocation(x0, start.y-1, 1);
+                grid.SetValueAtLocation(x0, start.y+1, 1);
+            }
+            else if (landcount > 1)
+            {
+                tilemap.SetTile(new Vector3Int(x0, start.y), terrainTiles[0]);
+                tilemap.SetTile(new Vector3Int(x0, start.y-1), terrainTiles[0]);
+                tilemap.SetTile(new Vector3Int(x0, start.y+1), terrainTiles[0]);
+                grid.SetValueAtLocation(x0, start.y, 0);
+                grid.SetValueAtLocation(x0, start.y-1, 0);
+                grid.SetValueAtLocation(x0, start.y+1, 0);
+            }
+            for (int x = x0; x <= x1; x++)
+            {
+                var pos = new Vector3Int(x, start.y, 0);
+                if (IsWater(pos) || bridgeTiles.Contains<TileBase>(tilemap.GetTile(pos)))
+                {
+                    tilemap.SetTile(pos, bridgeTiles[0]); // bridge floor
+                    grid.SetValueAtLocation(pos.x, pos.y, 0);
+                    bridgeCells.Add(pos);
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Non-axis-aligned bridge requested; handling diagonals not supported.");
+            return;
+        }
+
+        // Pass 2: add railings around placed bridge cells
+        foreach (var pos in bridgeCells)
+        {
+            Vector3Int left = pos + Vector3Int.left;
+            Vector3Int right = pos + Vector3Int.right;
+            Vector3Int up = pos + Vector3Int.up;
+            Vector3Int down = pos + Vector3Int.down;
+
+            bool hasLeft = tilemap.GetTile(left) == bridgeTiles[0];
+            bool hasRight = tilemap.GetTile(right) == bridgeTiles[0];
+            bool hasUp = tilemap.GetTile(up) == bridgeTiles[0];
+            bool hasDown = tilemap.GetTile(down) == bridgeTiles[0];
+
+            // --- Vertical bridge: put railings on left & right ---
+            if (hasUp && hasDown) // connected vertically
+            {
+                tilemap.SetTile(left, bridgeTiles[0]); // left railing
+                grid.SetValueAtLocation(left.x, left.y, 1);
+            
+                tilemap.SetTile(right, bridgeTiles[0]); // right railing
+                grid.SetValueAtLocation(right.x, right.y, 1);
+            }
+
+            // --- Horizontal bridge: put railings on top & bottom ---
+            if (hasLeft && hasRight) // connected horizontally
+            {
+                tilemap.SetTile(up, bridgeTiles[0]); // top railing
+                grid.SetValueAtLocation(up.x, up.y, 1);
+
+                tilemap.SetTile(down, bridgeTiles[0]); // bottom railing
+                grid.SetValueAtLocation(down.x, down.y, 1);
+            }
+
+
+        }
+
+        //pass 3 add Corners
+        foreach (var pos in bridgeCells)
+        {
+            Vector3Int left = pos + Vector3Int.left;
+            Vector3Int right = pos + Vector3Int.right;
+            Vector3Int up = pos + Vector3Int.up;
+            Vector3Int down = pos + Vector3Int.down;
+
+            bool hasLeft = tilemap.GetTile(left) == bridgeTiles[0];
+            bool hasRight = tilemap.GetTile(right) == bridgeTiles[0];
+            bool hasUp = tilemap.GetTile(up) == bridgeTiles[0];
+            bool hasDown = tilemap.GetTile(down) == bridgeTiles[0];
+
+            if (hasUp && hasRight)
+            {
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.right, bridgeTiles[0]);
+                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.left, bridgeTiles[0]);
+                grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.right).x, (pos + Vector3Int.up + Vector3Int.right).y, 1);
+                grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.left).x, (pos + Vector3Int.down + Vector3Int.left).y, 1);
+            }
+
+            if (hasUp && hasLeft)
+            {
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.left, bridgeTiles[0]);
+                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.right, bridgeTiles[0]);
+                grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.left).x, (pos + Vector3Int.up + Vector3Int.left).y, 1);
+                grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.right).x, (pos + Vector3Int.down + Vector3Int.right).y, 1);
+            }
+
+
+            if (hasDown && hasRight)
+            {
+                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.right, bridgeTiles[0]);
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.left, bridgeTiles[0]);
+                grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.right).x, (pos + Vector3Int.down + Vector3Int.right).y, 1);
+                grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.left).x, (pos + Vector3Int.up + Vector3Int.left).y, 1);
+            }
+
+            if (hasDown && hasLeft)
+            {
+                tilemap.SetTile(pos + Vector3Int.down + Vector3Int.left, bridgeTiles[0]);
+                tilemap.SetTile(pos + Vector3Int.up + Vector3Int.right, bridgeTiles[0]);
+                grid.SetValueAtLocation((pos + Vector3Int.down + Vector3Int.left).x, (pos + Vector3Int.down + Vector3Int.left).y, 1);
+                grid.SetValueAtLocation((pos + Vector3Int.up + Vector3Int.right).x, (pos + Vector3Int.up + Vector3Int.right).y, 1);
+            }
+        }
+        // Widen both ends of the bridge
+        if (IsLand(start)) EnsureLandMatchesBridge(start, horizontal);
+        if (IsLand(end)) EnsureLandMatchesBridge(end, horizontal);
+        
+        if (vertical) // vertical bridge
+        {
+            int y0 = Mathf.Min(start.y, end.y);
+            int y1 = Mathf.Max(start.y, end.y);
+            var pos = new Vector3Int(start.x, y1, 0);
+            
+            tilemap.SetTile(pos, bridgeTiles[0]); // bridge floor
+            grid.SetValueAtLocation(pos.x, pos.y, 0);
+            bridgeCells.Add(pos);
+            if (IsWater(pos + Vector3Int.up))
+            {
+                tilemap.SetTile(pos + Vector3Int.up, bridgeTiles[0]);
+            }
+        }
+        else if (horizontal) // horizontal bridge
+        {
+            int x0 = Mathf.Min(start.x, end.x);
+            int x1 = Mathf.Max(start.x, end.x);
+            var pos = new Vector3Int(x1, start.y, 0);
+        
+            tilemap.SetTile(pos, bridgeTiles[0]); // bridge floor
+            grid.SetValueAtLocation(pos.x, pos.y, 0);
+            bridgeCells.Add(pos);
+            if (IsWater(pos + Vector3Int.right))
+            {
+                tilemap.SetTile(pos + Vector3Int.right, bridgeTiles[0]);
+            }
+            
+        }
+    }
+
+    private class BridgeCandidate
+    {
+        public Vector3Int start;
+        public Vector3Int end;
+        public int length;
+        public float score;
+    }
+
+    // --- Vegetation ---
+    /// <summary>
+    /// Place plants on grass tiles using treeDensity and flowerDensity.
+    /// Trees/bamboo are collidable and use grid value 4.
+    /// Flowers are non-collidable and use grid value 3.
+    /// </summary>
+    // --- Vegetation ---
+    private void AddPlants()
+    {
+        // flowers and random non-collectable plants
+        AddRandomFlowers();
+
+        // clustered collectable resources
+        PlaceResourceClusters();
+    }
+    private void AddRandomFlowers()
+    {
+        bool haveNonColl = nonCollidablePlants != null && nonCollidablePlants.Length > 0;
+        if (!haveNonColl)
+        {
+            return;
+        }
+        for (int x = 0; x < map_width; x++)
+        {
+            for (int y = 0; y < map_height; y++)
+            {
+                if (noiseGrid[x][y] == 0) // grass only
+                {
+                    if (UnityEngine.Random.value < flowerDensity)
+                    {
+                        int id = UnityEngine.Random.Range(0, nonCollidablePlants.Length);
+                        tilemap.SetTile(new Vector3Int(x, y, 0), nonCollidablePlants[id]);
+                    }
+                }
+            }
+        }
+    }
+
+
+    private void PlaceResourceClusters()
+    {
+        bool haveCollectable = collectableTiles != null && collectableTiles.Length > 0;
+        if (!haveCollectable)
+        {
+            return;
+        }
+
+        for (int i = 0; i < numResourceClusters; i++)
+        {
+            // Pick a random grass location as the cluster center
+            Vector3Int center = FindRandomLandTile();
+            resourceClusterCenters.Add(center);
+            int radius = UnityEngine.Random.Range(minClusterRadius, maxClusterRadius);
+
+            // Each cluster can be a different resource type
+            int resourceIndex = UnityEngine.Random.Range(0, collectableTiles.Length);
+            Tile resourceTile = collectableTiles[resourceIndex];
+
+            // Fill the cluster
+            for (int x = center.x - radius; x <= center.x + radius; x++)
+            {
+                for (int y = center.y - radius; y <= center.y + radius; y++)
+                {
+                    if (!InBounds(x, y)) continue;
+
+                    float dist = Vector2.Distance(new Vector2(x, y), new Vector2(center.x, center.y));
+                    if (dist > radius) continue;
+
+                    // falloff — less dense near edge
+                    float chance = Mathf.InverseLerp(radius, 0, dist) * 0.9f;
+
+                    if (IsLand(new Vector3Int(x, y, 0)) && UnityEngine.Random.value < chance)
+                    {
+                        // place resource
+                        tilemap.SetTile(new Vector3Int(x, y, 0), resourceTile);
+                        // register it in your CollectableMap
+                        CollectableMap.Instance.registerCollectable(collectableItems[resourceIndex], new Vector2Int(x, y));
+                        grid.SetValueAtLocation(x, y, 0); // 4 -> collidable plant (tree)
+                        noiseGrid[x][y] = 4;
+                    }
+                }
+            }
+        }
+    }
+
+    private bool InBounds(int x, int y)
+    {
+        return x >= 0 && x < map_width && y >= 0 && y < map_height;
+    }
+
+    private Vector3Int FindRandomLandTile()
+    {
+        while (true)
+        {
+            int x = UnityEngine.Random.Range(0, map_width);
+            int y = UnityEngine.Random.Range(0, map_height);
+
+            if (noiseGrid[x][y] == 0) // land tile
+                return new Vector3Int(x, y, 0);
+        }
+    }
+
+    // --- Entities ---
+    private void SpawnEntities()
+    {
+        
+        // Spawn enemies on ResourceClusters with probability enemyFrequency
+        foreach (var center in resourceClusterCenters)
+        {
+            int radius = UnityEngine.Random.Range(minClusterRadius, maxClusterRadius);
+            for (int x = center.x - radius; x <= center.x + radius; x++)
+            {
+                for (int y = center.y - radius; y <= center.y + radius; y++)
+                {
+                    if (!InBounds(x, y)) continue;
+
+                    float dist = Vector2.Distance(new Vector2(x, y), new Vector2(center.x, center.y));
+                    if (dist > radius) continue;
+
+                    // falloff — less dense near edge
+                    float chance = Mathf.InverseLerp(radius, 0, dist) * enemyFrequency;
+
+                    if (IsLand(new Vector3Int(x, y, 0)) && UnityEngine.Random.value < chance)
+                    {
+                        int type = UnityEngine.Random.Range(0, enemies.Length);
+                        var pos = new Vector3(x, y);
+                        var newEnemy = Instantiate(enemies[type], pos, quaternion.identity);
+                        EntityManager.Instance.RegisterEntity(newEnemy, Vector2Int.RoundToInt(pos));
+                        var eb = newEnemy.GetComponent<EnemyBehavior>();
+                        if (eb != null) eb.grid = grid;
+                    }
+                }
+            }
+        }
+        if (resourceClusterCenters.Count == 0)
+        {
+            Debug.LogWarning("No grass cells found for player spawn.");
+        }
+        else if (player != null )
+        {
+            var spawn = FindRandomLandTile();
+            while (EntityManager.Instance.GetEntityAt(new Vector2Int(spawn.x, spawn.y)) != null)
+                    spawn = FindRandomLandTile();
+            if(PlayerStats.Instance == null)
+            {
+                player = Instantiate(player, spawn, quaternion.identity);
+                player.GetComponent<Controls>().grid = grid;
+                EntityManager.Instance.RegisterEntity(player, new Vector2Int(spawn.x, spawn.y));
+            }
+            else
+            {
+                player = PlayerStats.Instance.gameObject;
+                player.transform.position = spawn;
+                player.GetComponent<Controls>().grid = grid;
+                EntityManager.Instance.RegisterEntity(player, new Vector2Int(spawn.x, spawn.y));
+            }
+            
+        }
+    }
+
+    // --- Tile queries ---
+    private bool IsLand(Vector3Int pos)
+    {
+        var t = tilemap.GetTile(pos);
+        if (t == null) return false;
+
+        // grass is terrainTiles[0]; bridges and collidable plants count as land for floodfill
+        bool isGrass = terrainTiles != null && terrainTiles.Length > 0 && t == terrainTiles[0];
+        bool isBridge = bridgeTiles != null && bridgeTiles.Any(bt => bt != null && t == bt);
+        bool isCollidablePlant = collectableTiles != null && collectableTiles.Any(pt => pt != null && t == pt);
+
+        return isGrass || isBridge || isCollidablePlant;
+    }
+
+    private bool IsWater(Vector3Int pos)
+    {
+        var t = tilemap.GetTile(pos);
+        if (t == null) return false;
+
+        // Safer than range-slicing for broad C# compatibility
+        bool hasShallow = terrainTiles != null && terrainTiles.Length > 1 && t == terrainTiles[1];
+        bool hasDeep = terrainTiles != null && terrainTiles.Length > 2 && t == terrainTiles[2];
+
+        return hasShallow || hasDeep;
+    }
+
+    // Unused helper kept for future use
+    private bool HasShoreOffset(Vector3Int pos, Vector3Int direction, int offset)
+    {
+        for (int i = 0; i < offset; i++)
+        {
+            pos += direction;
+            if (!IsWater(pos)) return false;
+        }
+        return true;
+    }
+
+    public void setToGrass(Vector2 position)
+    {
+        Vector3Int newPosition = new Vector3Int((int)position.x, (int)position.y, 0);
+        tilemap.SetTile(newPosition, terrainTiles[0]);
+        grid.SetValueAtLocation(newPosition.x, newPosition.y, 0);
+    }
+}
+

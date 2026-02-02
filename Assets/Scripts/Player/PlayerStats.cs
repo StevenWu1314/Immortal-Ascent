@@ -1,12 +1,15 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PlayerStats : MonoBehaviour{
     [SerializeField] int Health;
     [SerializeField] int MaxHealth;
     [SerializeField] int strength;
     [SerializeField] int dexterity;
+    [SerializeField] int range;
     [SerializeField] int[,] temporaryStatAdjustments = new int[3, 2];
     [SerializeField] int currentExperience;
     [SerializeField] int currentLevel;
@@ -16,12 +19,32 @@ public class PlayerStats : MonoBehaviour{
     [SerializeField] AchievementManager achievementManager;
     [SerializeField] float expMultiplier = 1;
     public static event Action<PlayerStats> onLevelUpEvent;
+    public static event Action<PlayerStats> onDeath;
+
+    public static PlayerStats Instance;
+    [SerializeField] Image HealthBar;
+    [SerializeField] Image ExpBar;
 
 
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
     void OnEnable()
     {
-        Controls.onMoveEvent += tickDownBuffDuration;
+        Controls.onMoveEvent += tickdownBuffs;
+        HealthBar = GameObject.Find("HpBar").GetComponent<Image>();
+        ExpBar = GameObject.Find("ExpBar").GetComponent<Image>();
         ApplyAchievementBuffs();
+    }
+    void OnDestroy()
+    {
+        Controls.onMoveEvent -= tickdownBuffs;
     }
 
     private void ApplyAchievementBuffs()
@@ -40,43 +63,6 @@ public class PlayerStats : MonoBehaviour{
         }
     }
 
-    private void tickDownBuffDuration(Controls controls)
-    {
-        if(temporaryStatAdjustments[0, 1] > 0)
-        {
-            temporaryStatAdjustments[0, 1] -= 1;
-            if(temporaryStatAdjustments[0, 1] == 0)
-            {
-                strength -= temporaryStatAdjustments[0, 0];
-            }
-        }
-        else {
-            temporaryStatAdjustments[0, 0] = 0;
-        }
-        if(temporaryStatAdjustments[1, 1] > 0)
-        {
-            temporaryStatAdjustments[1, 1] -= 1;
-            if(temporaryStatAdjustments[1, 1] == 0)
-            {
-                dexterity -= temporaryStatAdjustments[1, 0];
-            }
-        }
-        else {
-            temporaryStatAdjustments[1, 0] = 0;
-        }
-        if(temporaryStatAdjustments[2, 1] > 0)
-        {
-            temporaryStatAdjustments[2, 1] -= 1;
-            if(temporaryStatAdjustments[2, 1] == 0)
-            {
-                MaxHealth -= temporaryStatAdjustments[2, 0];
-            }
-        }
-        else {
-            temporaryStatAdjustments[2, 0] = 0;
-        }
-    }
-
    
     public void attack(string form, Enemy target)
     {
@@ -84,7 +70,6 @@ public class PlayerStats : MonoBehaviour{
         switch (form){
             case "melee":
                 target.takeDamage(strength + equipments.meleeWeapon.getDamage() + temporaryStatAdjustments[0, 0]);
-                target.attack(this);
                 break;
             case "range":
                 target.takeDamage(dexterity + equipments.rangeWeapon.getDamage() + temporaryStatAdjustments[1, 0]);
@@ -95,35 +80,48 @@ public class PlayerStats : MonoBehaviour{
     public void takeDamage(int damage)
     {
         Health -= damage;
+        updateHealthBar();
+        if (Health <= 0)
+        {
+            SceneManager.LoadScene(0);
+        }
     }
 
-    public void heal(int amount) 
+    public void heal(int amount)
     {
         Health += amount;
-        if(Health > MaxHealth)
+        if (Health > MaxHealth)
         {
             Health = MaxHealth;
         }
-    }
-    private void OnDrawGizmos() {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, 1);
+        updateHealthBar();
     }
 
+    public void updateHealthBar()
+    {
+        HealthBar.fillAmount = (float) Health / (float)MaxHealth;
+    }
+
+    public void updateExpBar()
+    {
+        ExpBar.fillAmount = (float) currentExperience / (float) experienceToNextLevel;
+    }
     public void gainExperience(int amount)
     {
         currentExperience += (int)(amount * expMultiplier);
-        if(currentLevel < levelCap)
+        if (currentLevel < levelCap)
         {
             if (currentExperience >= experienceToNextLevel)
             {
                 currentExperience -= experienceToNextLevel;
                 currentLevel++;
-                experienceToNextLevel = (int)(experienceToNextLevel * 1.1f);
+                experienceToNextLevel = (int)(experienceToNextLevel * 1.5f);
                 onLevelUpEvent(this);
+                Health = MaxHealth;
             }
         }
-        
+        updateExpBar();
+
     }
 
     public int getStrength()
@@ -151,8 +149,13 @@ public class PlayerStats : MonoBehaviour{
     public void increaseMaxHealth()
     {
         MaxHealth += 10;
+        Health += 10;
     }
-
+    public void increaseMaxHealth(int amount)
+    {
+        MaxHealth += amount;
+        updateHealthBar();
+    }
     public void decreaseStrength()
     {
         strength--;
@@ -161,9 +164,14 @@ public class PlayerStats : MonoBehaviour{
     {
         dexterity--;
     }
-    public void decreaseMaxHealth()
+    public void decreaseMaxHealth(int amount)
     {
-        MaxHealth--;
+        MaxHealth -= amount;
+        if (Health > MaxHealth)
+        {
+            Health = MaxHealth;
+        }
+        updateHealthBar();
     }
 
     public void increaseStatTemp(string stat, int amount, int duration)
@@ -188,8 +196,40 @@ public class PlayerStats : MonoBehaviour{
         }
         
     }
+
+    void tickdownBuffs(Controls controls)
+    {
+        if (temporaryStatAdjustments[0, 1] > 0)
+        {
+            temporaryStatAdjustments[0, 1]--;
+            if (temporaryStatAdjustments[0, 1] == 0)
+            {
+                strength -= temporaryStatAdjustments[0, 0];
+            }
+        }
+        if (temporaryStatAdjustments[1, 1] > 0)
+        {
+            temporaryStatAdjustments[1, 1]--;
+            if (temporaryStatAdjustments[1, 1] == 0)
+            {
+                dexterity -= temporaryStatAdjustments[1, 0];
+            }
+        }
+    }
     internal void increaseExp(int expValue)
     {
         throw new NotImplementedException();
+    }
+
+    public int getRange()
+    {
+        if (equipments.rangeWeapon != null)
+        {
+            return range;
+        }
+        else
+        {
+            return 0;
+        }
     }
 }

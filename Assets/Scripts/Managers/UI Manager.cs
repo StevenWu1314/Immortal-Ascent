@@ -1,26 +1,32 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
-using TMPro.EditorUtilities;
-using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private GameObject levelUpMenu;
-    
-    private void Awake() {
+    public static event Action<UIManager> openMenu;
+
+    private void Awake()
+    {
         PlayerStats.onLevelUpEvent += toggleLevelUpMenu;
     }
 
     private void toggleLevelUpMenu(PlayerStats stats)
     {
-        levelUpMenu.SetActive(true);
+        Debug.Log("trying to find");
+        this.transform.Find("Level Up UI").gameObject.SetActive(true);
+        Debug.Log("trying to enable");
+        openMenu(this);
     }
 
-    private void Update() {
-        
+    public void Menu()
+    {
+        openMenu(this);
+    }
+    public void CloseMenu()
+    {
+        GameObject.FindGameObjectWithTag("Player").GetComponent<Controls>().MenuIsOpen = false;
     }
 
     public void DrawFlowupDamageText(int damage, Vector3 position)
@@ -30,11 +36,16 @@ public class UIManager : MonoBehaviour
     }
     IEnumerator FlowupDamageText(TextMesh damageText)
     {
-        for(int i = 0; i < 100; i++)
+        for (int i = 0; i < 100; i++)
         {
             damageText.transform.position += new Vector3(0, 0.1f, 0);
             yield return new WaitForSeconds(0.01f);
         }
         Destroy(damageText);
+    }
+
+    void OnDestroy()
+    {
+        PlayerStats.onLevelUpEvent -= toggleLevelUpMenu;
     }
 }

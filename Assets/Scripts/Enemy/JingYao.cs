@@ -1,12 +1,9 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Tilemaps;
 
 
 public class JingYao: Enemy {
-    private void Start() {
-        health = 20;
-        damage = 1;
-    }
-
+    
 
 }

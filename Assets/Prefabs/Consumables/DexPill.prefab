@@ -45,9 +45,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  name: Dex Pill
+  ItemName: Dex Elixir
   description: Increase your dexterity
-  image: {fileID: 0}
+  image: {fileID: -817780971, guid: 70e4db85413024f2abc4a504c03d8fde, type: 3}
   amount: 1
-  stackLimit: 10
+  stackLimit: 100
   itemDisplay: {fileID: 0}
