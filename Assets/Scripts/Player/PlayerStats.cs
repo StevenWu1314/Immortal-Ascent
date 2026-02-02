@@ -9,6 +9,7 @@ public class PlayerStats : MonoBehaviour{
     [SerializeField] int MaxHealth;
     [SerializeField] int strength;
     [SerializeField] int dexterity;
+    [SerializeField] int range;
     [SerializeField] int[,] temporaryStatAdjustments = new int[3, 2];
     [SerializeField] int currentExperience;
     [SerializeField] int currentLevel;
@@ -41,7 +42,10 @@ public class PlayerStats : MonoBehaviour{
         ExpBar = GameObject.Find("ExpBar").GetComponent<Image>();
         ApplyAchievementBuffs();
     }
-
+    void OnDestroy()
+    {
+        Controls.onMoveEvent -= tickdownBuffs;
+    }
 
     private void ApplyAchievementBuffs()
     {
@@ -215,5 +219,17 @@ public class PlayerStats : MonoBehaviour{
     internal void increaseExp(int expValue)
     {
         throw new NotImplementedException();
+    }
+
+    public int getRange()
+    {
+        if (equipments.rangeWeapon != null)
+        {
+            return range;
+        }
+        else
+        {
+            return 0;
+        }
     }
 }

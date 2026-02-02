@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
 public class Controls : MonoBehaviour
@@ -12,7 +13,7 @@ public class Controls : MonoBehaviour
     bool aiming = false;
     [SerializeField] private float moveCooldown = 0.1f;
     [SerializeField] private float runningCooldown = 0;
-    [SerializeField] private bool MenuIsOpen;
+    [SerializeField] public bool MenuIsOpen;
     [SerializeField] private PlayerStats playerStats;
     Collectables collectable;
     public GameObject CollectButton;
@@ -37,12 +38,18 @@ public class Controls : MonoBehaviour
 
         if (aiming)
         {
-            // Handle aiming mode
-            if (Input.GetKeyDown(KeyCode.W)) aim(KeyCode.W);
-            else if (Input.GetKeyDown(KeyCode.A)) aim(KeyCode.A);
-            else if (Input.GetKeyDown(KeyCode.S)) aim(KeyCode.S);
-            else if (Input.GetKeyDown(KeyCode.D)) aim(KeyCode.D);
-            else if (Input.GetKeyDown(KeyCode.L)) aim(KeyCode.L);
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                aiming = false;
+                transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
+                print("exiting aiming mode");
+                return;
+            }
+            else if(Input.GetMouseButtonDown(0))
+            {
+                Debug.Log("leftClickDetected");
+                aim();
+            }
             return;
         }
 
@@ -71,6 +78,7 @@ public class Controls : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.J))
             {
                 aiming = true;
+                transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
                 print("Entered aiming mode");
             }
         }
@@ -100,30 +108,21 @@ public class Controls : MonoBehaviour
         }
         callback?.Invoke(pressedKey);
     }
-    private void aim(KeyCode key)
+    private void aim()
     {
-        if (key == KeyCode.L)
-        {
-            aiming = false;
-            return;
-        }
         GameObject target = null;
-        Vector2Int offset = Vector2Int.zero;
-        Vector2Int currentPos = Vector2Int.FloorToInt(transform.position);
-        if (key == KeyCode.W) offset = Vector2Int.up;
-        else if (key == KeyCode.S) offset = Vector2Int.down;
-        else if (key == KeyCode.D) offset = Vector2Int.right;
-        else if (key == KeyCode.A) offset = Vector2Int.left;
-
-        if (offset == Vector2Int.zero) return;
-        for (int i = 1; i <= 5; i++)
+        Tilemap rangeIndicator =  transform.GetComponentInChildren<RangeAttackTilemap>().tilemap;
+        Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3Int clickCell = rangeIndicator.WorldToCell(worldPoint);
+        Vector3 cellcenter = rangeIndicator.GetCellCenterWorld(clickCell);
+        if(transform.GetComponentInChildren<RangeAttackTilemap>().InRange(clickCell))
         {
-            Vector2Int checkPos = currentPos + offset * i;
-            GameObject entity = EntityManager.Instance.GetEntityAt(checkPos);
-            if (entity != null && entity.GetComponent<Enemy>() != null)
+            Collider2D hit = Physics2D.OverlapCircle(cellcenter, 0.1f);
+            Debug.Log(cellcenter);
+            if(hit != null)
             {
-                target = entity;
-                break; // stop at first enemy in line of sight
+                Debug.Log("Target Found");
+                target = hit.gameObject;
             }
         }
         if (target != null)
@@ -131,11 +130,8 @@ public class Controls : MonoBehaviour
             playerStats.attack("range", target.GetComponent<Enemy>());
             onMoveEvent(this);
         }
-        else
-        {
-            print("no target found");
-        }
         aiming = false;
+        transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
         runningCooldown = 0.5f;
     }
     private void detectMenu(UIManager uIManager)
@@ -162,4 +158,9 @@ public class Controls : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        onMoveEvent -= checkForCollectables;
+        UIManager.openMenu -= detectMenu;
+    }
 }
