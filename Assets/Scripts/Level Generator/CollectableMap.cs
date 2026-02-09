@@ -46,6 +46,6 @@ public class CollectableMap : MonoBehaviour
 
     public void Reset()
     {
-        collectibleGrid = new();
+        Instance.collectibleGrid = new();
     }
 }

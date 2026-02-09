@@ -27,6 +27,11 @@ public abstract class Enemy : MonoBehaviour
         }
     }
 
+    public void ForceDie()
+    {
+        Destroy(gameObject);
+    }
+
     public virtual void Attack(PlayerStats target)
     {
         target.takeDamage(damage);
