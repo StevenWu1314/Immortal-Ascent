@@ -87,6 +87,6 @@ public class EntityManager : MonoBehaviour
 
     public void Reset()
     {
-        entityGrid = new();
+        Instance.entityGrid = new();
     }
 }

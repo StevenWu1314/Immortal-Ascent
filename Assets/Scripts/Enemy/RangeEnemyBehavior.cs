@@ -17,6 +17,13 @@ public class RangeEnemyBehavior : EnemyBehavior
     [SerializeField] private Vector3 lastAttackPos;
     private bool attacking;
     [SerializeField] int rangeAttackCooldown;
+    Tilemap collidableMap;
+
+    protected override void Start()
+    {
+        base.Start();
+        collidableMap = GameObject.Find("Collidable Plants").GetComponent<Tilemap>();
+    }
     protected override void takeTurn(Controls controls)
     {
         if (currentstate == state.Idle)
@@ -93,7 +100,7 @@ public class RangeEnemyBehavior : EnemyBehavior
 
                 }
             }
-            else if (math.distance(transform.position, player.transform.position) < range)
+            else if (math.distance(transform.position, player.transform.position) < range || attacking)
             {
                 if(attacking)
                 {
@@ -191,5 +198,110 @@ public class RangeEnemyBehavior : EnemyBehavior
 
             return; // stop after first valid move
         }
+    }
+
+
+    public bool ClearLine(Vector2Int start, Vector2Int target)
+    {
+        if(math.abs(target.y - start.y) < math.abs(target.x - start.x))
+        {
+            if(start.x > target.x)
+            {
+                return ClearLineLow(target, start);
+            }
+            else
+            {
+                return ClearLineLow(start, target);
+            }
+        }
+        else
+        {
+            if(start.y > target.y)
+            {
+                return ClearLineHigh(target, start);
+            }
+            else
+            {
+                return ClearLineHigh(start, target);
+            }
+        }
+    }
+
+    public bool ClearLineLow(Vector2Int start, Vector2Int target)
+    {
+        Vector2Int current = start;
+        if(collidableMap.GetTile((Vector3Int) current) != null)
+        {
+            Debug.Log(collidableMap.GetTile((Vector3Int) current));
+            return false;
+        }
+        int dy = target.y - start.y;
+        int dx = target.x - start.x;
+        int yi = 1;
+        if(dy < 0)
+        {
+            yi = -1;
+            dy = -dy;
+        }
+        int d = 2*dy - dx;
+        while (current.x != target.x)
+        {
+            if(d > 0)
+            {
+                current.y += yi;
+                d += 2 * (dy - dx);
+            }
+            else
+            {
+                d += 2*dy;
+            }
+            current.x++;
+            if(collidableMap.GetTile((Vector3Int) current) != null)
+            {
+                Debug.Log(collidableMap.GetTile((Vector3Int) current));
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public bool ClearLineHigh(Vector2Int start, Vector2Int target)
+    {
+        Vector2Int current = start;
+        if(collidableMap.GetTile((Vector3Int) current) != null)
+        {
+            Debug.Log(collidableMap.GetTile((Vector3Int) current));
+            return false;
+        }
+        int dy = target.y - start.y;
+        int dx = target.x - start.x;
+        int xi = 1;
+        if(dx < 0)
+        {
+            xi = -1;
+            dx = -dx;
+        }
+        int d = 2*dx - dy;
+        
+        while (current.y != target.y)
+        {
+            if(d > 0)
+            {
+                current.x += xi;
+                d += 2 * (dx - dy);
+            }
+            else
+            {
+                d += 2*dx;
+            }
+            current.y++;
+            if(collidableMap.GetTile((Vector3Int) current) != null)
+            {
+                Debug.Log(collidableMap.GetTile((Vector3Int) current));
+                return false;
+            }
+        }
+        return true;
+        
     }
 }

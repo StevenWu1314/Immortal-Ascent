@@ -31,7 +31,7 @@ public class EnemyBehavior : MonoBehaviour
         Controls.onMoveEvent -= checkForPlayerInRoom;
         Controls.onMoveEvent -= takeTurn;
     }
-    protected void Start()
+    virtual protected void Start()
     {
 
         player = GameObject.FindWithTag("Player");

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -14,11 +15,14 @@ public class PerlinNoiseMap : MonoBehaviour
     // --- Serialized fields / config ---
     [Header("Tilemaps & Tiles")]
     [SerializeField] private Tilemap tilemap;
+    [SerializeField] private Tilemap CollidablePlantTileMap;
     [SerializeField] private Tile[] terrainTiles;   // 0 = grass, 1 = water, 2 = deepwater
     [SerializeField] private Tile[] nonCollidablePlants; // e.g. flowers
+    [SerializeField] private Tile[] CollidablePlants;
     [SerializeField] private Tile[] collectableTiles;    // e.g. trees, bamboo
     [SerializeField] private Collectables[] collectableItems;
     [SerializeField] private RuleTile[] bridgeTiles;
+    [SerializeField] private Tile portalTile;
 
     [Header("Entities")]
     [SerializeField] private GameObject[] enemies;
@@ -73,6 +77,8 @@ public class PerlinNoiseMap : MonoBehaviour
     [SerializeField] int minClusterRadius = 4;
     [SerializeField] int maxClusterRadius = 10;
 
+    private Vector3Int portalPos;
+
     private void Start()
     {
         grid = new Grid(map_width, map_height, 1, new Vector3(0, 0, 0));
@@ -101,15 +107,37 @@ public class PerlinNoiseMap : MonoBehaviour
         SpawnEntities();
         PlaceBridge();
         tilemap.RefreshAllTiles();
+        CollidablePlantTileMap.RefreshAllTiles();
+        SpawnPortal();
         if (debugMode)
         {
             try { grid.printGrid(); } catch { /* ignore if not implemented */ }
         }
     }
 
+    private void SpawnPortal()
+    {
+        var pos = FindRandomLandTile();
+        while(CollidablePlantTileMap.GetTile(pos) != null)
+        {
+            pos = FindRandomLandTile();
+        }
+        tilemap.SetTile(pos, portalTile);
+        portalPos = pos;
+        player.GetComponent<Controls>().portalPos = portalPos;
+        GameObject.Find("PortalPos").GetComponent<TMP_Text>().text = $"Portal at {(Vector2Int) pos}";
+
+    }
+
     // --- Setup / teardown ---
     private void ClearPreviousState()
     {
+        resourceClusterCenters = new();
+        foreach(GameObject enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+        {
+            Debug.Log(enemy);
+            Destroy(enemy);
+        }
         // Clear grids
         EntityManager.Instance.Reset();
         CollectableMap.Instance.Reset();
@@ -121,6 +149,10 @@ public class PerlinNoiseMap : MonoBehaviour
         {
             tilemap.ClearAllTiles();
         }
+        if(CollidablePlantTileMap != null)
+        {
+            CollidablePlantTileMap.ClearAllTiles();
+        }
 
         // Remove old groups if we created any
         if (tileGroups != null)
@@ -131,6 +163,7 @@ public class PerlinNoiseMap : MonoBehaviour
             }
             tileGroups.Clear();
         }
+        
     }
 
     private void InitializeGame()
@@ -806,10 +839,35 @@ public class PerlinNoiseMap : MonoBehaviour
     {
         // flowers and random non-collectable plants
         AddRandomFlowers();
-
+        AddCollidablePlants();
         // clustered collectable resources
         PlaceResourceClusters();
     }
+
+    private void AddCollidablePlants()
+    {
+        bool haveColl = CollidablePlants != null && CollidablePlants.Length > 0;
+        if (!haveColl)
+        {
+            return;
+        }
+        for (int x = 0; x < map_width; x++)
+        {
+            for(int y = 0; y < map_height; y++)
+            {
+                if (noiseGrid[x][y] == 0) // grass only
+                {
+                    if (UnityEngine.Random.value < treeDensity)
+                    {
+                        int id = UnityEngine.Random.Range(0, CollidablePlants.Length);
+                        CollidablePlantTileMap.SetTile(new Vector3Int(x, y, 0), CollidablePlants[id]);
+                        grid.SetValueAtLocation(x, y, 1);
+                    }
+                }
+            }
+        }
+    }
+
     private void AddRandomFlowers()
     {
         bool haveNonColl = nonCollidablePlants != null && nonCollidablePlants.Length > 0;
@@ -936,6 +994,10 @@ public class PerlinNoiseMap : MonoBehaviour
         else if (player != null )
         {
             var spawn = FindRandomLandTile();
+            while(CollidablePlantTileMap.GetTile(spawn) != null)
+            {
+                spawn = FindRandomLandTile();
+            }
             while (EntityManager.Instance.GetEntityAt(new Vector2Int(spawn.x, spawn.y)) != null)
                     spawn = FindRandomLandTile();
             if(PlayerStats.Instance == null)

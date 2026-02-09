@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Tilemaps;
@@ -15,13 +16,17 @@ public class Controls : MonoBehaviour
     [SerializeField] private float runningCooldown = 0;
     [SerializeField] public bool MenuIsOpen;
     [SerializeField] private PlayerStats playerStats;
+    public TMP_Text positionDisplay;
     Collectables collectable;
     public GameObject CollectButton;
+    internal Vector3Int portalPos;
+
     public static event Action<Controls> onMoveEvent;
     public static event UnityAction onShootEvent;
     // Start is called before the first frame update
     void Start()
     {
+        positionDisplay = GameObject.Find("CurrentPos").GetComponent<TMP_Text>();
         UIManager.openMenu += detectMenu;
         self = gameObject.transform;
         grid = FindAnyObjectByType<PerlinNoiseMap>().grid;
@@ -29,6 +34,7 @@ public class Controls : MonoBehaviour
         onMoveEvent += checkForCollectables;
         CollectButton = GameObject.Find("Collect");
         CollectButton.SetActive(false);
+        positionDisplay.text = $"{Vector2Int.FloorToInt(transform.position)}";
     }
 
     // Update is called once per frame
@@ -40,15 +46,18 @@ public class Controls : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.J))
             {
+                GameObject bowindicator = transform.GetChild(1).gameObject;
+                bowindicator.SetActive(false);
                 aiming = false;
-                transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
+                transform.GetComponentInChildren<RangeAttackTilemap>().clearPrev();
+                transform.GetComponentInChildren<RangeAttackTilemap>().overlaying = false;
                 print("exiting aiming mode");
                 return;
             }
             else if(Input.GetMouseButtonDown(0))
             {
                 Debug.Log("leftClickDetected");
-                aim();
+                shoot();
             }
             return;
         }
@@ -67,19 +76,27 @@ public class Controls : MonoBehaviour
                 runningCooldown = moveCooldown;
                 Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
                 Vector2Int nextCell = currentCell + direction;
+                if(nextCell == (Vector2Int) portalPos)
+                {
+                    FindFirstObjectByType<PerlinNoiseMap>().GenerateMap();
+                }
                 if (grid.Move(transform.position, direction, transform))
                 {
                     EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
                 }
                 onMoveEvent(this);
+                positionDisplay.text = $"{nextCell}";
                 direction = Vector2Int.zero;
             }
 
             if (Input.GetKeyDown(KeyCode.J))
             {
                 aiming = true;
+                GameObject bowindicator = transform.GetChild(1).gameObject;
+                bowindicator.SetActive(true);
                 transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
                 print("Entered aiming mode");
+                onMoveEvent(this);
             }
         }
         else
@@ -108,10 +125,11 @@ public class Controls : MonoBehaviour
         }
         callback?.Invoke(pressedKey);
     }
-    private void aim()
+    private void shoot()
     {
+       
         GameObject target = null;
-        Tilemap rangeIndicator =  transform.GetComponentInChildren<RangeAttackTilemap>().tilemap;
+        Tilemap rangeIndicator = transform.GetComponentInChildren<RangeAttackTilemap>(true).tilemap;
         Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector3Int clickCell = rangeIndicator.WorldToCell(worldPoint);
         Vector3 cellcenter = rangeIndicator.GetCellCenterWorld(clickCell);
@@ -130,8 +148,6 @@ public class Controls : MonoBehaviour
             playerStats.attack("range", target.GetComponent<Enemy>());
             onMoveEvent(this);
         }
-        aiming = false;
-        transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
         runningCooldown = 0.5f;
     }
     private void detectMenu(UIManager uIManager)
