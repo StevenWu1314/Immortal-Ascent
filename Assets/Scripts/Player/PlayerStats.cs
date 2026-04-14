@@ -121,6 +121,7 @@ public class PlayerStats : MonoBehaviour{
             }
         }
         updateExpBar();
+        updateHealthBar();
 
     }
 

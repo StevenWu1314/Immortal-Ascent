@@ -1021,12 +1021,13 @@ public class PerlinNoiseMap : MonoBehaviour
     private bool IsLand(Vector3Int pos)
     {
         var t = tilemap.GetTile(pos);
+        var c = CollidablePlantTileMap.GetTile(pos);
         if (t == null) return false;
 
         // grass is terrainTiles[0]; bridges and collidable plants count as land for floodfill
         bool isGrass = terrainTiles != null && terrainTiles.Length > 0 && t == terrainTiles[0];
         bool isBridge = bridgeTiles != null && bridgeTiles.Any(bt => bt != null && t == bt);
-        bool isCollidablePlant = collectableTiles != null && collectableTiles.Any(pt => pt != null && t == pt);
+        bool isCollidablePlant = collectableTiles != null && collectableTiles.Any(pt => pt != null && c == pt);
 
         return isGrass || isBridge || isCollidablePlant;
     }
@@ -1059,6 +1060,8 @@ public class PerlinNoiseMap : MonoBehaviour
         Vector3Int newPosition = new Vector3Int((int)position.x, (int)position.y, 0);
         tilemap.SetTile(newPosition, terrainTiles[0]);
         grid.SetValueAtLocation(newPosition.x, newPosition.y, 0);
+        Debug.Log(newPosition + "" + tilemap.GetTile(newPosition));
+        
     }
 }
 

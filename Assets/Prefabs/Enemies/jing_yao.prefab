@@ -184,4 +184,4 @@ MonoBehaviour:
   range: 5
   attackIndicator: {fileID: 8378511737871769424, guid: 182d0ef67710546f7ae2b12c917063da, type: 3}
   lastAttackPos: {x: 0, y: 0, z: 0}
-  rangeAttackCooldown: 0
+  rangeAttackCooldown: 2

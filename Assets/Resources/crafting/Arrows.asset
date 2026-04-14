@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: da5f81e20904d4f0db495a7b755729d9, type: 3}
-  m_Name: Iron Sword
+  m_Name: Arrows
   m_EditorClassIdentifier: 
-  resultName: Iron Sword
-  result: {fileID: 8501900578419282080, guid: f5390054861d343ecbcecba456bd5811, type: 3}
+  resultName: Arrow
+  result: {fileID: 4132982777459572664, guid: 2bfa61813063c4bb185cc22c4eb3c7a3, type: 3}
   recipe:
   - material: {fileID: 829676800785955077, guid: c579e34cc648743519e02830b04a1d49, type: 3}
-    amount: 5
+    amount: 1
