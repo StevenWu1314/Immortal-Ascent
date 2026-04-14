@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class DexPill : Consumables
+public class DexElixer : Elixers
 {
 
-    public DexPill(int amount)
+    public DexElixer(int amount)
     {
-        this.ItemName = "Strength Pill";
+        this.ItemName = "Dexterity Elixer";
         this.stackLimit = 100;
         this.effectStrength = 10;
         this.description = "increase your strength by " + effectStrength + " for 50 turns";

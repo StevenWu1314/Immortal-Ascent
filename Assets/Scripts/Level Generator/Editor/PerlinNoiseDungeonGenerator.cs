@@ -24,11 +24,6 @@ public class PerlinNoiseDungeonGenerator : Editor
         base.OnInspectorGUI();
         if (GUILayout.Button("Create Perlin Noise Map"))
         {
-            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-            foreach (GameObject enemy in enemies)
-            {
-                DestroyImmediate(enemy);
-            }
             GameObject[] worldTexts = GameObject.FindGameObjectsWithTag("worldtexts");
             foreach (GameObject text in worldTexts)
                 DestroyImmediate(text);

@@ -16,4 +16,4 @@ MonoBehaviour:
   result: {fileID: 8501900578419282080, guid: f5390054861d343ecbcecba456bd5811, type: 3}
   recipe:
   - material: {fileID: 829676800785955077, guid: c579e34cc648743519e02830b04a1d49, type: 3}
-    amount: 1
+    amount: 5

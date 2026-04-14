@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ConPill : Consumables
+public class ConElixer : Elixers
 {
 
-    public ConPill(int amount)
+    public ConElixer(int amount)
     {
-        this.ItemName = "Constitution Pill";
+        this.ItemName = "Constitution Elixer";
         this.stackLimit = 100;
         this.effectStrength = 50;
         this.description = "increase your MaxHealth by " + effectStrength + " for 50 turns";
