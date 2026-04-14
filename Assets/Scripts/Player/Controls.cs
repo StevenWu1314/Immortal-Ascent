@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -94,6 +95,7 @@ public class Controls : MonoBehaviour
                 aiming = true;
                 GameObject bowindicator = transform.GetChild(1).gameObject;
                 bowindicator.SetActive(true);
+                transform.GetComponentInChildren<RangeAttackTilemap>().clearPrev();
                 transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
                 print("Entered aiming mode");
                 onMoveEvent(this);
@@ -145,7 +147,20 @@ public class Controls : MonoBehaviour
         }
         if (target != null)
         {
-            playerStats.attack("range", target.GetComponent<Enemy>());
+            bool hasArrow = false;
+            List<Item> items = Inventory.Instance.getItems();
+            foreach(Item item in items)
+            {
+                if(item.getName() == "Arrow")
+                {
+                    Inventory.Instance.removeItem(item, 1);
+                    hasArrow = true;
+                }
+            }
+            if(hasArrow)
+                playerStats.attack("range", target.GetComponent<Enemy>());
+            else
+                UIManager.Instance.DrawFlowupText("No arrows remaining", transform.position);
             onMoveEvent(this);
         }
         runningCooldown = 0.5f;
@@ -167,7 +182,6 @@ public class Controls : MonoBehaviour
         {
             collectable.collectThis();
             CollectableMap.Instance.unregisterCollectable(currentCell);
-            CollectButton.SetActive(false);
             PerlinNoiseMap map = GameObject.Find("map generator").GetComponent<PerlinNoiseMap>();
             map.setToGrass(currentCell);
 

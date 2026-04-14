@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class HealthPill : Consumables
+public class HealthPill : Elixers
 {
 
     public HealthPill(int amount)

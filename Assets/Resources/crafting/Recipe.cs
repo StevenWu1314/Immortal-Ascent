@@ -2,9 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEngine;
-using System;
-using UnityEditor.Search;
-using UnityEngine.Rendering;
+using System.Linq;
 
 [CreateAssetMenu(fileName = "Recipe", menuName = "ScriptableObjects/Recipe", order = 2)]
 public class Recipe : ScriptableObject
@@ -190,24 +188,31 @@ public class Recipe : ScriptableObject
     {
         List<Item> items = Inventory.Instance.getItems();
         int Count = 0;
+        List<(Item item, int amount)> toRemove = new List<(Item, int)>();
+
         foreach (Pair material in recipe)
         {
-            foreach (Item item in items)
+            Item match = items.FirstOrDefault(i => 
+                i.getName() == material.material.getName() && 
+                i.getAmount() >= material.amount);
+
+            if (match != null)
             {
-                if (item.getName() == material.material.getName() && item.getAmount() >= material.amount)
-                {
-                    Inventory.Instance.removeItem(item, material.amount);
-                    Count++;
-                    Debug.Log($"Material consumed: {material.material.getName()}");
-                }
-                else
-                {
-                    Debug.Log($"Missing material: {material.material.getName()}");
-                }
+                toRemove.Add((match, material.amount));
+                Count++;
+                Debug.Log($"Material consumed: {material.material.getName()}");
+            }
+            else
+            {
+                Debug.Log($"Missing material: {material.material.getName()}");
             }
         }
+
         if (Count == recipe.Count)
         {
+            foreach (var (item, amount) in toRemove)
+                Inventory.Instance.removeItem(item, amount);
+
             Inventory.Instance.addItem(FindItemByName(resultName));
         }
     }

@@ -8,6 +8,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Tilemaps;
+using Random = UnityEngine.Random;
 
 public class RangeEnemyBehavior : EnemyBehavior
 {
@@ -114,7 +115,7 @@ public class RangeEnemyBehavior : EnemyBehavior
                     lastAttackPos = new Vector3(-10000, -10000);
                     return;
                 }       
-                if(rangeAttackCooldown <= 0)
+                if(rangeAttackCooldown <= 0 && ClearLine(enemyCell, playerCell))
                 {
                     Debug.Log("trying to range attack");        
                     existingAttackIndicator = Instantiate(attackIndicator, player.transform.position, quaternion.identity, transform);
@@ -124,16 +125,51 @@ public class RangeEnemyBehavior : EnemyBehavior
                     lastAttackPos = player.transform.position;
                     return;
                 }
-                rangeAttackCooldown--;
+                else
+                {
+                    Vector2Int strafeDir;
+                    bool horizontal = math.abs(transform.position.x - player.transform.position.x) 
+                                    < math.abs(transform.position.y - player.transform.position.y);
+                    bool direction = Random.Range(0, 2) == 0;
+
+                    if (horizontal)
+                        strafeDir = new Vector2Int(direction ? 1 : -1, 0);
+                    else
+                        strafeDir = new Vector2Int(0, direction ? 1 : -1);
+
+                    Vector2Int candidate = enemyCell + strafeDir;
+                    Vector2Int opposite  = enemyCell - strafeDir;
+
+                    int t = grid.GetValueAtLocation(candidate.x, candidate.y);
+                    bool candWalkable = (t == 0);
+
+                    if (candWalkable && !EntityManager.Instance.IsOccupied(candidate))
+                    {
+                        nextCell = candidate;
+                        
+                    }
+                    else
+                    {
+                        t = grid.GetValueAtLocation(opposite.x, opposite.y);
+                        bool oppWalkable = (t == 0 || t == 5);
+                        if (oppWalkable && !EntityManager.Instance.IsOccupied(opposite))
+                            nextCell = opposite;
+                        else
+                            return; // nowhere to strafe, skip turn
+                    }
+                    rangeAttackCooldown--;
+                    EntityManager.Instance.MoveEntity(gameObject, enemyCell, nextCell);
+                    transform.position = new Vector3(nextCell.x, nextCell.y, 0f);
+                    return; // stop after first valid move
+                }
+           
             }
-            else
-            {
+            else {
                 // Move and update entity manager
                 EntityManager.Instance.MoveEntity(gameObject, enemyCell, nextCell);
                 transform.position = new Vector3(nextCell.x, nextCell.y, 0f);
+                return; // stop after first valid move
             }
-
-            return; // stop after first valid move
         }
     }
     

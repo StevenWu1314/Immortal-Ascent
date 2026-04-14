@@ -107,6 +107,7 @@ MonoBehaviour:
   overlayTile: {fileID: 11400000, guid: c0d4a51d625914f63b0fb21045e1eea2, type: 2}
   highlightedTile: {fileID: 11400000, guid: 0dc024a8e529f4026a1f03fa9ac5c352, type: 2}
   tilemap: {fileID: 0}
+  overlaying: 0
 --- !u!1 &2999913576728269609
 GameObject:
   m_ObjectHideFlags: 0
@@ -331,7 +332,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: 2f179005fc9be45978e7b97cd7862613, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5b3ea35b4635147bd9e0c9f32bb51df8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -380,6 +381,7 @@ MonoBehaviour:
   - {fileID: 1417053570654631579, guid: 72cecad0ffa3a40b888d5fc0f71dc50f, type: 3}
   - {fileID: 424189716286026104, guid: 50f9807f7c1a94729b969d91e63d2670, type: 3}
   - {fileID: 9127352406000723282, guid: 87c862b74002b40b7acd2f4a23d2d3dd, type: 3}
+  - {fileID: 1190025980987071172, guid: 2bfa61813063c4bb185cc22c4eb3c7a3, type: 3}
   itemDisplay: {fileID: 0}
 --- !u!114 &3324978833351514589
 MonoBehaviour:

@@ -6,10 +6,17 @@ public class UIManager : MonoBehaviour
 {
     [SerializeField] private GameObject levelUpMenu;
     public static event Action<UIManager> openMenu;
+    public static UIManager Instance;
 
     private void Awake()
     {
         PlayerStats.onLevelUpEvent += toggleLevelUpMenu;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
     }
 
     private void toggleLevelUpMenu(PlayerStats stats)
@@ -32,6 +39,11 @@ public class UIManager : MonoBehaviour
     public void DrawFlowupDamageText(int damage, Vector3 position)
     {
         TextMesh damageText = utilityFunction.createWorldText("-" + damage.ToString(), null, position, 20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
+        StartCoroutine(FlowupDamageText(damageText));
+    }
+    public void DrawFlowupText(string text, Vector3 position)
+    {
+        TextMesh damageText = utilityFunction.createWorldText(text, null, position, 20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
         StartCoroutine(FlowupDamageText(damageText));
     }
     IEnumerator FlowupDamageText(TextMesh damageText)

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class Consumables : Item
+public abstract class Elixers : Item
 {
     protected int effectStrength;
 
