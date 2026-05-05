@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -7594236510293803726}
   - component: {fileID: -2914483047055078606}
   m_Layer: 0
-  m_Name: Pig_yao
+  m_Name: Pig_yao 1
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -77,7 +77,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: ee892e4a3612bf7478db778b551f1936, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f64aa3fbce116cf479c982e4bb0a6c29, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -100,7 +100,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da510d2a12cd14d4da2c7ff97d14c109, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectionRadius: 20
+  detectionRadius: 10
+  spawnPos: {x: 0, y: 0, z: 0}
+  chaseRange: 20
+  currentstate: 0
 --- !u!114 &5485841303718966773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -113,6 +116,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4ff691017e154c3583a81d3951895a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: 50
+  damage: 10
   expValue: 10
 --- !u!58 &-7594236510293803726
 CircleCollider2D:
