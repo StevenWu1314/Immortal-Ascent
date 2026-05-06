@@ -25,7 +25,7 @@ public class RangeEnemyBehavior : EnemyBehavior
         base.Start();
         collidableMap = GameObject.Find("Collidable Plants").GetComponent<Tilemap>();
     }
-    protected override void takeTurn(Controls controls)
+    public override void takeTurn()
     {
         if (currentstate == state.Idle)
         {

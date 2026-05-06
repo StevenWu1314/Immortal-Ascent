@@ -22,6 +22,8 @@ public class Controls : MonoBehaviour
     public GameObject CollectButton;
     internal Vector3Int portalPos;
 
+    public bool takingTurn;
+
     public static event Action<Controls> onMoveEvent;
     public static event UnityAction onShootEvent;
     // Start is called before the first frame update
@@ -41,8 +43,7 @@ public class Controls : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (MenuIsOpen) return;
-
+        if (MenuIsOpen || takingTurn) return;
         if (aiming)
         {
             if (Input.GetKeyDown(KeyCode.J))
@@ -85,9 +86,11 @@ public class Controls : MonoBehaviour
                 {
                     EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
                 }
+                takingTurn = true;
                 onMoveEvent(this);
                 positionDisplay.text = $"{nextCell}";
                 direction = Vector2Int.zero;
+                
             }
 
             if (Input.GetKeyDown(KeyCode.J))
@@ -98,6 +101,7 @@ public class Controls : MonoBehaviour
                 transform.GetComponentInChildren<RangeAttackTilemap>().clearPrev();
                 transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
                 print("Entered aiming mode");
+                takingTurn = true;
                 onMoveEvent(this);
             }
         }
@@ -161,6 +165,7 @@ public class Controls : MonoBehaviour
                 playerStats.attack("range", target.GetComponent<Enemy>());
             else
                 UIManager.Instance.DrawFlowupText("No arrows remaining", transform.position);
+            takingTurn = true;
             onMoveEvent(this);
         }
         runningCooldown = 0.5f;
