@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 58a08b7b4636a4f24a9cc0ed4512fe80, type: 3}
-  m_Name: New New Custom Rule Tile
+  m_Name: Bridge Rule Tile
   m_EditorClassIdentifier: 
   m_DefaultSprite: {fileID: 21300000, guid: d81c51e8e0ec679438cfd41f8ba62c2e, type: 3}
   m_DefaultGameObject: {fileID: 0}
@@ -272,3 +272,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 26a6e64f1440e419d9cfc5d29ebd6dd8, type: 2}
   - {fileID: 11400000, guid: ec4f4f54f6db047358621eb1b08fc167, type: 2}
   water: {fileID: 11400000, guid: c845868fa911445c8bbe3b9eea1d75f4, type: 2}
+  additionalTilemapTags:
+  - MainTileMap

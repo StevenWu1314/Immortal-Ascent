@@ -23,13 +23,16 @@ public class EnemyBehavior : MonoBehaviour
     protected void OnEnable()
     {
         Controls.onMoveEvent += checkForPlayerInRoom;
-        Controls.onMoveEvent += takeTurn;
+        Controls.onMoveEvent += queup;
         grid = FindObjectOfType<PerlinNoiseMap>().grid;
         spawnPos = this.transform.position;
     }
+
+    
+
     protected void OnDestroy() {
         Controls.onMoveEvent -= checkForPlayerInRoom;
-        Controls.onMoveEvent -= takeTurn;
+        Controls.onMoveEvent -= queup;
     }
     virtual protected void Start()
     {
@@ -48,6 +51,7 @@ public class EnemyBehavior : MonoBehaviour
         {
             Controls.onMoveEvent -= checkForPlayerInRoom;
             currentstate = state.Chase;
+            Debug.Log("playerDetected");
             notifyNearbyEnemies();
         }
     }
@@ -68,7 +72,13 @@ public class EnemyBehavior : MonoBehaviour
         Controls.onMoveEvent -= checkForPlayerInRoom;
         currentstate = state.Chase;
     }
-    protected virtual void takeTurn(Controls controls)
+    private void queup(Controls controls)
+    {
+        if(currentstate != state.Idle)
+            TurnManager.Instance.queupToMove(this);
+    }
+
+    public virtual void takeTurn()
     {
         if (currentstate == state.Idle)
         {
@@ -94,6 +104,7 @@ public class EnemyBehavior : MonoBehaviour
     }
     protected virtual void chasePlayer()
     {
+        Debug.Log("chasing player");
         Vector2Int enemyCell = new Vector2Int(
             Mathf.FloorToInt(transform.position.x),
             Mathf.FloorToInt(transform.position.y)
