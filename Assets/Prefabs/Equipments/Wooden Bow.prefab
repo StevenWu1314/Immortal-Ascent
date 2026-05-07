@@ -48,7 +48,7 @@ MonoBehaviour:
   ItemName: Wooden Bow
   description: A simple bow, not the greatest thing ever, but probably better than
     using a sword right now
-  image: {fileID: -394736272, guid: a9bc9b4b48c2240ec87895e3d3bf8dbb, type: 3}
+  image: {fileID: 21300000, guid: f8232ec78854e684f9a00f3dad4b2001, type: 3}
   amount: 0
   stackLimit: 1
   itemDisplay: {fileID: 0}

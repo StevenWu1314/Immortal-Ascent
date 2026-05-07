@@ -56,7 +56,7 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Immortal-Descent.sln",
+    "dotnet.defaultSolution": "Rogue Asian Fantasy.sln",
     "C_Cpp_Runner.cCompilerPath": "clang",
     "C_Cpp_Runner.cppCompilerPath": "clang++",
     "C_Cpp_Runner.debuggerPath": "lldb",
