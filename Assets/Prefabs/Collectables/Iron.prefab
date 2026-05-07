@@ -45,11 +45,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  name: Iron
+  ItemName: Iron
   description: Iron
   image: {fileID: 0}
   amount: 1
   stackLimit: 99
   itemDisplay: {fileID: 0}
   dropRange: {x: 1, y: 1}
-  item: {fileID: 829676800785955077}

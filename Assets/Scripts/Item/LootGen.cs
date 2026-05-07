@@ -31,6 +31,10 @@ public class LootGen : MonoBehaviour
         Grid.chestOpen += rollTable;
         playerInventory = Inventory.Instance;
     }
+    void OnDestroy()
+    {
+        Grid.chestOpen -= rollTable;
+    }
     public void rollTable()
     {
         Debug.Log("rolling lootable");

@@ -1,26 +1,23 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class DexPill : Consumables
+public class DexElixer : Elixers
 {
 
-    public DexPill(int amount)
+    public DexElixer(int amount)
     {
-        this.name = "Strength Pill";
+        this.ItemName = "Dexterity Elixer";
         this.stackLimit = 100;
         this.effectStrength = 10;
         this.description = "increase your strength by " + effectStrength + " for 50 turns";
         this.amount = amount;
         
     }
-    private void Start() {
-        itemDisplay = FindObjectOfType<ItemDisplay>();
-        Debug.Log("trying to find itemDisplay");
-    }
+
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "Dexterity", 10, amount, this);
+        itemDisplay.setFields(ItemName, description, image, "Dexterity", 10, amount, this);
     }
 
     public override void onUse()

@@ -84,4 +84,9 @@ public class EntityManager : MonoBehaviour
     {
         return entityGrid.ContainsKey(cell);
     }
+
+    public void Reset()
+    {
+        Instance.entityGrid = new();
+    }
 }

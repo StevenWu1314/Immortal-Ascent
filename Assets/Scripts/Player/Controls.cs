@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
 public class Controls : MonoBehaviour
@@ -12,15 +15,21 @@ public class Controls : MonoBehaviour
     bool aiming = false;
     [SerializeField] private float moveCooldown = 0.1f;
     [SerializeField] private float runningCooldown = 0;
-    [SerializeField] private bool MenuIsOpen;
+    [SerializeField] public bool MenuIsOpen;
     [SerializeField] private PlayerStats playerStats;
+    public TMP_Text positionDisplay;
     Collectables collectable;
     public GameObject CollectButton;
+    internal Vector3Int portalPos;
+
+    public bool takingTurn;
+
     public static event Action<Controls> onMoveEvent;
     public static event UnityAction onShootEvent;
     // Start is called before the first frame update
     void Start()
     {
+        positionDisplay = GameObject.Find("CurrentPos").GetComponent<TMP_Text>();
         UIManager.openMenu += detectMenu;
         self = gameObject.transform;
         grid = FindAnyObjectByType<PerlinNoiseMap>().grid;
@@ -28,21 +37,30 @@ public class Controls : MonoBehaviour
         onMoveEvent += checkForCollectables;
         CollectButton = GameObject.Find("Collect");
         CollectButton.SetActive(false);
+        positionDisplay.text = $"{Vector2Int.FloorToInt(transform.position)}";
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (MenuIsOpen) return;
-
+        if (MenuIsOpen || takingTurn) return;
         if (aiming)
         {
-            // Handle aiming mode
-            if (Input.GetKeyDown(KeyCode.W)) aim(KeyCode.W);
-            else if (Input.GetKeyDown(KeyCode.A)) aim(KeyCode.A);
-            else if (Input.GetKeyDown(KeyCode.S)) aim(KeyCode.S);
-            else if (Input.GetKeyDown(KeyCode.D)) aim(KeyCode.D);
-            else if (Input.GetKeyDown(KeyCode.L)) aim(KeyCode.L);
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                GameObject bowindicator = transform.GetChild(1).gameObject;
+                bowindicator.SetActive(false);
+                aiming = false;
+                transform.GetComponentInChildren<RangeAttackTilemap>().clearPrev();
+                transform.GetComponentInChildren<RangeAttackTilemap>().overlaying = false;
+                print("exiting aiming mode");
+                return;
+            }
+            else if(Input.GetMouseButtonDown(0))
+            {
+                Debug.Log("leftClickDetected");
+                shoot();
+            }
             return;
         }
 
@@ -60,18 +78,31 @@ public class Controls : MonoBehaviour
                 runningCooldown = moveCooldown;
                 Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
                 Vector2Int nextCell = currentCell + direction;
+                if(nextCell == (Vector2Int) portalPos)
+                {
+                    FindFirstObjectByType<PerlinNoiseMap>().GenerateMap();
+                }
                 if (grid.Move(transform.position, direction, transform))
                 {
                     EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
                 }
+                takingTurn = true;
                 onMoveEvent(this);
+                positionDisplay.text = $"{nextCell}";
                 direction = Vector2Int.zero;
+                
             }
 
             if (Input.GetKeyDown(KeyCode.J))
             {
                 aiming = true;
+                GameObject bowindicator = transform.GetChild(1).gameObject;
+                bowindicator.SetActive(true);
+                transform.GetComponentInChildren<RangeAttackTilemap>().clearPrev();
+                transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
                 print("Entered aiming mode");
+                takingTurn = true;
+                onMoveEvent(this);
             }
         }
         else
@@ -100,42 +131,43 @@ public class Controls : MonoBehaviour
         }
         callback?.Invoke(pressedKey);
     }
-    private void aim(KeyCode key)
+    private void shoot()
     {
-        if (key == KeyCode.L)
-        {
-            aiming = false;
-            return;
-        }
+       
         GameObject target = null;
-        Vector2Int offset = Vector2Int.zero;
-        Vector2Int currentPos = Vector2Int.FloorToInt(transform.position);
-        if (key == KeyCode.W) offset = Vector2Int.up;
-        else if (key == KeyCode.S) offset = Vector2Int.down;
-        else if (key == KeyCode.D) offset = Vector2Int.right;
-        else if (key == KeyCode.A) offset = Vector2Int.left;
-
-        if (offset == Vector2Int.zero) return;
-        for (int i = 1; i <= 5; i++)
+        Tilemap rangeIndicator = transform.GetComponentInChildren<RangeAttackTilemap>(true).tilemap;
+        Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3Int clickCell = rangeIndicator.WorldToCell(worldPoint);
+        Vector3 cellcenter = rangeIndicator.GetCellCenterWorld(clickCell);
+        if(transform.GetComponentInChildren<RangeAttackTilemap>().InRange(clickCell))
         {
-            Vector2Int checkPos = currentPos + offset * i;
-            GameObject entity = EntityManager.Instance.GetEntityAt(checkPos);
-            if (entity != null && entity.GetComponent<Enemy>() != null)
+            Collider2D hit = Physics2D.OverlapCircle(cellcenter, 0.1f);
+            Debug.Log(cellcenter);
+            if(hit != null)
             {
-                target = entity;
-                break; // stop at first enemy in line of sight
+                Debug.Log("Target Found");
+                target = hit.gameObject;
             }
         }
         if (target != null)
         {
-            playerStats.attack("range", target.GetComponent<Enemy>());
+            bool hasArrow = false;
+            List<Item> items = Inventory.Instance.getItems();
+            foreach(Item item in items)
+            {
+                if(item.getName() == "Arrow")
+                {
+                    Inventory.Instance.removeItem(item, 1);
+                    hasArrow = true;
+                }
+            }
+            if(hasArrow)
+                playerStats.attack("range", target.GetComponent<Enemy>());
+            else
+                UIManager.Instance.DrawFlowupText("No arrows remaining", transform.position);
+            takingTurn = true;
             onMoveEvent(this);
         }
-        else
-        {
-            print("no target found");
-        }
-        aiming = false;
         runningCooldown = 0.5f;
     }
     private void detectMenu(UIManager uIManager)
@@ -146,24 +178,24 @@ public class Controls : MonoBehaviour
     private void checkForCollectables(Controls controls)
     {
         Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
-        Vector2Int LookingAt = currentCell + direction;
         if (collectable != null)
         {
-            removeCollectable();
+            collectable = null;
         }
-        collectable = CollectableMap.Instance.GetCollectableAt(LookingAt);
+        collectable = CollectableMap.Instance.GetCollectableAt(currentCell);
         if (collectable != null)
         {
-            CollectButton.SetActive(true);
-            CollectButton.GetComponent<Button>().onClick.AddListener(collectable.collectThis);
-            //CollectButton.GetComponent<Button>().onClick.AddListener(removeCollectable);
+            collectable.collectThis();
+            CollectableMap.Instance.unregisterCollectable(currentCell);
+            PerlinNoiseMap map = GameObject.Find("map generator").GetComponent<PerlinNoiseMap>();
+            map.setToGrass(currentCell);
+
         }
     }
 
-    public void removeCollectable()
+    private void OnDestroy()
     {
-        CollectButton.GetComponent<Button>().onClick.RemoveListener(collectable.collectThis);
-        collectable = null;
-        CollectButton.SetActive(false);
+        onMoveEvent -= checkForCollectables;
+        UIManager.openMenu -= detectMenu;
     }
 }

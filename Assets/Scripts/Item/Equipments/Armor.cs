@@ -6,7 +6,7 @@ public class Armor : Item
     [SerializeField] public GameObject equipedIcon;
     public Armor(int health, bool range, string name, int id, string description, Sprite sprite) {
     this.Health = health;
-    this.name = name;
+    this.ItemName = name;
     this.id = id;
     this.description = description;
     stackLimit = 1;
@@ -19,7 +19,7 @@ public class Armor : Item
 
     public override void displaySelf()
     {
-        itemDisplay.setFields(name, description, image, "Health", Health, 1, this);
+        itemDisplay.setFields(ItemName, description, image, "Health", Health, 1, this);
     }
     public override void onUse()
     {
