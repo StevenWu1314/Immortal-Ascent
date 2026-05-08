@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resultName: Iron Sword
   result: {fileID: 8501900578419282080, guid: f5390054861d343ecbcecba456bd5811, type: 3}
+  sprite: {fileID: 21300000, guid: f0d58f5efe45b4d7ab9e3e954622a56d, type: 3}
   recipe:
   - material: {fileID: 829676800785955077, guid: c579e34cc648743519e02830b04a1d49, type: 3}
     amount: 5
