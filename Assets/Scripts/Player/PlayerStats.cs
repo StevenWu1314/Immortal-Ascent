@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -18,6 +19,7 @@ public class PlayerStats : MonoBehaviour{
     [SerializeField] Equipments equipments;
     [SerializeField] AchievementManager achievementManager;
     [SerializeField] float expMultiplier = 1;
+    SpriteRenderer spriteRenderer;
     public static event Action<PlayerStats> onLevelUpEvent;
     public static event Action<PlayerStats> onDeath;
 
@@ -34,6 +36,7 @@ public class PlayerStats : MonoBehaviour{
             return;
         }
         Instance = this;
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
     void OnEnable()
     {
@@ -81,10 +84,43 @@ public class PlayerStats : MonoBehaviour{
     {
         Health -= damage;
         updateHealthBar();
+        StartCoroutine(DamageIndicator());
+        StartCoroutine(DamageShake());
         if (Health <= 0)
         {
             SceneManager.LoadScene(0);
         }
+    }
+
+    private IEnumerator DamageIndicator() {
+        float indicatortimer = 0.3f;
+
+        Color[] damageColors = {
+            new Color(1f, 0f, 0f, 1f),
+            Color.white,
+            Color.white
+        };
+
+        foreach (Color color in damageColors) {
+            spriteRenderer.color = color;
+            yield return new WaitForSeconds(indicatortimer);
+        }
+
+        spriteRenderer.color = Color.white;
+    }
+
+    private IEnumerator DamageShake() {
+        Vector3 originalPos = transform.position;
+        float shakeAmount = 0.1f;
+        float shakeInterval = 0.05f;
+
+        for (int i = 0; i < 6; i++)
+        {
+            transform.position = originalPos + new Vector3(i % 2 == 0 ? shakeAmount : -shakeAmount, 0, 0);
+            yield return new WaitForSeconds(shakeInterval);
+        }
+
+        transform.position = originalPos;
     }
 
     public void heal(int amount)
