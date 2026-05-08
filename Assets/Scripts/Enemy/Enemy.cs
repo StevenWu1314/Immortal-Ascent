@@ -11,20 +11,39 @@ public abstract class Enemy : MonoBehaviour
     [SerializeField] protected int damage;
     [SerializeField] protected int expValue;
     private UIManager uiManager;
+    SpriteRenderer spriteRenderer;
 
     void OnEnable()
     {
         uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
     public void takeDamage(int damage)
     {
         health -= damage;
         uiManager.DrawFlowupDamageText(damage, this.transform.position);
+        StartCoroutine(DamageIndicator());
         if(health <= 0)
         {
             PlayerStats.Instance.gainExperience(expValue);
             Die();
         }
+    }
+
+    private IEnumerator DamageIndicator() {
+        float indicatortimer = 0.3f;
+
+        Color[] damageColors = {
+            new Color(1f, 0f, 0f, 1f),
+            new Color(1f, 1f, 1f, 1f),
+        };
+
+        foreach (Color color in damageColors) {
+            spriteRenderer.color = color;
+            yield return new WaitForSeconds(indicatortimer);
+        }
+
+        spriteRenderer.color = Color.white;
     }
 
     public void ForceDie()
