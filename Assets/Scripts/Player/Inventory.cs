@@ -6,9 +6,15 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
+    [System.Serializable]
+    public struct StarterItem
+    {
+        public Item item;
+        public int amount;
+    }
     [SerializeField] private GameObject inventoryContainer; // parent with 24 slot children
     [SerializeField] private List<Item> items = new List<Item>();
-    [SerializeField] private List<Item> StarterItems;
+    [SerializeField] private List<StarterItem> StarterItems;
     [SerializeField] private ItemDisplay itemDisplay;
     private ItemBox[] slots; // fixed slots
     public static Inventory Instance;
@@ -35,9 +41,12 @@ public class Inventory : MonoBehaviour
 
     private void addStarterItems()
     {
-        foreach (Item item in StarterItems)
+        foreach (StarterItem item in StarterItems)
         {
-            addItem((Instantiate(item)));
+            for(int i = 0; i < item.amount; i++)
+            {
+                addItem((Instantiate(item.item)));
+            }
         }
         updateInventory();
     }

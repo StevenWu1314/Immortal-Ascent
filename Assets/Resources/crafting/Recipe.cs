@@ -15,7 +15,8 @@ public class Recipe : ScriptableObject
     }
 
     public string resultName;
-    public GameObject    result;
+    public GameObject result;
+    public Sprite sprite;
     public List<Pair> recipe = new List<Pair>();
 
     private static string filePath = "Assets/Resources/crafting/Recipies.txt";

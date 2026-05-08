@@ -12,7 +12,6 @@ public class CameraFollow : MonoBehaviour
 
     void Start()
     {
-        player = FindObjectOfType<PlayerStats>().transform;
         cam = GetComponent<Camera>();
         halfHeight = cam.orthographicSize;
         halfWidth = halfHeight * cam.aspect;

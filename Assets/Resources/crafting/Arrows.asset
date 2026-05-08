@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resultName: Arrow
   result: {fileID: 4132982777459572664, guid: 2bfa61813063c4bb185cc22c4eb3c7a3, type: 3}
+  sprite: {fileID: 21300000, guid: 7d2a99838ba522240bace6e905e61fe6, type: 3}
   recipe:
   - material: {fileID: 829676800785955077, guid: c579e34cc648743519e02830b04a1d49, type: 3}
     amount: 1

@@ -154,6 +154,10 @@ public class EnemyBehavior : MonoBehaviour
                     this.GetComponent<Enemy>().Attack(player.GetComponent<PlayerStats>());
 
                 }
+                else
+                {
+                    continue;
+                }
             }
             else
             {

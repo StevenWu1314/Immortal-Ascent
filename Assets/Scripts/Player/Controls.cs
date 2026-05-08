@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Tilemaps;
@@ -24,8 +25,12 @@ public class Controls : MonoBehaviour
 
     public bool takingTurn;
 
+    [SerializeField] GameObject shotArrow;
+
     public static event Action<Controls> onMoveEvent;
     public static event UnityAction onShootEvent;
+
+    [SerializeField] private bowBehavior bow;
     // Start is called before the first frame update
     void Start()
     {
@@ -35,22 +40,29 @@ public class Controls : MonoBehaviour
         grid = FindAnyObjectByType<PerlinNoiseMap>().grid;
         Debug.Log(grid);
         onMoveEvent += checkForCollectables;
-        CollectButton = GameObject.Find("Collect");
-        CollectButton.SetActive(false);
         positionDisplay.text = $"{Vector2Int.FloorToInt(transform.position)}";
+        bow = GetComponentsInChildren<bowBehavior>(true)[0];
+        Debug.Log("bow: " + bow);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (MenuIsOpen || takingTurn) return;
-        if (aiming)
+        if (MenuIsOpen || takingTurn)
         {
+            bow.restingSprite();
+            return;
+        }
+            
+        else if (aiming)
+        {
+            bow.aimingSprite();
             if (Input.GetKeyDown(KeyCode.J))
             {
                 GameObject bowindicator = transform.GetChild(1).gameObject;
                 bowindicator.SetActive(false);
                 aiming = false;
+                bow.restingSprite();
                 transform.GetComponentInChildren<RangeAttackTilemap>().clearPrev();
                 transform.GetComponentInChildren<RangeAttackTilemap>().overlaying = false;
                 print("exiting aiming mode");
@@ -65,7 +77,7 @@ public class Controls : MonoBehaviour
         }
 
         // --- Normal movement mode ---
-        if (runningCooldown <= 0)
+        else if (runningCooldown <= 0)
         {
             direction = Vector2Int.zero;
             if (Input.GetKey(KeyCode.W)) direction = Vector2Int.up;
@@ -75,6 +87,8 @@ public class Controls : MonoBehaviour
 
             if (direction != Vector2Int.zero)
             {
+                takingTurn = true;
+                onMoveEvent(this);
                 runningCooldown = moveCooldown;
                 Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
                 Vector2Int nextCell = currentCell + direction;
@@ -86,8 +100,7 @@ public class Controls : MonoBehaviour
                 {
                     EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
                 }
-                takingTurn = true;
-                onMoveEvent(this);
+                
                 positionDisplay.text = $"{nextCell}";
                 direction = Vector2Int.zero;
                 
@@ -95,14 +108,16 @@ public class Controls : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.J))
             {
+                takingTurn = true;
+                onMoveEvent(this);
                 aiming = true;
+                bow.aimingSprite();
                 GameObject bowindicator = transform.GetChild(1).gameObject;
                 bowindicator.SetActive(true);
                 transform.GetComponentInChildren<RangeAttackTilemap>().clearPrev();
                 transform.GetComponentInChildren<RangeAttackTilemap>().overlay();
                 print("Entered aiming mode");
-                takingTurn = true;
-                onMoveEvent(this);
+                
             }
         }
         else
@@ -116,35 +131,27 @@ public class Controls : MonoBehaviour
         // }
 
     }
-    IEnumerator WaitforKeyPress(Action<KeyCode> callback)
-    {
-        KeyCode pressedKey = KeyCode.None;
-
-        while (pressedKey == KeyCode.None)
-        {
-            if (Input.GetKeyDown(KeyCode.W)) pressedKey = KeyCode.W;
-            else if (Input.GetKeyDown(KeyCode.A)) pressedKey = KeyCode.A;
-            else if (Input.GetKeyDown(KeyCode.S)) pressedKey = KeyCode.S;
-            else if (Input.GetKeyDown(KeyCode.D)) pressedKey = KeyCode.D;
-            else if (Input.GetKeyDown(KeyCode.L)) pressedKey = KeyCode.L;
-            yield return null; // Wait for next frame
-        }
-        callback?.Invoke(pressedKey);
-    }
     private void shoot()
     {
        
         GameObject target = null;
         Tilemap rangeIndicator = transform.GetComponentInChildren<RangeAttackTilemap>(true).tilemap;
-        Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = -Camera.main.transform.position.z; // e.g. camera at z=-10, so this = 10
+    
+        Vector3 worldPoint = Camera.main.ScreenToWorldPoint(mousePos);
+        worldPoint.z = 0f; // clamp to world plane just to be safe
+
         Vector3Int clickCell = rangeIndicator.WorldToCell(worldPoint);
-        Vector3 cellcenter = rangeIndicator.GetCellCenterWorld(clickCell);
+        Vector3 cellCenter = rangeIndicator.GetCellCenterWorld(clickCell);
+        Debug.Log($"worldPoint: {worldPoint}, clickCell: {clickCell}, cellCenter: {cellCenter}");
         if(transform.GetComponentInChildren<RangeAttackTilemap>().InRange(clickCell))
         {
-            Collider2D hit = Physics2D.OverlapCircle(cellcenter, 0.1f);
-            Debug.Log(cellcenter);
+            Vector2 boxSize = (Vector2)rangeIndicator.cellSize * 0.9f;
+            Collider2D hit = Physics2D.OverlapBox(cellCenter, boxSize, 0f);
             if(hit != null)
             {
+
                 Debug.Log("Target Found");
                 target = hit.gameObject;
             }
@@ -157,12 +164,22 @@ public class Controls : MonoBehaviour
             {
                 if(item.getName() == "Arrow")
                 {
-                    Inventory.Instance.removeItem(item, 1);
                     hasArrow = true;
                 }
             }
             if(hasArrow)
+            {
                 playerStats.attack("range", target.GetComponent<Enemy>());
+                var temp = Instantiate(shotArrow, transform.position, quaternion.identity);
+                temp.GetComponent<ShotArrow>().target = cellCenter;
+                foreach(Item item in items)
+                {
+                    if(item.getName() == "Arrow")
+                    {
+                        Inventory.Instance.removeItem(item, 1);
+                    }
+                }
+            }
             else
                 UIManager.Instance.DrawFlowupText("No arrows remaining", transform.position);
             takingTurn = true;

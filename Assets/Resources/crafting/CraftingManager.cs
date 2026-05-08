@@ -34,7 +34,8 @@ public class CraftingManager : MonoBehaviour
             if (recipe.canCraft())
             {
                 GameObject button = Instantiate(buttonTemplate, CraftingPanel.transform.Find("itemholder"));
-                button.transform.Find("Text (TMP)").gameObject.GetComponent<TMP_Text>().text = recipe.resultName;
+                //button.transform.Find("Text (TMP)").gameObject.GetComponent<TMP_Text>().text = recipe.resultName;
+                button.GetComponent<Image>().sprite = recipe.sprite;
                 buttons.Add(button);
                 button.GetComponent<Button>().onClick.AddListener(recipe.craft);
             }

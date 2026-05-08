@@ -54,7 +54,7 @@ public abstract class Item : MonoBehaviour
     public abstract void onUse();
     private void Start()
     {
-        itemDisplay = GameObject.Find("ItemInfoDisplay").GetComponent<ItemDisplay>();
+        //itemDisplay = GameObject.Find("ItemInfoDisplay").GetComponent<ItemDisplay>();
         Debug.Log("trying to find itemDisplay");
     }
     

@@ -49,7 +49,7 @@ MonoBehaviour:
   states:
   - {fileID: 21300000, guid: f8232ec78854e684f9a00f3dad4b2001, type: 3}
   - {fileID: 21300000, guid: 6cdbf32b1d0b3e34bac97fe7d18d5865, type: 3}
-  sprite: {fileID: 0}
+  sprite: {fileID: 6589287743342653791}
 --- !u!1 &1969433353285742004
 GameObject:
   m_ObjectHideFlags: 0
@@ -336,7 +336,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: 5b3ea35b4635147bd9e0c9f32bb51df8, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 89023903155a67841ab541e1eb2ff011, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -366,6 +366,8 @@ MonoBehaviour:
   positionDisplay: {fileID: 0}
   CollectButton: {fileID: 0}
   takingTurn: 0
+  shotArrow: {fileID: 4132982777459572664, guid: cc9ae52b9c0cf4739830d8599356e047, type: 3}
+  bow: {fileID: 0}
 --- !u!114 &1542500301828780655
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -381,12 +383,18 @@ MonoBehaviour:
   inventoryContainer: {fileID: 0}
   items: []
   StarterItems:
-  - {fileID: 8103580277624727149, guid: 4c1badd76ba604c858b8a0d17ebcd530, type: 3}
-  - {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
-  - {fileID: 1417053570654631579, guid: 72cecad0ffa3a40b888d5fc0f71dc50f, type: 3}
-  - {fileID: 424189716286026104, guid: 50f9807f7c1a94729b969d91e63d2670, type: 3}
-  - {fileID: 9127352406000723282, guid: 87c862b74002b40b7acd2f4a23d2d3dd, type: 3}
-  - {fileID: 1190025980987071172, guid: 2bfa61813063c4bb185cc22c4eb3c7a3, type: 3}
+  - item: {fileID: 8103580277624727149, guid: 4c1badd76ba604c858b8a0d17ebcd530, type: 3}
+    amount: 1
+  - item: {fileID: 1417053570654631579, guid: 72cecad0ffa3a40b888d5fc0f71dc50f, type: 3}
+    amount: 1
+  - item: {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
+    amount: 3
+  - item: {fileID: 9127352406000723282, guid: 87c862b74002b40b7acd2f4a23d2d3dd, type: 3}
+    amount: 1
+  - item: {fileID: 424189716286026104, guid: 50f9807f7c1a94729b969d91e63d2670, type: 3}
+    amount: 1
+  - item: {fileID: 1190025980987071172, guid: 2bfa61813063c4bb185cc22c4eb3c7a3, type: 3}
+    amount: 10
   itemDisplay: {fileID: 0}
 --- !u!114 &3324978833351514589
 MonoBehaviour:

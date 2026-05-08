@@ -48,6 +48,6 @@ MonoBehaviour:
   ItemName: Arrow
   description: Plain old arrows
   image: {fileID: 21300000, guid: 7d2a99838ba522240bace6e905e61fe6, type: 3}
-  amount: 10
+  amount: 1
   stackLimit: 100
   itemDisplay: {fileID: 0}

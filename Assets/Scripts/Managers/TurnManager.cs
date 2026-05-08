@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ public class TurnManager : MonoBehaviour
     [SerializeField] private Queue<EnemyBehavior> enemies;
     private HashSet<EnemyBehavior> enemiestable; 
     public static TurnManager Instance;
+    //public static event Action<TurnManager> finishTurn;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -49,7 +51,7 @@ public class TurnManager : MonoBehaviour
         try
         {
             if (enemies.Count != 0)
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(0.4f);
             while (enemies.Count != 0)
             {
                 Debug.Log("looping: " + enemies.Count + " left");
@@ -63,6 +65,7 @@ public class TurnManager : MonoBehaviour
         {
             PlayerStats.Instance.gameObject.GetComponent<Controls>().takingTurn = false;
             Debug.Log("Turn Manager Finished: Player Unlocked");
+            //finishTurn(this);
         }
         
     }
