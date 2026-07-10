@@ -110,6 +110,8 @@ public class PerlinNoiseMap : MonoBehaviour
         tilemap.RefreshAllTiles();
         CollidablePlantTileMap.RefreshAllTiles();
         SpawnPortal();
+
+        FogManager.Instance.Initialize(map_width, map_height, Vector2Int.zero);
         if (debugMode)
         {
             try { grid.printGrid(); } catch { /* ignore if not implemented */ }
@@ -169,8 +171,11 @@ public class PerlinNoiseMap : MonoBehaviour
             tileGroups.Clear();
         }
         
+        if (FogManager.Instance != null) {
+            FogManager.Instance.ClearFog();
+        }
+        
     }
-
     private void InitializeGame()
     {
         // Guard magnification

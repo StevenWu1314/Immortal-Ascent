@@ -43,6 +43,7 @@ public class Controls : MonoBehaviour
         positionDisplay.text = $"{Vector2Int.FloorToInt(transform.position)}";
         bow = GetComponentsInChildren<bowBehavior>(true)[0];
         Debug.Log("bow: " + bow);
+        FogManager.Instance.DiscoveredTiles(Vector2Int.FloorToInt(transform.position));
     }
 
     // Update is called once per frame
@@ -103,6 +104,12 @@ public class Controls : MonoBehaviour
                 
                 positionDisplay.text = $"{nextCell}";
                 direction = Vector2Int.zero;
+
+                if (grid.Move(transform.position, direction, transform)) {
+                    EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
+                }
+
+                FogManager.Instance.DiscoveredTiles(nextCell);
                 
             }
 
