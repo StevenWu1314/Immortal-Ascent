@@ -269,4 +269,9 @@ public class PlayerStats : MonoBehaviour{
             return 0;
         }
     }
+    
+    public void setRange(int range)
+    {
+        this.range = range;
+    }
 }

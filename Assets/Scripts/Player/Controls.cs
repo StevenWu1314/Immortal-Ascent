@@ -37,7 +37,7 @@ public class Controls : MonoBehaviour
         positionDisplay = GameObject.Find("CurrentPos").GetComponent<TMP_Text>();
         UIManager.openMenu += detectMenu;
         self = gameObject.transform;
-        grid = FindAnyObjectByType<PerlinNoiseMap>().grid;
+        //grid = FindAnyObjectByType<PerlinNoiseMap>().grid;
         Debug.Log(grid);
         onMoveEvent += checkForCollectables;
         positionDisplay.text = $"{Vector2Int.FloorToInt(transform.position)}";
@@ -57,7 +57,7 @@ public class Controls : MonoBehaviour
         else if (aiming)
         {
             bow.aimingSprite();
-            if (Input.GetKeyDown(KeyCode.J))
+            if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 GameObject bowindicator = transform.GetChild(1).gameObject;
                 bowindicator.SetActive(false);
@@ -106,7 +106,7 @@ public class Controls : MonoBehaviour
                 
             }
 
-            if (Input.GetKeyDown(KeyCode.J))
+            if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 takingTurn = true;
                 onMoveEvent(this);

@@ -98,6 +98,7 @@ public class RangeEnemyBehavior : EnemyBehavior
                 if (other.CompareTag("Player"))
                 {
                     this.GetComponent<Enemy>().Attack(player.GetComponent<PlayerStats>());
+                    return;
 
                 }
             }

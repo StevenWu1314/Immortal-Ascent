@@ -10,6 +10,12 @@ public class TurnManager : MonoBehaviour
     [SerializeField] private Queue<EnemyBehavior> enemies;
     private HashSet<EnemyBehavior> enemiestable; 
     public static TurnManager Instance;
+
+    public List<EnemyBehavior>[] AllEnemies;
+
+    public BoundsInt[] rooms;
+    private PlayerStats player;
+    public int numberofRooms;
     //public static event Action<TurnManager> finishTurn;
     private void Awake()
     {
@@ -26,7 +32,18 @@ public class TurnManager : MonoBehaviour
         enemies = new Queue<EnemyBehavior>();
         enemiestable = new HashSet<EnemyBehavior>();
         Controls.onMoveEvent += callTaketurn;
+        player = PlayerStats.Instance;
+        
+    }
 
+    public void initialize()
+    {
+        AllEnemies = new List<EnemyBehavior>[numberofRooms];
+        for(int i = 0; i < numberofRooms; i++)
+        {
+            AllEnemies[i] = new List<EnemyBehavior>();
+        }
+        rooms = new BoundsInt[numberofRooms];
     }
 
     public void queupToMove(EnemyBehavior enemy)
@@ -39,6 +56,19 @@ public class TurnManager : MonoBehaviour
     }
     public void callTaketurn(Controls controls)
     {
+        Vector3 playerpos = player.transform.position;
+        int i = 0;
+        foreach(BoundsInt room in rooms)
+        {
+            if(room.Contains(new Vector3Int((int)playerpos.x, (int)playerpos.y)))
+            {
+                foreach(EnemyBehavior enemy in AllEnemies[i])
+                {
+                    enemy.becomeAlerted();
+                }
+            }
+            i++;
+        }
         StartCoroutine("TakeTurns");
     }
     public void OnDestroy()

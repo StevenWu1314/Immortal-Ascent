@@ -271,6 +271,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a7e58f527287a4871a577834fa2bf868, type: 2}
   - {fileID: 11400000, guid: 26a6e64f1440e419d9cfc5d29ebd6dd8, type: 2}
   - {fileID: 11400000, guid: ec4f4f54f6db047358621eb1b08fc167, type: 2}
+  - {fileID: 11400000, guid: 8d5d531d3531f43bfa9283827424402d, type: 2}
   water: {fileID: 11400000, guid: c845868fa911445c8bbe3b9eea1d75f4, type: 2}
   additionalTilemapTags:
   - MainTileMap

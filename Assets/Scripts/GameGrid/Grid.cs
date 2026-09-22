@@ -89,11 +89,9 @@ public class Grid
 
     public bool Move(Vector3 position, Vector2Int direction, Transform entity)
     {
-        float worldx, worldy;
-        worldx = position.x;
-        worldy = position.y;
-        int x, y;
-        getXY(new Vector3(worldx, worldy), out x, out y);
+        int x = (int) position.x;
+        int y = (int) position.y;
+        //getXY(new Vector3(worldx, worldy), out x, out y);
         int value = gridArray[x, y];
         Vector2Int targetDirection = new Vector2Int(x, y) + direction;
         int targetValue = gridArray[targetDirection.x, targetDirection.y];

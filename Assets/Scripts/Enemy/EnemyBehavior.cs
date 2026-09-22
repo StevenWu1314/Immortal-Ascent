@@ -2,10 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using Vector3 = UnityEngine.Vector3;
 
 public class EnemyBehavior : MonoBehaviour
 {
@@ -13,6 +15,8 @@ public class EnemyBehavior : MonoBehaviour
     protected GameObject player;
     public float detectionRadius;
     protected bool playerDetected;
+
+    public BoundsInt room;
 
     public Vector3 spawnPos;
     [SerializeField] protected int chaseRange;
@@ -24,7 +28,8 @@ public class EnemyBehavior : MonoBehaviour
     {
         Controls.onMoveEvent += checkForPlayerInRoom;
         Controls.onMoveEvent += queup;
-        grid = FindObjectOfType<PerlinNoiseMap>().grid;
+        //grid = FindObjectOfType<PerlinNoiseMap>().grid;
+        grid = FindObjectOfType<RoomFirstDungeonGenerator>().grid;
         spawnPos = this.transform.position;
     }
 
@@ -46,14 +51,21 @@ public class EnemyBehavior : MonoBehaviour
         // Debug.Log("checking for player");
         // Debug.Log(detectionRadius + " contains: " + new Vector3Int((int)player.transform.position.x, (int)player.transform.position.y));
         // Debug.Log(detectionRadius.Contains(new Vector3Int((int)player.transform.position.x, (int)player.transform.position.y)));
-        Collider2D[] objectInRange = Physics2D.OverlapCircleAll(transform.position, detectionRadius);
-        if (objectInRange.Contains(player.GetComponent<Collider2D>()))
-        {
-            Controls.onMoveEvent -= checkForPlayerInRoom;
-            currentstate = state.Chase;
-            Debug.Log("playerDetected");
-            notifyNearbyEnemies();
-        }
+        // Collider2D[] objectInRange = Physics2D.OverlapCircleAll(transform.position, detectionRadius);
+        // if (objectInRange.Contains(player.GetComponent<Collider2D>()))
+        // {
+        //     Controls.onMoveEvent -= checkForPlayerInRoom;
+        //     currentstate = state.Chase;
+        //     Debug.Log("playerDetected");
+        //     notifyNearbyEnemies();
+        // }
+        // Vector3 playerPos = PlayerStats.Instance.gameObject.transform.position;
+        // if(room.Contains(new Vector3Int((int)playerPos.x, (int)playerPos.y)))
+        // {
+        //     currentstate = state.Chase;
+        //     Debug.Log("playerDetected");
+        // }
+    
     }
 
     protected void notifyNearbyEnemies()

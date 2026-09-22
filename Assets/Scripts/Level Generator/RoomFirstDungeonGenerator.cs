@@ -15,16 +15,16 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
     [SerializeField] private int minHeight;
     [SerializeField] private int numberOfRooms;
     [SerializeField] private TilePlacer tilePlacer;
-    [SerializeField] private GameObject spawnPoint;
+    
+    [SerializeField] private GameObject player;
     [SerializeField] private GameObject[] enemies;
-    public static int gridSize = 500;
-    public Grid grid = new Grid(gridSize, gridSize, 1, new Vector3 (-gridSize/2, -gridSize/2));
+    public int gridSize = 500;
+    public Grid grid;
     
     void Start()
     {
-        generateDungeon();
-        //generateBranchingDungeon();
-        
+        grid = new Grid(gridSize, gridSize, 1, new Vector3 (-gridSize/2, -gridSize/2));
+        generateBranchingDungeon();     
         
     }
 
@@ -41,26 +41,36 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
     public void generateBranchingDungeon()
     {
         tilePlacer.clear();
-        List<Rooms> rooms = ProceduralGenerationAlgorithm.BrachingRooms(5, numberOfRooms);
+        List<Rooms> rooms = ProceduralGenerationAlgorithm.BrachingRooms(5, numberOfRooms, gridSize);
         List<BoundsInt> roomsSpace = new List<BoundsInt>();
+        TurnManager.Instance.numberofRooms = rooms.ToArray().Length;
+        TurnManager.Instance.initialize();
+        
         for (int i = 0; i < rooms.Count; i++)
         {
+            Debug.Log(rooms[i].body);
             roomsSpace.Add(rooms[i].body);
+            TurnManager.Instance.rooms[i] = rooms[i].body;
             if(rooms[i].type == "Starting")
             {
-                Instantiate(spawnPoint, rooms[i].body.center, quaternion.identity, gameObject.transform);
-                
+                GameObject instance = Instantiate(player, rooms[i].body.center-new Vector3(0.5f, 0.5f), quaternion.identity);
+                instance.GetComponent<Controls>().grid = grid;
+                EntityManager.Instance.RegisterEntity(instance, new Vector2Int((int) rooms[i].body.center.x, (int) rooms[i].body.center.y));
             }
             
         }
+        
         tilePlacer.PlaceTiles(roomsSpace, grid);
         tilePlacer.generateLootTiles(roomsSpace, grid);
-        tilePlacer.branchingCorridors(rooms, grid);
+        tilePlacer.branchingCorridors(rooms, grid, 10);
+        tilePlacer.fillWater(grid);
+
         spawnEnemies(roomsSpace);
     }
 
     private void spawnEnemies(List<BoundsInt> roomsSpace)
     {
+        int n = 0;
         GameObject[] oldEnemies = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (GameObject oldEnemy in oldEnemies)
         {
@@ -69,24 +79,19 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         foreach (BoundsInt room in roomsSpace)
         {
             
-            int amountToSpawn = Random.Range(0, 11);
-            if(amountToSpawn >= 5 && amountToSpawn <= 8)
+            int amountToSpawn = Random.Range(0, 2);
+            for(int i = 0; i < amountToSpawn; i++)
             {
                 int type = Random.Range(0, enemies.Length);
-                float x = Random.Range(room.xMin+3, room.xMax-3);
-                float y = Random.Range(room.yMin+3, room.yMax-3);
+                int x = Random.Range(room.xMin+3, room.xMax-3);
+                int y = Random.Range(room.yMin+3, room.yMax-3);
                 GameObject newEnemy = Instantiate(enemies[type], new Vector3(x, y), quaternion.identity);
+                EnemyBehavior enemy =  newEnemy.GetComponent<EnemyBehavior>();
+                enemy.room = room;
+                EntityManager.Instance.RegisterEntity(newEnemy, new Vector2Int(x, y));
+                TurnManager.Instance.AllEnemies[n].Add(enemy);
             }
-            else if(amountToSpawn > 8)
-            {
-                int type = Random.Range(0, enemies.Length);
-                float x = Random.Range(room.xMin+3, room.xMax-3);
-                float y = Random.Range(room.yMin+3, room.yMax-3);
-                GameObject newEnemy = Instantiate(enemies[type], new Vector3(x, y), quaternion.identity);
-                x = Random.Range(room.xMin+1, room.xMax-1);
-                y = Random.Range(room.yMin+1, room.yMax-1);
-                newEnemy = Instantiate(enemies[type], new Vector3(x, y), quaternion.identity);
-            }
+            n++;
         }
     }
 }

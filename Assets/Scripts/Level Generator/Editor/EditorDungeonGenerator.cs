@@ -16,7 +16,7 @@ public class EditorDungeonGenerator : Editor
     void Awake()
     {
         generator = (RoomFirstDungeonGenerator)target;
-        perlinNoiseMap = (PerlinNoiseMap)target;
+        //perlinNoiseMap = (PerlinNoiseMap)target;
     }
 
 
@@ -34,7 +34,7 @@ public class EditorDungeonGenerator : Editor
         
         if (GUILayout.Button("Create Perlin Noise Map"))
         {
-            perlinNoiseMap.GenerateMap();
+            //perlinNoiseMap.GenerateMap();
         }
     }
     

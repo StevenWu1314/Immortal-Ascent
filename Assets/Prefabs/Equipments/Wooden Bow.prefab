@@ -54,4 +54,5 @@ MonoBehaviour:
   itemDisplay: {fileID: 0}
   damage: 10
   equipedIcon: {fileID: 0}
-  range: 1
+  ranged: 1
+  range: 10

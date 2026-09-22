@@ -89,13 +89,13 @@ public static class ProceduralGenerationAlgorithm
 
     }
 
-    public static List<Rooms> BrachingRooms(int minRooms, int maxRooms)
+    public static List<Rooms> BrachingRooms(int minRooms, int maxRooms, int gridSize)
     {
         int numberOfRooms = Random.Range(minRooms,  maxRooms);
 
         List<Rooms> rooms = new List<Rooms>();
         Queue<Rooms> roomsQue = new Queue<Rooms>();
-        Rooms room = new Rooms(new BoundsInt(0, 0, -10, 11, 11, 20), new Vector2(0, 0));
+        Rooms room = new Rooms(new BoundsInt(gridSize/2, gridSize/2, -10, 11, 11, 20), new Vector2(0, 0));
         
         room.setType("Starting");
         rooms.Add(room);
@@ -117,6 +117,11 @@ public static class ProceduralGenerationAlgorithm
                 {
                     direction = Random.Range(1, numberBranch); 
                     Rooms branchedRoom = workingRoom.Branch(availableSpace[direction]);
+                    if(branchedRoom.body.xMin <= 0 || branchedRoom.body.y <= 0 || branchedRoom.body.xMax >= gridSize || branchedRoom.body.yMax >= gridSize)
+                    {
+                        workingRoom.setConnected(availableSpace[direction], false);
+                        break;
+                    }
                     foreach(Rooms test in rooms)
                     {
                         if(test != branchedRoom)
