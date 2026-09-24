@@ -15,6 +15,10 @@ public class RangeAttackTilemap : MonoBehaviour
     PlayerStats player;
     public bool overlaying;
     Vector3Int prevPos;
+    // The cell currently drawn with highlightedTile, or null when nothing is highlighted.
+    // Using a nullable instead of a sentinel cell avoids writing a stray tile at a huge
+    // coordinate (which also explodes tilemap.cellBounds).
+    Vector3Int? lastHighlighted;
     // Start is called before the first frame update
     void Start()
     {
@@ -34,6 +38,14 @@ public class RangeAttackTilemap : MonoBehaviour
                 tilemap.SetTile(prevPos, overlayTile);
                 tilemap.SetTile(clickCell, highlightedTile);
                 prevPos = clickCell;
+                lastHighlighted = clickCell;
+            }
+            else if (lastHighlighted.HasValue)
+            {
+                // Cursor left the in-range area: restore the tile so no stale highlight
+                // is left painted where the player is no longer pointing.
+                tilemap.SetTile(lastHighlighted.Value, overlayTile);
+                lastHighlighted = null;
             }
         }
     }
@@ -169,19 +181,39 @@ public class RangeAttackTilemap : MonoBehaviour
     public void clearPrev()
     {
         tilemap.ClearAllTiles();
+        lastHighlighted = null;   // the highlight tile is gone with the rest
     }
 
-    public void overlay()
+    /// <summary>Enter aiming: clear, redraw the in-range area and start cursor tracking.</summary>
+    public void ShowOverlay()
     {
-        Debug.Log("Overlaying");
         clearPrev();
         DisplayCurrent();
-        overlaying = !overlaying;
-        
+        overlaying = true;
+    }
+
+    /// <summary>Leave aiming: stop tracking and remove every preview tile.</summary>
+    public void HideOverlay()
+    {
+        overlaying = false;
+        clearPrev();
+    }
+
+    /// <summary>Redraw the preview without changing whether aiming is active.</summary>
+    public void RefreshOverlay()
+    {
+        if (!overlaying)
+        {
+            return;
+        }
+        clearPrev();
+        DisplayCurrent();
     }
 
     public bool InRange(Vector3Int selectedTile)
     {
-        return (tilemap.GetTile(selectedTile) != null);
+        // Only tiles the preview actually painted count as targetable, so this stays a
+        // true range test rather than "a cell inside the tilemap bounds".
+        return tilemap.GetTile(selectedTile) != null;
     }
 }

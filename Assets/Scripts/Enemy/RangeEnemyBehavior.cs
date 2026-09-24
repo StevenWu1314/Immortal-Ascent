@@ -85,10 +85,8 @@ public class RangeEnemyBehavior : EnemyBehavior
         {
             Vector2Int nextCell = enemyCell + step;
             // Step 1: check static grid
-            int terrain = grid.GetValueAtLocation(nextCell.x, nextCell.y);
-            bool walkable = (terrain == 0 || terrain == 5); // grass or bridge
-
-            if (!walkable) continue; // try next direction
+            // Step 1: walkable terrain AND still on this enemy's own island.
+            if (!CanStepOnto(nextCell)) continue; // try next direction
 
             // Step 2: check entity layer
             if (EntityManager.Instance.IsOccupied(nextCell))
@@ -141,8 +139,7 @@ public class RangeEnemyBehavior : EnemyBehavior
                     Vector2Int candidate = enemyCell + strafeDir;
                     Vector2Int opposite  = enemyCell - strafeDir;
 
-                    int t = grid.GetValueAtLocation(candidate.x, candidate.y);
-                    bool candWalkable = (t == 0);
+                    bool candWalkable = CanStepOnto(candidate);
 
                     if (candWalkable && !EntityManager.Instance.IsOccupied(candidate))
                     {
@@ -151,8 +148,7 @@ public class RangeEnemyBehavior : EnemyBehavior
                     }
                     else
                     {
-                        t = grid.GetValueAtLocation(opposite.x, opposite.y);
-                        bool oppWalkable = (t == 0 || t == 5);
+                        bool oppWalkable = CanStepOnto(opposite);
                         if (oppWalkable && !EntityManager.Instance.IsOccupied(opposite))
                             nextCell = opposite;
                         else
@@ -210,10 +206,8 @@ public class RangeEnemyBehavior : EnemyBehavior
         {
             Vector2Int nextCell = enemyCell + step;
             // Step 1: check static grid
-            int terrain = grid.GetValueAtLocation(nextCell.x, nextCell.y);
-            bool walkable = (terrain == 0 || terrain == 5); // grass or bridge
-
-            if (!walkable) continue; // try next direction
+            // Step 1: walkable terrain AND still on this enemy's own island.
+            if (!CanStepOnto(nextCell)) continue; // try next direction
 
             // Step 2: check entity layer
             if (EntityManager.Instance.IsOccupied(nextCell))

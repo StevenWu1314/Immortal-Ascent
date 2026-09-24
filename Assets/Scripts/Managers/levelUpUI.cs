@@ -60,6 +60,7 @@ public class levelUpUI : MonoBehaviour
 
     public void recordStr()
     {
+        if (points <= 0) return;
         pointsAssigned.x++;
         playerStats.increaseStrength();
         points--;
@@ -67,12 +68,14 @@ public class levelUpUI : MonoBehaviour
 
     public void recordDex()
     {
+        if (points <= 0) return;
         pointsAssigned.y++;
         playerStats.increaseDexterity();
         points--;
     }
     public void recordHealth()
     {
+        if (points <= 0) return;
         pointsAssigned.z += 10;
         playerStats.increaseMaxHealth();
         points--;
@@ -88,9 +91,12 @@ public class levelUpUI : MonoBehaviour
         {
             playerStats.decreaseDexterity();
         }
-        for(int i = 0; i < pointsAssigned.z; i++)
+        // pointsAssigned.z is a health AMOUNT (10 per point), not an iteration count.
+        // Looping it as a count ran 10x too many times and also depended on the magic 10
+        // appearing in two places.
+        if (pointsAssigned.z > 0)
         {
-            playerStats.decreaseMaxHealth(1);
+            playerStats.decreaseMaxHealth(pointsAssigned.z);
         }
         pointsAssigned = new Vector3Int(0, 0, 0);
         points = 5;

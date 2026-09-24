@@ -46,8 +46,12 @@ public class EntityManager : MonoBehaviour
                 {
                     entityGrid.TryGetValue(newCell, out var enemy);
                     if (enemy.GetComponent<Enemy>() != null)
-                        entity.GetComponent<PlayerStats>().attack("melee", enemy.GetComponent<Enemy>());
-
+                        if(entity.GetComponent<Controls>().swordDrawn)
+                            entity.GetComponent<PlayerStats>().attack("melee", enemy.GetComponent<Enemy>());
+                        else
+                        {
+                            Debug.Log("You do not have a sword drawn");
+                        }
                 }
             }
             else
@@ -78,6 +82,9 @@ public class EntityManager : MonoBehaviour
         entityGrid.TryGetValue(cell, out var entity);
         return entity;
     }
+
+    /// <summary>Read-only view of every registered entity, keyed by cell.</summary>
+    public IReadOnlyDictionary<Vector2Int, GameObject> AllEntities => entityGrid;
 
     /// <summary> Check if a cell is occupied. </summary>
     public bool IsOccupied(Vector2Int cell)

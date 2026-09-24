@@ -69,13 +69,35 @@ public class PlayerStats : MonoBehaviour{
    
     public void attack(string form, Enemy target)
     {
-        Debug.Log(target);
+        if (target == null)
+        {
+            Debug.LogWarning("PlayerStats.attack called with a null target; ignoring.");
+            return;
+        }
+        if (equipments == null)
+        {
+            Debug.LogError("PlayerStats: no Equipments assigned.");
+            return;
+        }
+
         switch (form){
             case "melee":
-                target.takeDamage(strength + equipments.meleeWeapon.getDamage() + temporaryStatAdjustments[0, 0]);
+                if (equipments.meleeWeapon == null)
+                {
+                    UIManager.Instance.DrawFlowupText("No melee weapon equipped", transform.position);
+                    return;
+                }
+                // No temporary-adjustment term: increaseStatTemp already folds the bonus
+                // into `strength`, so adding it again doubled every elixir's effect.
+                target.takeDamage(strength + equipments.meleeWeapon.getDamage());
                 break;
             case "range":
-                target.takeDamage(dexterity + equipments.rangeWeapon.getDamage() + temporaryStatAdjustments[1, 0]);
+                if (equipments.rangeWeapon == null)
+                {
+                    UIManager.Instance.DrawFlowupText("No ranged weapon equipped", transform.position);
+                    return;
+                }
+                target.takeDamage(dexterity + equipments.rangeWeapon.getDamage());
                 break;        
            }
     }
@@ -213,44 +235,71 @@ public class PlayerStats : MonoBehaviour{
 
     public void increaseStatTemp(string stat, int amount, int duration)
     {
+        int index;
         switch (stat)
         {
-            case "Strength":
-                temporaryStatAdjustments[0, 0] = amount;
-                temporaryStatAdjustments[0, 1] = duration;
-                strength += amount;
-                break;
-            case "Dexterity":
-                temporaryStatAdjustments[1, 0] = amount;
-                temporaryStatAdjustments[1, 1] = duration;
-                dexterity += amount;
-                break;
-            case "Max Health":
-                temporaryStatAdjustments[2, 0] = amount;
-                temporaryStatAdjustments[2, 1] = duration;
-                MaxHealth += amount;
-                break;
+            case "Strength":   index = 0; break;
+            case "Dexterity":  index = 1; break;
+            case "Max Health": index = 2; break;
+            default:
+                Debug.LogWarning($"increaseStatTemp: unknown stat '{stat}'");
+                return;
         }
-        
+
+        // Re-applying a buff of the same kind must not stack its bonus additively.
+        // Remove whatever is still active first, then apply the new value.
+        RevertTempStat(index);
+
+        temporaryStatAdjustments[index, 0] = amount;
+        temporaryStatAdjustments[index, 1] = duration;
+
+        switch (index)
+        {
+            case 0: strength += amount; break;
+            case 1: dexterity += amount; break;
+            case 2: increaseMaxHealth(amount); break;
+        }
     }
 
+    private void RevertTempStat(int index)
+    {
+        int applied = temporaryStatAdjustments[index, 0];
+        temporaryStatAdjustments[index, 0] = 0;
+        temporaryStatAdjustments[index, 1] = 0;
+        if (applied == 0)
+        {
+            return;
+        }
+        switch (index)
+        {
+            case 0: strength -= applied; break;
+            case 1: dexterity -= applied; break;
+            case 2: decreaseMaxHealth(applied); break;
+        }
+    }
+
+    /// <summary>
+    /// Remaining turns per buff: [0,*] = Strength, [1,*] = Dexterity, [2,*] = Max Health.
+    /// temporaryStatAdjustments[stat, 0] holds the amount to revert when the timer expires.
+    /// </summary>
     void tickdownBuffs(Controls controls)
     {
-        if (temporaryStatAdjustments[0, 1] > 0)
+        for (int stat = 0; stat < 3; stat++)
         {
-            temporaryStatAdjustments[0, 1]--;
-            if (temporaryStatAdjustments[0, 1] == 0)
+            if (temporaryStatAdjustments[stat, 1] <= 0)
             {
-                strength -= temporaryStatAdjustments[0, 0];
+                continue;
             }
-        }
-        if (temporaryStatAdjustments[1, 1] > 0)
-        {
-            temporaryStatAdjustments[1, 1]--;
-            if (temporaryStatAdjustments[1, 1] == 0)
+
+            temporaryStatAdjustments[stat, 1]--;
+            if (temporaryStatAdjustments[stat, 1] > 0)
             {
-                dexterity -= temporaryStatAdjustments[1, 0];
+                continue;
             }
+
+            // Expired: revert the amount that was actually applied. Includes index 2
+            // (Max Health), which used to be skipped entirely, making that buff permanent.
+            RevertTempStat(stat);
         }
     }
     internal void increaseExp(int expValue)

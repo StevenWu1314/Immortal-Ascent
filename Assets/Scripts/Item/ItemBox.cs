@@ -19,15 +19,15 @@ public class ItemBox : MonoBehaviour, IPointerClickHandler
             image = transform.Find("slot").transform.Find("Item").GetComponent<Image>();
         }
         this.item = item;
-        image.sprite = item.getSprite();
+        // null must be handled before touching item, otherwise this throws.
         if (item == null)
         {
-            image.color = new Color(255, 255, 255, 0);
+            image.sprite = null;
+            image.color = Color.clear;
+            return;
         }
-        else
-        {
-            image.color = new Color(255, 255, 255, 1);
-        }
+        image.sprite = item.getSprite();
+        image.color = Color.white;
     }
 
     public void OnPointerClick(PointerEventData eventData)

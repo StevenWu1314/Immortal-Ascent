@@ -82,9 +82,9 @@ public class PerlinNoiseMap : MonoBehaviour
 
     private void Start()
     {
-        grid = new Grid(map_width, map_height, 1, new Vector3(0, 0, 0));
         resourceClusterCenters = new List<Vector3Int>();    
-        Debug.Log(grid);
+        // Grid creation is handled by InitializeGame() (called from GenerateMap) so
+        // that an existing correctly-sized grid can be reused rather than replaced.
         GenerateMap();
     }
 
@@ -176,8 +176,14 @@ public class PerlinNoiseMap : MonoBehaviour
         // Guard magnification
         magnification = Mathf.Max(0.0001f, magnification);
 
-        // Construct your gameplay grid (custom class in your project)
-
+        // This component owns the level grid. If one already exists with the right
+        // dimensions (e.g. the scene also holds a dungeon generator that created it),
+        // reuse it so that every consumer shares a single coordinate space.
+        if (grid == null || grid.Width != map_width || grid.Height != map_height)
+        {
+            grid = new Grid(map_width, map_height, 1, new Vector3(0, 0, 0));
+        }
+        Grid.Current = grid;
 
         // Wire the player to the grid if present
 
@@ -951,13 +957,104 @@ public class PerlinNoiseMap : MonoBehaviour
 
     private Vector3Int FindRandomLandTile()
     {
-        while (true)
+        // Bounded: an unconstrained loop here hangs the editor if the map has no land
+        // (e.g. waterThreshold = 1, or every land cell is rejected by the caller).
+        const int maxAttempts = 10000;
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
             int x = UnityEngine.Random.Range(0, map_width);
             int y = UnityEngine.Random.Range(0, map_height);
 
             if (noiseGrid[x][y] == 0) // land tile
                 return new Vector3Int(x, y, 0);
+        }
+
+        Debug.LogWarning("FindRandomLandTile: no land tile found; falling back to map centre.");
+        return new Vector3Int(map_width / 2, map_height / 2, 0);
+    }
+
+    /// <summary>
+    /// Pick a spawn cell the player can actually move in: the grid value must be walkable
+    /// (that is what movement checks) and at least one orthogonal neighbour must be
+    /// walkable too, so the player is never boxed in on the first frame.
+    /// </summary>
+    private Vector3Int FindWalkableSpawnTile()
+    {
+        Vector3Int best = new Vector3Int(-1, -1, 0);
+        int bestScore = -1;
+
+        // Sample rather than scanning the whole map, and keep the best candidate found.
+        const int samples = 4000;
+        for (int attempt = 0; attempt < samples; attempt++)
+        {
+            int x = UnityEngine.Random.Range(0, map_width);
+            int y = UnityEngine.Random.Range(0, map_height);
+
+            if (!Grid.IsWalkableTerrain(grid.GetValueAtLocation(x, y)))
+            {
+                continue;
+            }
+            if (CollidablePlantTileMap != null && CollidablePlantTileMap.GetTile(new Vector3Int(x, y, 0)) != null)
+            {
+                continue;
+            }
+            if (EntityManager.Instance != null &&
+                EntityManager.Instance.GetEntityAt(new Vector2Int(x, y)) != null)
+            {
+                continue;
+            }
+
+            int walkableNeighbours = 0;
+            if (Grid.IsWalkableTerrain(grid.GetValueAtLocation(x + 1, y))) walkableNeighbours++;
+            if (Grid.IsWalkableTerrain(grid.GetValueAtLocation(x - 1, y))) walkableNeighbours++;
+            if (Grid.IsWalkableTerrain(grid.GetValueAtLocation(x, y + 1))) walkableNeighbours++;
+            if (Grid.IsWalkableTerrain(grid.GetValueAtLocation(x, y - 1))) walkableNeighbours++;
+
+            if (walkableNeighbours > bestScore)
+            {
+                bestScore = walkableNeighbours;
+                best = new Vector3Int(x, y, 0);
+            }
+            if (walkableNeighbours == 4)
+            {
+                break; // can't do better
+            }
+        }
+
+        if (bestScore < 0)
+        {
+            Debug.LogWarning("FindWalkableSpawnTile: no walkable spawn cell found; using map centre.");
+            best = new Vector3Int(map_width / 2, map_height / 2, 0);
+        }
+        return best;
+    }
+
+    /// <summary>
+    /// Guarantee the 3x3 block around a cell is passable on the grid (the authority for
+    /// movement). Used for the player spawn so generation can never trap them.
+    /// </summary>
+    private void ClearSpawnArea(Vector3Int centre)
+    {
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                int x = centre.x + dx;
+                int y = centre.y + dy;
+                if (!InBounds(x, y))
+                {
+                    continue;
+                }
+                grid.SetValueAtLocation(x, y, 0);
+                if (tilemap != null && terrainTiles != null && terrainTiles.Length > 0)
+                {
+                    tilemap.SetTile(new Vector3Int(x, y, 0), terrainTiles[0]);
+                }
+                if (CollidablePlantTileMap != null)
+                {
+                    CollidablePlantTileMap.SetTile(new Vector3Int(x, y, 0), null);
+                }
+            }
         }
     }
 
@@ -999,13 +1096,11 @@ public class PerlinNoiseMap : MonoBehaviour
         }
         else if (player != null )
         {
-            var spawn = FindRandomLandTile();
-            while(CollidablePlantTileMap.GetTile(spawn) != null)
-            {
-                spawn = FindRandomLandTile();
-            }
-            while (EntityManager.Instance.GetEntityAt(new Vector2Int(spawn.x, spawn.y)) != null)
-                    spawn = FindRandomLandTile();
+            // Pick a cell the movement code will actually accept, and clear its 3x3
+            // neighbourhood so generation cannot box the player in.
+            Vector3Int spawn = FindWalkableSpawnTile();
+            ClearSpawnArea(spawn);
+
             if(PlayerStats.Instance == null)
             {
                 player = Instantiate(player, spawn, quaternion.identity);

@@ -24,12 +24,64 @@ public class EnemyBehavior : MonoBehaviour
     public enum state {Idle, Chase, Return}
     public state currentstate;
 
+    private int homeIsland = int.MinValue;
+
+    /// <summary>
+    /// The island this enemy spawned on. Resolved lazily because islands are built after
+    /// enemies are spawned. An enemy never leaves its own island, so it can never wander
+    /// across a bridge onto the player's island (which would lock the player out of leaving).
+    /// </summary>
+    protected int HomeIsland
+    {
+        get
+        {
+            // Only cache once the island map exists. Caching -1 while islands are still being
+            // built would permanently convince this enemy it has no island.
+            if (homeIsland == int.MinValue && IslandManager.IsInitialized)
+            {
+                homeIsland = IslandManager.GetIsland(transform.position);
+            }
+            return homeIsland == int.MinValue ? -1 : homeIsland;
+        }
+    }
+
+    /// <summary>
+    /// May this enemy step onto <paramref name="cell"/>? Combines the terrain check with the
+    /// island confinement rule so both chase and return use one gate.
+    /// </summary>
+    protected bool CanStepOnto(Vector2Int cell)
+    {
+        if (grid == null)
+        {
+            return false;
+        }
+        if (!Grid.IsWalkableTerrain(grid.GetValueAtLocation(cell.x, cell.y)))
+        {
+            return false;
+        }
+        // HomeIsland < 0 means this enemy spawned on a non-walkable cell, so it has no island
+        // to be confined to; fall back to the terrain check alone rather than wandering freely.
+        if (HomeIsland < 0)
+        {
+            return true;
+        }
+        // Stay within the room itself. This allows pursuing the player through a doorway the
+        // corridor carved open, while never stepping into the corridor beyond it.
+        return IslandManager.IsPartOfRoom(cell, HomeIsland);
+    }
+
     protected void OnEnable()
     {
         Controls.onMoveEvent += checkForPlayerInRoom;
         Controls.onMoveEvent += queup;
-        //grid = FindObjectOfType<PerlinNoiseMap>().grid;
-        grid = FindObjectOfType<RoomFirstDungeonGenerator>().grid;
+        // The level grid has exactly one owner. Read it from Grid.Current instead of
+        // searching the scene for a specific generator: the world-map scene has no
+        // RoomFirstDungeonGenerator at all, and its grid uses different dimensions
+        // and origin from the dungeon generator's grid.
+        if (grid == null)
+        {
+            grid = Grid.Current;
+        }
         spawnPos = this.transform.position;
     }
 
@@ -48,24 +100,33 @@ public class EnemyBehavior : MonoBehaviour
     }
     protected void checkForPlayerInRoom(Controls controls)
     {
-        // Debug.Log("checking for player");
-        // Debug.Log(detectionRadius + " contains: " + new Vector3Int((int)player.transform.position.x, (int)player.transform.position.y));
-        // Debug.Log(detectionRadius.Contains(new Vector3Int((int)player.transform.position.x, (int)player.transform.position.y)));
-        // Collider2D[] objectInRange = Physics2D.OverlapCircleAll(transform.position, detectionRadius);
-        // if (objectInRange.Contains(player.GetComponent<Collider2D>()))
-        // {
-        //     Controls.onMoveEvent -= checkForPlayerInRoom;
-        //     currentstate = state.Chase;
-        //     Debug.Log("playerDetected");
-        //     notifyNearbyEnemies();
-        // }
-        // Vector3 playerPos = PlayerStats.Instance.gameObject.transform.position;
-        // if(room.Contains(new Vector3Int((int)playerPos.x, (int)playerPos.y)))
-        // {
-        //     currentstate = state.Chase;
-        //     Debug.Log("playerDetected");
-        // }
-    
+        if (currentstate != state.Idle || player == null)
+        {
+            return;
+        }
+
+        // Islands are the authority when available: this enemy engages only when the player
+        // has actually set foot on the island this enemy spawned on.
+        if (IslandManager.IsInitialized)
+        {
+            int home = HomeIsland;
+            if (home >= 0)
+            {
+                if (IslandManager.GetIsland(player.transform.position) == home)
+                {
+                    becomeAlerted();
+                }
+                return;
+            }
+        }
+
+        // Fallback used only when islands are unavailable, so a level generated without them
+        // still has some way to wake enemies up.
+        if (detectionRadius > 0f &&
+            Vector3.Distance(transform.position, player.transform.position) <= detectionRadius)
+        {
+            becomeAlerted();
+        }
     }
 
     protected void notifyNearbyEnemies()
@@ -92,6 +153,19 @@ public class EnemyBehavior : MonoBehaviour
 
     public virtual void takeTurn()
     {
+        // Safety net: if this enemy somehow ends up off its own island (knockback, a bug in
+        // the movement code), walk it home instead of leaving it stranded on the player's
+        // island where it would lock the exit.
+        if (IslandManager.IsInitialized && HomeIsland >= 0)
+        {
+            int here = IslandManager.GetIsland(transform.position);
+            if (here >= 0 && here != HomeIsland)
+            {
+                returnToSpawn();
+                return;
+            }
+        }
+
         if (currentstate == state.Idle)
         {
             return;
@@ -150,11 +224,8 @@ public class EnemyBehavior : MonoBehaviour
         foreach (var step in steps)
         {
             Vector2Int nextCell = enemyCell + step;
-            // Step 1: check static grid
-            int terrain = grid.GetValueAtLocation(nextCell.x, nextCell.y);
-            bool walkable = (terrain == 0 || terrain == 5); // grass or bridge
-
-            if (!walkable) continue; // try next direction
+            // Step 1: walkable terrain AND still on this enemy's own island.
+            if (!CanStepOnto(nextCell)) continue; // try next direction
 
             // Step 2: check entity layer
             if (EntityManager.Instance.IsOccupied(nextCell))
@@ -217,11 +288,8 @@ public class EnemyBehavior : MonoBehaviour
         foreach (var step in steps)
         {
             Vector2Int nextCell = enemyCell + step;
-            // Step 1: check static grid
-            int terrain = grid.GetValueAtLocation(nextCell.x, nextCell.y);
-            bool walkable = (terrain == 0 || terrain == 5); // grass or bridge
-
-            if (!walkable) continue; // try next direction
+            // Step 1: walkable terrain AND still on this enemy's own island.
+            if (!CanStepOnto(nextCell)) continue; // try next direction
 
             // Step 2: check entity layer
             if (EntityManager.Instance.IsOccupied(nextCell))

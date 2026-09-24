@@ -1,0 +1,159 @@
+# Unity game-coding agent preset for the "Rogue Asian Fantasy" project.
+#
+# Installed as a workspace bundle. It inserts one `@deepseek-ai/dsh-agent-preset`
+# declaration, which the Web GUI picks up from the preset registry as the
+# "Unity Game Dev" option when a session is created.
+#
+# Project-specific Unity knowledge lives in the companion skill under
+# `skills/unity-rogue-asian-fantasy/SKILL.md`, loaded by the `skill-filesystem`
+# row below. Edit that skill to change how the agent codes; edit this file to
+# change which plugins the preset mounts.
+- insert:
+    - id: preset-unity
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: unity
+        name: Unity Game Dev
+        description: >-
+          Codes the Rogue Asian Fantasy Unity project: C# gameplay, turn system,
+          procedural dungeon generation, and ScriptableObject content.
+        order: 2
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              suffix: Your working directory is {{cwd}}.
+              prefix: |
+                You are the gameplay engineer for "Rogue Asian Fantasy", a turn-based
+                2D roguelike dungeon crawler built in Unity 2022.3.62f2 (URP, 2D
+                feature set, Tilemap, TextMeshPro, UGUI, legacy Input API).
+
+                The `unity-rogue-asian-fantasy` skill is your authority on this
+                codebase. Load it before changing gameplay code. It records the grid
+                and turn contracts, the terrain codes, the scene wiring rules, which
+                directories are third-party and off-limits, and the exact commands
+                that compile-check and test the project.
+
+                Apply these defaults, overriding them only with a reason you state:
+
+                - Work in C#, never in `.unity`, `.prefab`, `.asset`, or `.meta` files.
+                  Those are Unity-editor-owned, machine-authored, and merge-hostile.
+                  When a change genuinely needs scene or prefab wiring, make the C#
+                  side ready and then tell the user the exact editor steps to perform.
+                - Read the surrounding systems before editing. Manager singletons,
+                  the static event channels, and the grid owner are shared contracts;
+                  changing one without its call sites breaks the game silently.
+                - Prefer the smallest change that satisfies the request. This project
+                  is mid-development with placeholder code, so match the local style
+                  of the file you touch instead of refactoring it toward a taste.
+                - Keep the public API you were not asked to change. Gameplay bugs here
+                  come from changed signatures and reordered event subscriptions.
+                - Verify with the project's compile check before reporting success, and
+                  say plainly what you ran and what you could not run. Never claim the
+                  game works in the editor when you only compiled it.
+                - Prefer the project's own vocabulary in names and comments, and avoid
+                  renaming existing serialized fields, because their values live in
+                  prefabs and scenes as field-name keyed data.
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+            config:
+              # Absolute, because a relative path here resolves against the dsh
+              # profile directory (ctx.baseUrl), not against this bundle.
+              # Re-point this one line if the project directory moves.
+              customSkillDirs:
+                - /Users/stevenwu/Documents/GitHub/Rogue Asian Fantasy/Tools/dsh-unity-preset/skills
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+            disabled: !!js process.platform === 'win32'
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: tool-jobs
+            name: '@deepseek-ai/dsh-tool-jobs'
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+          - id: present
+            name: '@deepseek-ai/dsh-tool-present'
+          - id: command-goal
+            name: '@deepseek-ai/dsh-command-goal'
+          - id: tool-goal
+            name: '@deepseek-ai/dsh-tool-goal'
+          - id: planning
+            name: cordis:group
+            group: true
+            isolate:
+              planMode: true
+            config:
+              - id: plan-mode
+                name: '@deepseek-ai/dsh-plan-mode'
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: delegation
+            name: cordis:group
+            group: true
+            isolate:
+              workflowEngine: true
+            config:
+              - id: tool-subagent-control
+                name: '@deepseek-ai/dsh-tool-subagent-control'
+              - id: tool-subagent-list-agents
+                name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+              - id: tool-subagent
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: spawn
+                  toolName: subagent
+                  modelSelectionSettings: true
+                  backgroundMode: continuable
+              - id: tool-subagent-fork
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: fork
+                  toolName: subagent_fork
+                  backgroundMode: continuable
+              - id: workflow-ptc
+                name: '@deepseek-ai/dsh-workflow-ptc'
+                config:
+                  provider: spawn
+              - id: tool-workflow
+                name: '@deepseek-ai/dsh-tool-workflow'
+          - id: tool-cordis
+            name: '@deepseek-ai/dsh-tool-cordis'
+          - id: tool-plugin-manager
+            name: '@deepseek-ai/dsh-plugin-manager/tools'

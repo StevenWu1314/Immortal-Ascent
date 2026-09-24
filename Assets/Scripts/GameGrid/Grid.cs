@@ -1,4 +1,3 @@
-using Unity.Mathematics;
 using UnityEngine;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
@@ -13,6 +12,23 @@ public class Grid
     public delegate void genLoot();
     public static event genLoot chestOpen;
 
+    /// <summary>
+    /// Value reported for any cell outside the grid. Counts as blocked so that
+    /// callers (enemy AI, the player) treat the map edge as a wall instead of
+    /// reading past the end of the array.
+    /// </summary>
+    public const int OutOfBounds = 1;
+
+    /// <summary>
+    /// The grid currently backing the level. Exactly one component should own the
+    /// level grid (see PerlinNoiseMap), and everything else should read it from
+    /// here rather than creating or searching for its own instance.
+    /// </summary>
+    public static Grid Current { get; set; }
+
+    public int Width => width;
+    public int Height => height;
+
     
     public Grid(int width, int height, float cellSize, Vector3 originPosition)
     {
@@ -21,6 +37,7 @@ public class Grid
         this.cellSize = cellSize;
         this.originPosition = originPosition;
         gridArray = new int[width, height];
+        Current = this;
 
 
         // for (int x = 0; x < gridArray.GetLength(0); x++)
@@ -41,6 +58,10 @@ public class Grid
     
     public int GetValueAtLocation(int x, int y)
     {
+        if (!InBounds(x, y))
+        {
+            return OutOfBounds;
+        }
         return gridArray[x, y];
     }
 
@@ -48,13 +69,28 @@ public class Grid
     {
         int x, y;
         getXY(worldPos, out x, out y);
+        if (!InBounds(x, y))
+        {
+            return OutOfBounds;
+        }
         return gridArray[x, y];
     }
     public void SetValueAtLocation(int x, int y, int value)
     {
+        if (!InBounds(x, y))
+        {
+            // Generation code legitimately probes one tile outside the map (e.g. a
+            // bridge widening pass). Silently ignore instead of throwing.
+            return;
+        }
         gridArray[x, y] = value;
         //Debug.Log("x: " + x + " y: " + y);
         //utilityFunction.createWorldText(gridArray[x, y].ToString(), null, GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f, 20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
+    }
+
+    public bool InBounds(int x, int y)
+    {
+        return x >= 0 && y >= 0 && x < width && y < height;
     }
 
     public void SetValueAtWorldLocation(Vector3 location, int value)
@@ -64,6 +100,10 @@ public class Grid
         worldy = (int)location.y;
         int x, y;
         getXY(new Vector3(worldx, worldy), out x, out y);
+        if (!InBounds(x, y))
+        {
+            return;
+        }
         gridArray[x, y] = value;
         utilityFunction.createWorldText(gridArray[x, y].ToString(), null, new Vector3(worldx, worldy) + new Vector3(cellSize, cellSize) * 0.5f, 20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
     }
@@ -72,37 +112,41 @@ public class Grid
         return gridArray.GetLength(dimension);
     }
 
-    private void getXY(Vector3 Pos, out int x, out int y)
+    /// <summary>
+    /// Single definition of "an entity may stand here". Terrain codes are written by
+    /// PerlinNoiseMap/TilePlacer: 0 = grass/floor/corridor, 1 = wall/shallow water,
+    /// 2 = deep water, 5 = bridge (legacy), 99 = chest. Anything unknown is treated
+    /// as blocked so a malformed map cannot silently let entities walk off it.
+    /// </summary>
+    public static bool IsWalkableTerrain(int terrain)
     {
-        if(Pos.x < 0)
-        {
-            Pos = new Vector3(math.floor(Pos.x), Pos.y);
-        }
-        if(Pos.y < 0)
-        {
-            Pos = new Vector3(Pos.x, math.floor(Pos.y));
-        }
-        x = (int)math.floor(Pos.x - originPosition.x);
-        y = (int)math.floor(Pos.y - originPosition.y);
-
+        return terrain == 0 || terrain == 5;
     }
 
+    /// <summary>Grid-aligned cell for a world position, matching the AI's FloorToInt convention.</summary>
+    public static Vector2Int CellFromWorld(Vector3 worldPos)
+    {
+        return new Vector2Int(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.y));
+    }
+
+    private void getXY(Vector3 Pos, out int x, out int y)
+    {
+        x = Mathf.FloorToInt(Pos.x - originPosition.x);
+        y = Mathf.FloorToInt(Pos.y - originPosition.y);
+    }
+
+    /// <summary>
+    /// True when the player may step from their current cell in <paramref name="direction"/>.
+    /// The <paramref name="entity"/> parameter is retained for call-site compatibility; occupancy
+    /// is owned by EntityManager, not by this static terrain grid.
+    /// </summary>
     public bool Move(Vector3 position, Vector2Int direction, Transform entity)
     {
-        int x = (int) position.x;
-        int y = (int) position.y;
-        //getXY(new Vector3(worldx, worldy), out x, out y);
-        int value = gridArray[x, y];
-        Vector2Int targetDirection = new Vector2Int(x, y) + direction;
-        int targetValue = gridArray[targetDirection.x, targetDirection.y];
-        if (targetValue == 0)
-        {
-            return true;
-        }
-        else 
-        {
-            return false;
-        }
+        int x, y;
+        getXY(position, out x, out y);
+        Vector2Int target = new Vector2Int(x, y) + direction;
+        // IsWalkableTerrain(OutOfBounds) is false, so the map edge blocks movement.
+        return IsWalkableTerrain(GetValueAtLocation(target.x, target.y));
     }
 
     public void printGrid() {
@@ -127,22 +171,22 @@ public class Grid
 
     public Enemy detectEnemiesInALine(Vector3 position, Vector2Int direction, int range)
     {
-        float worldx, worldy;
-        worldx = position.x;
-        worldy = position.y;
         int x, y;
-        getXY(new Vector3(worldx, worldy), out x, out y);
+        getXY(position, out x, out y);
         for (int i = 0; i < range; i++)
         {
             x += direction.x;
             y += direction.y;
+            if (!InBounds(x, y))
+            {
+                return null;
+            }
             int value = gridArray[x, y];
             if (value == 3) {
                 Collider2D[] targets = Physics2D.OverlapCircleAll(position + new Vector3(i * direction.x, i * direction.y), 1);
                 Enemy target = null;
                 foreach (Collider2D collider in targets)
                 {
-                    Debug.Log(collider);
                     if (collider.gameObject.GetComponent<Enemy>() != null) {
                     
                         target = collider.gameObject.GetComponent<Enemy>();

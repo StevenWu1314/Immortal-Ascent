@@ -25,24 +25,47 @@ public class Equipments : MonoBehaviour
     
     public void updateEquipment(String type, Item itemToEquip)
     {
+        if (PlayerStats.Instance == null)
+        {
+            Debug.LogError("Equipments: PlayerStats.Instance is null; cannot equip.");
+            return;
+        }
+
         switch (type)
         {
             case "Melee Weapon":
-                //if (meleeWeapon != null) meleeWeapon.equipedIcon.SetActive(false);
-                meleeWeapon = (Weapon)itemToEquip;
-                Debug.Log(meleeWeapon.getName());
+                if (!(itemToEquip is Weapon melee))
+                {
+                    Debug.LogError($"Equipments: '{itemToEquip}' is not a Weapon; cannot equip as melee.");
+                    return;
+                }
+                meleeWeapon = melee;
                 break;
             case "Range Weapon":
-                //if (rangeWeapon != null) rangeWeapon.equipedIcon.SetActive(false);
-                rangeWeapon = (Weapon)itemToEquip;
+                if (!(itemToEquip is Weapon ranged))
+                {
+                    Debug.LogError($"Equipments: '{itemToEquip}' is not a Weapon; cannot equip as ranged.");
+                    return;
+                }
+                rangeWeapon = ranged;
                 break;
             case "Armor":
+                if (!(itemToEquip is Armor newArmor))
+                {
+                    Debug.LogError($"Equipments: '{itemToEquip}' is not an Armor; cannot equip.");
+                    return;
+                }
+                // Remove the old armour's contribution with PlayerStats.Instance rather
+                // than Manager.player, which was never assigned and threw on every swap.
                 if (Armor != null)
                 {
-                    Manager.player.decreaseMaxHealth(Armor.getHealth());
+                    PlayerStats.Instance.decreaseMaxHealth(Armor.getHealth());
                 }
-                Armor = (Armor)itemToEquip;
+                Armor = newArmor;
                 PlayerStats.Instance.increaseMaxHealth(Armor.getHealth());
+                break;
+            default:
+                Debug.LogWarning($"Equipments: unknown equipment type '{type}'");
                 break;
         }
     }

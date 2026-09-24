@@ -23,7 +23,12 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
     
     void Start()
     {
-        grid = new Grid(gridSize, gridSize, 1, new Vector3 (-gridSize/2, -gridSize/2));
+        // Origin MUST stay (0,0): every writer in TilePlacer calls
+        // grid.SetValueAtLocation(x, y, ...) with raw tilemap cell coordinates (0..gridSize),
+        // and entities index the grid with floor(transform.position). A non-zero origin makes
+        // Grid's world->cell conversion (getXY) subtract it, so the player would read terrain
+        // from a cell gridSize/2 away and every move would be blocked by a wall.
+        grid = new Grid(gridSize, gridSize, 1, new Vector3(0, 0, 0));
         generateBranchingDungeon();     
         
     }
@@ -62,10 +67,19 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         
         tilePlacer.PlaceTiles(roomsSpace, grid);
         tilePlacer.generateLootTiles(roomsSpace, grid);
-        tilePlacer.branchingCorridors(rooms, grid, 10);
+        // Corridors must span the gap between rooms (Rooms.distanceApart) plus enough to
+        // punch through the neighbour's wall ring. A length shorter than the gap leaves the
+        // corridor as a dead end and the player can never reach the next island.
+        int corridorLength = (rooms.Count > 0 ? rooms[0].distanceApart : 10);
+        tilePlacer.branchingCorridors(rooms, grid, corridorLength);
         tilePlacer.fillWater(grid);
 
         spawnEnemies(roomsSpace);
+
+        // Islands are assigned explicitly from the room layout rather than inferred from water
+        // connectivity, so they stay correct however far the corridors happen to reach.
+        // Corridor cells become a shared passage: the player may cross them, enemies may not.
+        IslandManager.Rebuild(roomsSpace);
     }
 
     private void spawnEnemies(List<BoundsInt> roomsSpace)
@@ -78,7 +92,7 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         }
         foreach (BoundsInt room in roomsSpace)
         {
-            
+
             int amountToSpawn = Random.Range(0, 2);
             for(int i = 0; i < amountToSpawn; i++)
             {

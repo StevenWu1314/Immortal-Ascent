@@ -412,8 +412,16 @@ public class TilePlacer : MonoBehaviour
             grid.SetValueAtLocation(currentPos.x, currentPos.y, 0);
             for(int i = 0; i < length; i++)
             {
-                //corridor.SetTile(currentPos, floorTile);
-                walls.SetTile(currentPos,null);
+                // This branch only cleared the wall tile and never wrote the grid, so the
+                // corridor stayed blocked on the terrain grid (the authority for movement)
+                // and the room below was unreachable. Mirror the "up" branch.
+                corridor.SetTile(currentPos, bridgeTile);
+                walls.SetTile(currentPos, null);
+                corridor.SetTile(currentPos + new Vector3Int(1, 0), bridgeTile);
+                corridor.SetTile(currentPos + new Vector3Int(-1, 0), bridgeTile);
+                grid.SetValueAtLocation(currentPos.x + 1, currentPos.y, 1);
+                grid.SetValueAtLocation(currentPos.x - 1, currentPos.y, 1);
+                grid.SetValueAtLocation(currentPos.x, currentPos.y, 0);
                 currentPos += new Vector3Int(0, -1, 0);
             }
         }
@@ -455,10 +463,14 @@ public class TilePlacer : MonoBehaviour
         {
             for(int y = 0; y < grid.GetSize(1); y++)
             {
-                if(floor.GetTile(new Vector3Int(x, y)) == null && corridor.GetTile(new Vector3Int(x, y)) == null)
+                Vector3Int cell = new Vector3Int(x, y);
+                if (floor.GetTile(cell) == null && corridor.GetTile(cell) == null)
                 {
-                    floor.SetTile(new Vector3Int(x, y), water);
-                    Debug.Log("placing water");
+                    floor.SetTile(cell, water);
+                    // The grid is the authority for movement, so water must be BLOCKED on it.
+                    // Previously only the tile was drawn, leaving the value at 0 (walkable),
+                    // which made every gap between rooms traversable.
+                    grid.SetValueAtLocation(x, y, 1);
                 }
             }
         }

@@ -8,8 +8,21 @@ public static class ProceduralGenerationAlgorithm
         Queue<BoundsInt> roomsQue = new Queue<BoundsInt>();
         List<BoundsInt> roomsList = new List<BoundsInt>();
         roomsQue.Enqueue(spaceToSplit);
+
+        // Hard cap on iterations. Without it an unshrinkable space splits into pieces the
+        // same size as its parent and the queue never drains, freezing the editor.
+        int maxIterations = Mathf.Max(1000, numberOfRooms * 100);
+        int iterations = 0;
         while(roomsQue.Count > 0 && roomsList.Count <= numberOfRooms)
         {
+
+            if (++iterations > maxIterations)
+            {
+                Debug.LogWarning($"BinarySpacePartitioning hit its {maxIterations}-iteration cap " +
+                                 $"(space {spaceToSplit.size}, minWidth {minWidth}, minHeight {minHeight}). " +
+                                 "Check that Space has a non-zero size.");
+                break;
+            }
             
                 var room = roomsQue.Dequeue();
                 if(room.size.y >= minHeight  && room.size.x >= minWidth)
@@ -48,7 +61,14 @@ public static class ProceduralGenerationAlgorithm
 
     private static void splitVertically(int minWidth, Queue<BoundsInt> roomsQue, BoundsInt room, List<BoundsInt> roomsList)
     {
-        var xSplit = Random.Range(1, room.size.x);
+        // A split only makes progress when both halves end up strictly smaller than the
+        // parent. With size.x < 2 no such split exists, so splitting would enqueue a room
+        // identical to the parent and loop forever.
+        if (room.size.x < 2)
+        {
+            return;
+        }
+        var xSplit = Mathf.Clamp(Random.Range(1, room.size.x), 1, room.size.x - 1);
         roomsList.Remove(room);
         BoundsInt room1 = new BoundsInt(room.min, new Vector3Int(xSplit, room.size.y, room.size.z));
         BoundsInt room2 = new BoundsInt(new Vector3Int(room.xMin + xSplit, room.yMin, room.zMin), 
@@ -59,8 +79,12 @@ public static class ProceduralGenerationAlgorithm
 
     private static void splitHorizontally(int minHeight, Queue<BoundsInt> roomsQue, BoundsInt room, List<BoundsInt> roomsList)
     {
+        if (room.size.y < 2)
+        {
+            return;
+        }
         roomsList.Remove(room);
-        var ySplit = Random.Range(1, room.size.y);
+        var ySplit = Mathf.Clamp(Random.Range(1, room.size.y), 1, room.size.y - 1);
         BoundsInt room1 = new BoundsInt(room.min, new Vector3Int(room.size.x, ySplit));
         BoundsInt room2 = new BoundsInt(new Vector3Int(room.xMin, room1.yMax), new Vector3Int(room.size.x, room.size.y-ySplit));    
         roomsQue.Enqueue(room1);

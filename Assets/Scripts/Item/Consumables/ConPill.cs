@@ -20,7 +20,16 @@ public class ConElixer : Elixers
 
     public override void onUse()
     {
-        Manager.player.increaseStatTemp("Max Health", 10, 50);
+        // Was Manager.player, which is never assigned anywhere and threw before the pill
+        // was consumed, leaving the item both unusable and un-consumed.
+        if (PlayerStats.Instance == null)
+        {
+            return;
+        }
+        // NOTE: 10 matches this item's displayed value. The 50 written into effectStrength
+        // above is dead (MonoBehaviour constructors never run) and the prefab's description
+        // string says 50 — that mismatch is a data/design decision, not fixed here.
+        PlayerStats.Instance.increaseStatTemp("Max Health", 10, 50);
         base.onUse();
         displaySelf();
     }
