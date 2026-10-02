@@ -10,12 +10,12 @@ public class Recipe : ScriptableObject
     [System.Serializable]
     public struct Pair
     {
-        public Item material;
+        public ItemDefinition material;
         public int amount;
     }
 
     public string resultName;
-    public GameObject result;
+    public ItemDefinition result;
     public Sprite sprite;
     public List<Pair> recipe = new List<Pair>();
 
@@ -58,7 +58,14 @@ public class Recipe : ScriptableObject
         sb.AppendLine("=== Recipe Start ===");
         sb.AppendLine($"ResultName: {resultName}");
         foreach (var pair in recipe)
-            sb.AppendLine($"{pair.material.getName()}: {pair.amount}");
+        {
+            if (pair.material == null)
+            {
+                Debug.LogError($"Recipe '{resultName}': skipping an empty material entry while exporting.");
+                continue;
+            }
+            sb.AppendLine($"{pair.material.DisplayName}: {pair.amount}");
+        }
         sb.AppendLine("=== Recipe End ===");
 
         File.WriteAllText(filePath, sb.ToString());
@@ -104,7 +111,14 @@ public class Recipe : ScriptableObject
                 if (inTargetRecipe)
                 {
                     Debug.Log($"Loaded recipe for {resultName}");
-                    result = FindItemByName(resultName).gameObject;
+                    ItemDefinition imported = FindDefinitionByName(resultName);
+                    if (imported == null)
+                    {
+                        Debug.LogError($"ImportRecipe: no ItemDefinition named '{resultName}' was found; " +
+                                       "'result' was left unchanged.");
+                        return;
+                    }
+                    result = imported;
 
                     #if UNITY_EDITOR
                     UnityEditor.EditorUtility.SetDirty(this);
@@ -126,8 +140,7 @@ public class Recipe : ScriptableObject
                     string matName = parts[0].Trim();
                     int amount = int.Parse(parts[1].Trim());
 
-                    // Find material in your assets
-                    Item mat = FindItemByName(matName);
+                    ItemDefinition mat = FindDefinitionByName(matName);
                     if (mat != null)
                     {
                         recipe.Add(new Pair { material = mat, amount = amount });
@@ -143,20 +156,21 @@ public class Recipe : ScriptableObject
         Debug.LogWarning($"Recipe for {resultName} not found in file!");
     }
 
-    private Item FindItemByName(string matName)
+    /// <summary>
+    /// Editor-only lookup of an ItemDefinition asset by its display name. Player builds never
+    /// call this: craft() uses the serialized <see cref="result"/> reference instead, which is
+    /// what stopped crafting from consuming materials and then producing nothing in a build.
+    /// </summary>
+    private ItemDefinition FindDefinitionByName(string itemName)
     {
-        // Fast editor-safe search:
 #if UNITY_EDITOR
-        string[] guids = UnityEditor.AssetDatabase.FindAssets($"t:Prefab");
-        foreach (string guid in guids)
+        foreach (string guid in UnityEditor.AssetDatabase.FindAssets("t:ItemDefinition"))
         {
             string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
-            GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
-            if (prefab != null)
+            ItemDefinition definition = UnityEditor.AssetDatabase.LoadAssetAtPath<ItemDefinition>(path);
+            if (definition != null && definition.DisplayName == itemName)
             {
-                Item item = prefab.GetComponent<Item>();
-                if (item != null && item.getName() == matName)
-                    return item;
+                return definition;
             }
         }
 #endif
@@ -165,57 +179,102 @@ public class Recipe : ScriptableObject
 
     public bool canCraft()
     {
-        int Count = 0;
-        List<Item> items = Inventory.Instance.getItems();
-        foreach (Pair material in recipe)
-        {
-            foreach (Item item in items)
-            {
-                if (item.getName() == material.material.getName() && item.getAmount() >= material.amount)
-                {
-                    Count++;
-                    Debug.Log($"Material found: {material.material.getName()}");
-                }
-                else
-                {
-                    Debug.Log($"Missing material: {material.material.getName()}");
-                }
-            }
-        }
-        return Count == recipe.Count;
+        // Quiet: LoadAvailableRecipies() calls this once per recipe, so logging every
+        // missing material here would spam the console.
+        return TryResolveMaterials(out _, false);
     }
 
     public void craft()
     {
-        List<Item> items = Inventory.Instance.getItems();
-        int Count = 0;
-        List<(Item item, int amount)> toRemove = new List<(Item, int)>();
+        if (Inventory.Instance == null)
+        {
+            Debug.LogError($"Recipe '{name}': no Inventory instance; nothing was crafted.");
+            return;
+        }
 
+        // Resolve the output BEFORE touching the inventory. If it cannot be resolved,
+        // consuming materials would destroy them for no product.
+        if (result == null)
+        {
+            Debug.LogError($"Recipe '{name}': no result ItemDefinition assigned; refusing to craft.");
+            return;
+        }
+
+        // Validate the whole recipe first so a partially available one is never
+        // half-consumed.
+        if (!TryResolveMaterials(out List<(ItemDefinition material, int amount)> toRemove, true))
+        {
+            return;
+        }
+
+        // A full inventory must be detected BEFORE removing anything, otherwise the materials
+        // are consumed and the crafted item is dropped on the floor (the old craft() bug).
+        if (!Inventory.Instance.hasRoomFor(result, 1))
+        {
+            Debug.LogWarning($"Recipe '{name}': inventory has no room for {result.DisplayName}; " +
+                             "materials were not consumed.");
+            return;
+        }
+
+        foreach (var (material, amount) in toRemove)
+        {
+            Inventory.Instance.removeItem(material, amount);
+        }
+
+        Inventory.Instance.addItem(result, 1);
+        Debug.Log($"Crafted: {result.DisplayName}");
+    }
+
+    /// <summary>
+    /// Work out which definitions satisfy this recipe without changing anything.
+    /// Entries for the same material are summed first, so two lines asking for 5 Iron each
+    /// require 10 in stock instead of passing two independent "has 5" checks and then
+    /// under-consuming.
+    /// </summary>
+    private bool TryResolveMaterials(out List<(ItemDefinition material, int amount)> toRemove, bool logMissing)
+    {
+        toRemove = new List<(ItemDefinition, int)>();
+
+        if (recipe == null || recipe.Count == 0)
+        {
+            if (logMissing)
+            {
+                Debug.LogWarning($"Recipe '{name}' has no materials defined; refusing to craft.");
+            }
+            return false;
+        }
+
+        Inventory inventory = Inventory.Instance;
+        if (inventory == null)
+        {
+            return false;
+        }
+
+        Dictionary<ItemDefinition, int> demand = new Dictionary<ItemDefinition, int>();
         foreach (Pair material in recipe)
         {
-            Item match = items.FirstOrDefault(i => 
-                i.getName() == material.material.getName() && 
-                i.getAmount() >= material.amount);
-
-            if (match != null)
+            if (material.material == null)
             {
-                toRemove.Add((match, material.amount));
-                Count++;
-                Debug.Log($"Material consumed: {material.material.getName()}");
+                Debug.LogError($"Recipe '{name}': a material entry has no ItemDefinition assigned.");
+                return false;
             }
-            else
-            {
-                Debug.Log($"Missing material: {material.material.getName()}");
-            }
+            demand.TryGetValue(material.material, out int total);
+            demand[material.material] = total + material.amount;
         }
 
-        if (Count == recipe.Count)
+        foreach (var entry in demand)
         {
-            foreach (var (item, amount) in toRemove)
-                Inventory.Instance.removeItem(item, amount);
-
-            Inventory.Instance.addItem(FindItemByName(resultName));
+            if (inventory.countOf(entry.Key) < entry.Value)
+            {
+                if (logMissing)
+                {
+                    Debug.Log($"Missing material: {entry.Key.DisplayName} (need {entry.Value})");
+                }
+                return false;
+            }
+            toRemove.Add((entry.Key, entry.Value));
         }
+
+        return true;
     }
 }
-

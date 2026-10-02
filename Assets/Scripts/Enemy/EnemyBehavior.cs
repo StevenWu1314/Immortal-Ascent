@@ -90,6 +90,14 @@ public class EnemyBehavior : MonoBehaviour
     protected void OnDestroy() {
         Controls.onMoveEvent -= checkForPlayerInRoom;
         Controls.onMoveEvent -= queup;
+        // Catch-all for every destruction path (killed by the player, a regeneration sweep,
+        // scene teardown). Without this the queue kept a destroyed component and TakeTurns()
+        // called takeTurn() on it, throwing MissingReferenceException and aborting the
+        // coroutine for every enemy still queued behind it.
+        if (TurnManager.Instance != null)
+        {
+            TurnManager.Instance.UnregisterEnemy(this);
+        }
     }
     virtual protected void Start()
     {

@@ -1,19 +1,18 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-
 
 public class Inventory : MonoBehaviour
 {
     [System.Serializable]
     public struct StarterItem
     {
-        public Item item;
+        public ItemDefinition definition;
         public int amount;
     }
-    [SerializeField] private GameObject inventoryContainer; // parent with 24 slot children
-    [SerializeField] private List<Item> items = new List<Item>();
+
+    [SerializeField] private GameObject inventoryContainer; // parent with the ItemBox slot children
+    [SerializeField] private List<ItemStack> items = new List<ItemStack>();
     [SerializeField] private List<StarterItem> StarterItems;
     [SerializeField] private ItemDisplay itemDisplay;
     private ItemBox[] slots; // fixed slots
@@ -46,16 +45,26 @@ public class Inventory : MonoBehaviour
         updateInventory();
     }
 
+    /// <summary>
+    /// Seed the inventory from the serialized starter list. This used to Instantiate a copy of
+    /// each item prefab and then throw it away (addItem cloned it instead), leaking roughly 17
+    /// GameObjects on every scene start. ItemStack needs no GameObject at all.
+    /// </summary>
     private void addStarterItems()
     {
-        foreach (StarterItem item in StarterItems)
+        foreach (StarterItem entry in StarterItems)
         {
-            for(int i = 0; i < item.amount; i++)
+            if (entry.definition == null || entry.amount <= 0)
             {
-                addItem((Instantiate(item.item)));
+                continue;
+            }
+            int leftover = addItem(entry.definition, entry.amount);
+            if (leftover > 0)
+            {
+                Debug.LogWarning($"Inventory: no room for {leftover} x {entry.definition.DisplayName} " +
+                                 "from StarterItems.");
             }
         }
-        updateInventory();
     }
 
     public void updateInventory()
@@ -70,11 +79,9 @@ public class Inventory : MonoBehaviour
             {
                 continue;
             }
-            if (i < items.Count)
+            if (i < items.Count && !items[i].IsEmpty)
             {
-                Item item = items[i];
-                item.itemDisplay = itemDisplay;
-                slots[i].setItem(item);
+                slots[i].setItem(items[i], itemDisplay);
             }
             else
             {
@@ -83,77 +90,232 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    public void addItem(Item item)
+    /// <summary>
+    /// Add <paramref name="amount"/> units, topping up existing stacks as far as their
+    /// stackLimit allows and opening new stacks only when needed.
+    ///
+    /// Returns how many units could NOT be stored, so the caller can surface a message
+    /// instead of silently destroying them. The old addItem() ignored the incoming amount
+    /// entirely and did a hardcoded +1 per call, so picking up N units stored 1.
+    /// </summary>
+    public int addItem(ItemDefinition definition, int amount)
     {
-        if (item == null)
+        if (definition == null)
         {
-            Debug.LogWarning("Inventory.addItem called with null; ignoring.");
-            return;
+            Debug.LogWarning("Inventory.addItem called with a null definition; ignoring.");
+            return 0;
+        }
+        if (amount <= 0)
+        {
+            return 0;
         }
         if (slots == null || slots.Length == 0)
         {
-            Debug.LogWarning("Inventory has no slots; cannot add " + item.getName());
+            Debug.LogWarning("Inventory has no slots; cannot add " + definition.DisplayName);
+            return amount;
+        }
+
+        // Equipment takes one instance per unit and never merges. Inscriptions live on the
+        // instance, so folding a second Iron Sword into the first one's stack would silently
+        // fuse two different sets of inscriptions.
+        if (IsEquipmentKind(definition))
+        {
+            int equipmentRemaining = amount;
+            while (equipmentRemaining > 0 && items.Count < slots.Length)
+            {
+                items.Add(new ItemStack(new EquipmentInstance(definition)));
+                equipmentRemaining--;
+            }
+            updateInventory();
+            if (equipmentRemaining > 0)
+            {
+                Debug.Log($"Inventory full! {equipmentRemaining} x {definition.DisplayName} could not be stored.");
+            }
+            return equipmentRemaining;
+        }
+
+        int limit = definition.StackLimit;
+        int remaining = amount;
+
+        // Top up stacks of the same definition first.
+        for (int i = 0; i < items.Count && remaining > 0; i++)
+        {
+            ItemStack stack = items[i];
+            if (stack.definition != definition)
+            {
+                continue;
+            }
+            int space = limit - stack.amount;
+            if (space <= 0)
+            {
+                continue;
+            }
+            int moved = Mathf.Min(space, remaining);
+            stack.amount += moved;
+            items[i] = stack;   // ItemStack is a struct: write the copy back
+            remaining -= moved;
+        }
+
+        // Then fill empty slots, which is what actually bounds the inventory.
+        while (remaining > 0 && items.Count < slots.Length)
+        {
+            int moved = Mathf.Min(limit, remaining);
+            items.Add(new ItemStack(definition, moved));
+            remaining -= moved;
+        }
+
+        updateInventory();
+
+        if (remaining > 0)
+        {
+            Debug.Log($"Inventory full! {remaining} x {definition.DisplayName} could not be stored.");
+        }
+        return remaining;
+    }
+
+    /// <summary>Remove <paramref name="amount"/> units of a definition, dropping empty stacks.</summary>
+    public void removeItem(ItemDefinition definition, int amount)
+    {
+        if (definition == null || amount <= 0)
+        {
             return;
         }
 
-        foreach (Item unsorteditem in items)
+        int remaining = amount;
+        for (int i = items.Count - 1; i >= 0 && remaining > 0; i--)
         {
-            if (unsorteditem != null && item.getName() == unsorteditem.getName())
+            if (items[i].definition != definition)
             {
-                unsorteditem.increaseAmount(1);
-                updateInventory();
-                return; // don't add duplicate to the list
+                continue;
+            }
+            ItemStack stack = items[i];
+            int taken = Mathf.Min(stack.amount, remaining);
+            stack.amount -= taken;
+            remaining -= taken;
+
+            if (stack.amount <= 0)
+            {
+                items.RemoveAt(i);
+            }
+            else
+            {
+                items[i] = stack;
             }
         }
 
-        if (items.Count < slots.Length)
+        if (remaining > 0)
         {
-
-            items.Add(item.clone());
-            updateInventory();
+            Debug.Log($"Inventory: tried to remove {remaining} more {definition.DisplayName} than held.");
         }
-        else
-        {
-            Debug.Log("Inventory full!");
-        }
-    }
-
-    public void removeItem(Item item)
-    {
-        items.Remove(item);
         updateInventory();
     }
 
-    public void removeItem(Item item, int amount)
+    /// <summary>How many units of a definition the inventory currently holds.</summary>
+    public int countOf(ItemDefinition definition)
     {
-        if (item == null || items == null)
+        if (definition == null)
         {
-            return;
+            return 0;
         }
-        int index = items.IndexOf(item);
-        if (index < 0)
+        int total = 0;
+        foreach (ItemStack stack in items)
         {
-            // The item is not in the inventory (already consumed or a stale reference).
-            // Bail out instead of indexing items[-1].
-            return;
+            if (stack.definition == definition)
+            {
+                total += stack.amount;
+            }
+        }
+        return total;
+    }
+
+    /// <summary>
+    /// Could <paramref name="amount"/> more units be stored right now? Callers that consume
+    /// something first (crafting) must ask this beforehand, otherwise a full inventory eats the
+    /// inputs and drops the output.
+    /// </summary>
+    public bool hasRoomFor(ItemDefinition definition, int amount)
+    {
+        if (definition == null || amount <= 0)
+        {
+            return true;
         }
 
-        items[index].subtractAmount(amount);
-        if (items[index].getAmount() <= 0)
+        int limit = definition.StackLimit;
+        int space = 0;
+
+        foreach (ItemStack stack in items)
         {
-            items.RemoveAt(index);
+            if (stack.definition == definition)
+            {
+                space += Mathf.Max(0, limit - stack.amount);
+            }
         }
-        // Refresh on both paths: previously a surviving stack kept displaying its old count.
-        updateInventory();
+
+        int freeSlots = (slots != null ? slots.Length : 0) - items.Count;
+        space += Mathf.Max(0, freeSlots) * limit;
+
+        return space >= amount;
     }
+
     public void setItemDisplay(ItemDisplay itemDisplay)
     {
         this.itemDisplay = itemDisplay;
         updateInventory();
     }
 
-    public List<Item> getItems()
+    public ItemDisplay getItemDisplay()
+    {
+        return itemDisplay;
+    }
+
+    public List<ItemStack> getItems()
     {
         return items;
+    }
+
+    /// <summary>Equipment is tracked per instance, so it never participates in stacking.</summary>
+    public static bool IsEquipmentKind(ItemDefinition definition)
+    {
+        return definition != null &&
+               (definition.Kind == ItemKind.Weapon || definition.Kind == ItemKind.Armor);
+    }
+
+    /// <summary>
+    /// Every equipment instance the player carries, in slot order. Inscriptions are applied to
+    /// these, so the inscription UI needs instances rather than shared definitions.
+    /// </summary>
+    public List<EquipmentInstance> getEquipmentInstances()
+    {
+        List<EquipmentInstance> result = new List<EquipmentInstance>();
+        foreach (ItemStack stack in items)
+        {
+            if (stack.instance != null)
+            {
+                result.Add(stack.instance);
+            }
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Remove one specific equipment instance, matched by reference. Removing "any Iron Sword"
+    /// would be wrong here: two swords can carry different inscriptions.
+    /// </summary>
+    public bool removeItem(EquipmentInstance instance)
+    {
+        if (instance == null)
+        {
+            return false;
+        }
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i].instance == instance)
+            {
+                items.RemoveAt(i);
+                updateInventory();
+                return true;
+            }
+        }
+        return false;
     }
 }

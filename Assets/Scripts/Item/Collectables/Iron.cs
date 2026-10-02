@@ -1,13 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+/// <summary>
+/// The iron resource node. It exists only so Iron.prefab keeps a valid component reference;
+/// all behaviour lives on <see cref="Collectables"/> and all data on its ItemDefinition.
+/// </summary>
 public class Iron : Collectables
 {
-
-    public override void onUse()
-    {
-        Debug.Log("Not supposed to be used directly in inventory");
-    }
-
 }

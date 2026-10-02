@@ -76,11 +76,65 @@ public class EntityManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Unregister an entity wherever it currently sits. Death teardown uses this instead of
+    /// the cell-keyed overload so a stale or drifted position can never leave the entity
+    /// registered forever, which used to make the cell permanently unregisterable.
+    /// </summary>
+    public void UnregisterEntity(GameObject entity)
+    {
+        if (entity == null)
+        {
+            return;
+        }
+        Vector2Int found = default;
+        bool any = false;
+        foreach (var pair in entityGrid)
+        {
+            if (pair.Value == entity)
+            {
+                found = pair.Key;
+                any = true;
+                break;
+            }
+        }
+        if (any)
+        {
+            entityGrid.Remove(found);
+        }
+    }
+
     /// <summary> Get the entity at a given cell, or null if empty. </summary>
     public GameObject GetEntityAt(Vector2Int cell)
     {
         entityGrid.TryGetValue(cell, out var entity);
         return entity;
+    }
+
+    /// <summary>
+    /// The cell an entity is currently registered in.
+    ///
+    /// Callers that are about to move an entity must use this instead of deriving the cell from
+    /// transform.position. Visual effects (the damage shake) move the transform, and a rounded
+    /// cell that disagrees with the registry makes MoveEntity's old-cell lookup fail -- which
+    /// silently dropped every move.
+    /// </summary>
+    public bool TryGetCell(GameObject entity, out Vector2Int cell)
+    {
+        cell = default;
+        if (entity == null)
+        {
+            return false;
+        }
+        foreach (var pair in entityGrid)
+        {
+            if (pair.Value == entity)
+            {
+                cell = pair.Key;
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>Read-only view of every registered entity, keyed by cell.</summary>

@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -910,9 +909,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9afd5089f268d49409b1ee0f49be81ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  swordDrawn: 1
   moveCooldown: 0.1
   runningCooldown: 0
+  MenuIsOpen: 0
   playerStats: {fileID: 68319005}
+  positionDisplay: {fileID: 0}
+  CollectButton: {fileID: 0}
+  takingTurn: 0
+  shotArrow: {fileID: 0}
+  bow: {fileID: 0}
 --- !u!114 &68319004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -927,18 +933,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inventoryContainer: {fileID: 466365973}
   items:
-  - {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
-  - {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
-  - {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
-  - {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
-  - {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
-  - {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
-  - {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
-  - {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
-  - {fileID: 8103580277624727149, guid: 4c1badd76ba604c858b8a0d17ebcd530, type: 3}
-  ItemContainer: {fileID: 5328590925920947999, guid: 3f5a4a7dc312242998c2a93364128efe, type: 3}
+  - definition: {fileID: 0}
+    amount: 0
+  - definition: {fileID: 0}
+    amount: 0
+  - definition: {fileID: 0}
+    amount: 0
+  - definition: {fileID: 0}
+    amount: 0
+  - definition: {fileID: 0}
+    amount: 0
+  - definition: {fileID: 0}
+    amount: 0
+  - definition: {fileID: 0}
+    amount: 0
+  - definition: {fileID: 0}
+    amount: 0
+  - definition: {fileID: 0}
+    amount: 0
+  StarterItems: []
   itemDisplay: {fileID: 1145181589}
-  oldContainers: []
 --- !u!114 &68319005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -962,6 +976,8 @@ MonoBehaviour:
   equipments: {fileID: 68319007}
   achievementManager: {fileID: 11400000, guid: ea808bb1738014ddf874da0cd7f6b6f0, type: 2}
   expMultiplier: 1
+  HealthBar: {fileID: 0}
+  ExpBar: {fileID: 0}
 --- !u!114 &68319007
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -977,7 +993,7 @@ MonoBehaviour:
   inventoryContainer: {fileID: 0}
   meleeWeapon: {fileID: 0}
   rangeWeapon: {fileID: 0}
-  Armor: {fileID: 0}
+  armor: {fileID: 0}
   ItemContainer: {fileID: 0}
   itemDisplay: {fileID: 0}
 --- !u!1 &147366282
@@ -2132,12 +2148,12 @@ MonoBehaviour:
   m_RequiresColorTexture: 0
   m_Version: 2
   m_TaaSettings:
-    quality: 3
-    frameInfluence: 0.1
-    jitterScale: 1
-    mipBias: 0
-    varianceClampScale: 0.9
-    contrastAdaptiveSharpening: 0
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -2869,6 +2885,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6574a381f7834ee1b85e9ba08b8d891, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: 0
+  damage: 0
   expValue: 10
 --- !u!58 &850811749
 CircleCollider2D:
@@ -2944,9 +2962,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da510d2a12cd14d4da2c7ff97d14c109, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectionRadius:
-    m_Position: {x: -38, y: 28, z: -10}
-    m_Size: {x: 17, y: 19, z: 20}
+  detectionRadius: 0
+  room:
+    m_Position: {x: 0, y: 0, z: 0}
+    m_Size: {x: 0, y: 0, z: 0}
+  spawnPos: {x: 0, y: 0, z: 0}
+  chaseRange: 0
+  currentstate: 0
 --- !u!212 &850811752
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3342,6 +3364,7 @@ MonoBehaviour:
   description: {fileID: 2138485661}
   icon: {fileID: 1891955874}
   typeValue: {fileID: 1375633964}
+  amount: {fileID: 0}
   button: {fileID: 1419302375}
 --- !u!114 &1145181590
 MonoBehaviour:
@@ -5021,6 +5044,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4ff691017e154c3583a81d3951895a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: 0
+  damage: 0
   expValue: 10
 --- !u!114 &1528848622
 MonoBehaviour:
@@ -5034,9 +5059,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da510d2a12cd14d4da2c7ff97d14c109, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectionRadius:
-    m_Position: {x: 0, y: 0, z: -10}
-    m_Size: {x: 11, y: 11, z: 20}
+  detectionRadius: 0
+  room:
+    m_Position: {x: 0, y: 0, z: 0}
+    m_Size: {x: 0, y: 0, z: 0}
+  spawnPos: {x: 0, y: 0, z: 0}
+  chaseRange: 0
+  currentstate: 0
 --- !u!212 &1528848623
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -5137,6 +5166,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6574a381f7834ee1b85e9ba08b8d891, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: 0
+  damage: 0
   expValue: 10
 --- !u!58 &1545127725
 CircleCollider2D:
@@ -5212,9 +5243,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da510d2a12cd14d4da2c7ff97d14c109, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectionRadius:
-    m_Position: {x: -38, y: 28, z: -10}
-    m_Size: {x: 17, y: 19, z: 20}
+  detectionRadius: 0
+  room:
+    m_Position: {x: 0, y: 0, z: 0}
+    m_Size: {x: 0, y: 0, z: 0}
+  spawnPos: {x: 0, y: 0, z: 0}
+  chaseRange: 0
+  currentstate: 0
 --- !u!212 &1545127728
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -13600,25 +13635,14 @@ MonoBehaviour:
   walls: {fileID: 1854551926}
   floor: {fileID: 1657984946}
   corridor: {fileID: 1793419300}
-  floorTile: {fileID: 11400000, guid: dbea1c6aa2c5c4ca5a8df49da8f94531, type: 2}
-  flowerFloorTile: {fileID: 11400000, guid: 43f260c99439149248caac790610c69a, type: 2}
-  wallTileTop1: {fileID: 11400000, guid: f4d4328d486bd44df895f488d265c50b, type: 2}
-  wallTileTop2: {fileID: 11400000, guid: daad519a92c444f13b722376a38f1e0d, type: 2}
-  wallTileBottom1: {fileID: 11400000, guid: f4d4328d486bd44df895f488d265c50b, type: 2}
-  wallTileBottom2: {fileID: 11400000, guid: daad519a92c444f13b722376a38f1e0d, type: 2}
-  wallTileLeft1: {fileID: 11400000, guid: f2ea8853fac4242888c57e1e83e0c760, type: 2}
-  wallTileLeft2: {fileID: 11400000, guid: f2ea8853fac4242888c57e1e83e0c760, type: 2}
-  wallTileRight1: {fileID: 11400000, guid: cb9bbf35e9a1b41b09d581e04a4ba72f, type: 2}
-  wallTileRight2: {fileID: 11400000, guid: cb9bbf35e9a1b41b09d581e04a4ba72f, type: 2}
-  wallTileTopLeft: {fileID: 11400000, guid: f7fbe39e3d7774a14a80f0e4c98bf93f, type: 2}
-  wallTileTopRight: {fileID: 11400000, guid: e6497285386754aaa984fa120fea679a, type: 2}
-  wallTileBottomLeft: {fileID: 11400000, guid: e196356893a5642c096570237fd7ed14, type: 2}
-  wallTileBottomRight: {fileID: 11400000, guid: 193d3d23489d446449a80bed3bc693b8, type: 2}
-  wallLefttoDown: {fileID: 11400000, guid: aad0331360b914a5b9b983bb4fb27cba, type: 2}
-  wallRighttoDown: {fileID: 11400000, guid: 947679754c2c341e68c0237019e14989, type: 2}
-  wallDowntoLeft: {fileID: 11400000, guid: c5d2372e050d14409923a19c38d19011, type: 2}
-  wallDowntoRight: {fileID: 11400000, guid: 85ce36bdf2d074e619aff1437a1e57af, type: 2}
+  floorTile:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  bridgeTile: {fileID: 0}
   chest: {fileID: 11400000, guid: 2869205ec354a4fd5b9649d3b15f01c3, type: 2}
+  water: {fileID: 0}
+  flowerDensity: 0
 --- !u!114 &1667098383
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13637,11 +13661,13 @@ MonoBehaviour:
   minWidth: 14
   minHeight: 14
   numberOfRooms: 5
+  enemiesPerRoom: {x: 1, y: 2}
   tilePlacer: {fileID: 1667098382}
-  spawnPoint: {fileID: 5560012146257092101, guid: dd6058c7c7d654870bdb95a4d11f878a, type: 3}
+  player: {fileID: 0}
   enemies:
   - {fileID: 1363082926110395293, guid: 3e1d33bf9a53f474f83f98e2ae9f0535, type: 3}
   - {fileID: 4491772018395455330, guid: 38530b514ce2d4737ac2b67c89f29127, type: 3}
+  gridSize: 500
 --- !u!4 &1667098384
 Transform:
   m_ObjectHideFlags: 0
@@ -13671,19 +13697,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 399a8a69d30ba4ce8a0b86d072c7448f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lootDistribution: 640000001e00000000000000
+  epicChance: 1
+  rareChance: 30
   commonItem:
-  - {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
-  - {fileID: 424189716286026104, guid: 50f9807f7c1a94729b969d91e63d2670, type: 3}
-  - {fileID: 9127352406000723282, guid: 87c862b74002b40b7acd2f4a23d2d3dd, type: 3}
+  - {fileID: 11400000, guid: 75306d1c06f2e474b9b7f3348678060b, type: 2}
+  - {fileID: 11400000, guid: f6f64e0a209854be1afae53f341dfe8e, type: 2}
+  - {fileID: 11400000, guid: 958c5a248604b4dbbab57a63aed5c3da, type: 2}
   rareItem:
-  - {fileID: 9127352406000723282, guid: 87c862b74002b40b7acd2f4a23d2d3dd, type: 3}
-  - {fileID: 424189716286026104, guid: 50f9807f7c1a94729b969d91e63d2670, type: 3}
-  - {fileID: 9133367012519911419, guid: 7d5a39dfa409b4c5294d476deb08db5a, type: 3}
+  - {fileID: 11400000, guid: 958c5a248604b4dbbab57a63aed5c3da, type: 2}
+  - {fileID: 11400000, guid: f6f64e0a209854be1afae53f341dfe8e, type: 2}
+  - {fileID: 11400000, guid: 2409d1e0ede844384a1981b50ce5a8da, type: 2}
   epicItem:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  dropAmount: 1
   playerInventory: {fileID: 68319004}
 --- !u!1 &1793419299
 GameObject:

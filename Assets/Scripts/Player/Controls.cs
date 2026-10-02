@@ -143,7 +143,17 @@ public class Controls : MonoBehaviour
                 takingTurn = true;
                 onMoveEvent(this);
                 runningCooldown = moveCooldown;
-                Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
+
+                // Ask the registry where the player is rather than rounding transform.position.
+                // The damage shake moves the transform, and a cell that disagrees with the
+                // registry made MoveEntity drop the move entirely.
+                Vector2Int currentCell;
+                if (EntityManager.Instance == null ||
+                    !EntityManager.Instance.TryGetCell(gameObject, out currentCell))
+                {
+                    // Not registered (or no registry): fall back to the transform.
+                    currentCell = Vector2Int.FloorToInt(transform.position);
+                }
                 Vector2Int nextCell = currentCell + direction;
 
                 if (nextCell == (Vector2Int) portalPos)
@@ -167,9 +177,13 @@ public class Controls : MonoBehaviour
                 // Island rule: while inside a room that still holds enemies you may not step
                 // outside that room. Corridors themselves are never gated, so once the room is
                 // clear you can walk out and choose the next one.
-                if (!IslandManager.CanMoveTo(transform.position, nextCell))
+                //
+                // The registry cell is passed as a world position on purpose: CanMoveTo rounds
+                // its argument, and transform.position can be mid-shake.
+                Vector3 currentWorld = new Vector3(currentCell.x, currentCell.y, 0f);
+                if (!IslandManager.CanMoveTo(currentWorld, nextCell))
                 {
-                    UIManager.Instance.DrawFlowupText(IslandManager.DescribeBlock(transform.position), transform.position);
+                    UIManager.Instance.DrawFlowupText(IslandManager.DescribeBlock(currentWorld), currentWorld);
                     direction = Vector2Int.zero;
                     return;
                 }
@@ -191,6 +205,13 @@ public class Controls : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 TryEnterAimMode();
+            }
+
+            // Chests are solid terrain, so the player can only ever be next to one. Opening is
+            // deliberately free (it does not fire onMoveEvent), so looting is not a turn.
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                TryOpenAdjacentChest();
             }
         }
         else
@@ -233,21 +254,17 @@ public class Controls : MonoBehaviour
         return FindEnemyInCell(cell) != null;
     }
 
-    private Item FindArrowStack()
+    private ItemDefinition FindArrowDefinition()
     {
         if (Inventory.Instance == null)
         {
             return null;
         }
-        foreach (Item item in Inventory.Instance.getItems())
+        foreach (ItemStack stack in Inventory.Instance.getItems())
         {
-            if (item == null)
+            if (stack.definition != null && stack.definition.Kind == ItemKind.Ammo && stack.amount > 0)
             {
-                continue;
-            }
-            if (item is Arrow && item.getAmount() > 0)
-            {
-                return item;
+                return stack.definition;
             }
         }
         return null;
@@ -307,7 +324,7 @@ public class Controls : MonoBehaviour
             return false;
         }
 
-        Item arrow = FindArrowStack();
+        ItemDefinition arrow = FindArrowDefinition();
         if (arrow == null)
         {
             UIManager.Instance.DrawFlowupText("No arrows remaining", transform.position);
@@ -337,8 +354,8 @@ public class Controls : MonoBehaviour
             }
         }
 
-        // Remove exactly one arrow. FindArrowStack returns a single stack, so this never
-        // mutates the inventory list while it is being enumerated.
+        // Remove exactly one arrow by definition, so this never mutates the inventory list
+        // while it is being enumerated.
         Inventory.Instance.removeItem(arrow, 1);
         return true;
     }
@@ -389,8 +406,10 @@ public class Controls : MonoBehaviour
             bowIndicator.SetActive(true);
         }
         aiming = true;
+        onMoveEvent(this);
         lastAimCell = MouseCell();
         rangeOverlay.ShowOverlay();
+        
     }
 
     private void LeaveAimMode()
@@ -413,9 +432,40 @@ public class Controls : MonoBehaviour
         MenuIsOpen = !MenuIsOpen;
     }
 
-    private void checkForCollectables(Controls controls)
+    /// <summary>
+    /// Open the chest next to the player, if any. Reports when there is nothing to open so the
+    /// key never feels broken.
+    /// </summary>
+    private void TryOpenAdjacentChest()
     {
-        Vector2Int currentCell = Vector2Int.FloorToInt(transform.position);
+        // Registry cell for the same reason as movement: a mid-shake transform would look for a
+        // chest next to the wrong cell.
+        Vector2Int cell;
+        if (EntityManager.Instance == null ||
+            !EntityManager.Instance.TryGetCell(gameObject, out cell))
+        {
+            cell = Vector2Int.FloorToInt(transform.position);
+        }
+        if (ChestRegistry.TryGetAdjacent(cell, out Chest chest))
+        {
+            chest.Open(Inventory.Instance);
+            return;
+        }
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.DrawFlowupText("No chest nearby", transform.position);
+        }
+    }
+
+    private void checkForCollectables(Controls controls)    {
+        // Registry cell, not a rounded transform: the damage shake offsets the transform and
+        // would make this miss the pickup (same root cause as the movement lock).
+        Vector2Int currentCell;
+        if (EntityManager.Instance == null ||
+            !EntityManager.Instance.TryGetCell(gameObject, out currentCell))
+        {
+            currentCell = Vector2Int.FloorToInt(transform.position);
+        }
         if (collectable != null)
         {
             collectable = null;

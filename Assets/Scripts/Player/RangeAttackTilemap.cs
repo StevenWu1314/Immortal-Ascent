@@ -55,7 +55,15 @@ public class RangeAttackTilemap : MonoBehaviour
         Vector3Int rayCenter = collidableMap.WorldToCell(player.transform.position);
         Debug.Log(center);
         Debug.Log(player.transform.position);
-        int range = player.getRange();
+        // Range is owned by the equipped ranged weapon, not by PlayerStats: reading it from
+        // the item means equipping a sword can no longer zero out the bow's reach.
+        int range = Equipments.Instance != null ? Equipments.Instance.getRange() : 0;
+        if (range <= 0)
+        {
+            Debug.LogWarning("RangeAttackTilemap: no ranged weapon with range equipped; " +
+                             "nothing to draw.");
+            return;
+        }
         for(int x = -range; x <= range; x++)
         {
             for(int y = -range; y <= range; y++)

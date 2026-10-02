@@ -1,25 +1,53 @@
 using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class PlayerStats : MonoBehaviour{
+    // ---------------------------------------------------------------------------------
+    // BASE VALUES. These are the saved/levelled numbers. Level-up allocation and the
+    // levelUpUI rollback write here, and nothing else.
+    // ---------------------------------------------------------------------------------
     [SerializeField] int Health;
     [SerializeField] int MaxHealth;
     [SerializeField] int strength;
     [SerializeField] int dexterity;
-    [SerializeField] int range;
-    [SerializeField] int[,] temporaryStatAdjustments = new int[3, 2];
+
+    /// <summary>
+    /// Temporary buffs: [stat, 0] = amount, [stat, 1] = turns remaining.
+    /// These are NOT folded into the base values any more; the effective accessors add them.
+    /// That removes the old add-now/subtract-on-expiry bookkeeping, which is what made a
+    /// MaxHealth buff permanent when its revert path was skipped.
+    /// </summary>
+    int[,] temporaryStatAdjustments = new int[3, 2];
+
     [SerializeField] int currentExperience;
     [SerializeField] int currentLevel;
     [SerializeField] int levelCap;
     [SerializeField] int experienceToNextLevel;
     [SerializeField] Equipments equipments;
     [SerializeField] AchievementManager achievementManager;
+
+    /// <summary>Base experience multiplier. Achievement bonus is added on top in <see cref="ExpMultiplier"/>.</summary>
     [SerializeField] float expMultiplier = 1;
+
+    // ---------------------------------------------------------------------------------
+    // DERIVED BONUSES. Deliberately not serialized: RecalculateStats() rebuilds them from
+    // scratch, so they cannot drift and cannot be applied twice. The old code added the
+    // achievement bonuses straight onto the serialized fields from OnEnable, so every
+    // disable/enable cycle stacked them again (BUG-13).
+    // ---------------------------------------------------------------------------------
+    private int bonusStrength;
+    private int bonusDexterity;
+    private int bonusMaxHealth;
+    private float achievementExpBonus;
+
     SpriteRenderer spriteRenderer;
+
+    /// <summary>Guard so overlapping hits cannot stack shakes (see <see cref="DamageShake"/>).</summary>
+    private bool shaking;
+    private Vector3 shakeOrigin;
     public static event Action<PlayerStats> onLevelUpEvent;
     public static event Action<PlayerStats> onDeath;
 
@@ -27,6 +55,23 @@ public class PlayerStats : MonoBehaviour{
     [SerializeField] Image HealthBar;
     [SerializeField] Image ExpBar;
 
+    // ---------------------------------------------------------------------------------
+    // EFFECTIVE VALUES. Everything outside this class should read these.
+    // ---------------------------------------------------------------------------------
+    public int Strength => strength + bonusStrength + TempBonus(0);
+    public int Dexterity => dexterity + bonusDexterity + TempBonus(1);
+    public int EffectiveMaxHealth => Mathf.Max(1, MaxHealth + bonusMaxHealth + TempBonus(2));
+    public float ExpMultiplier => expMultiplier + achievementExpBonus;
+
+    /// <summary>Base strength, before equipment/inscription/achievement/buff bonuses.</summary>
+    public int BaseStrength => strength;
+    public int BaseDexterity => dexterity;
+    public int BaseMaxHealth => MaxHealth;
+
+    private int TempBonus(int index)
+    {
+        return temporaryStatAdjustments[index, 0];
+    }
 
     private void Awake()
     {
@@ -37,36 +82,86 @@ public class PlayerStats : MonoBehaviour{
         }
         Instance = this;
         spriteRenderer = GetComponent<SpriteRenderer>();
+        RecalculateStats();
     }
+
     void OnEnable()
     {
         Controls.onMoveEvent += tickdownBuffs;
-        HealthBar = GameObject.Find("HpBar").GetComponent<Image>();
-        ExpBar = GameObject.Find("ExpBar").GetComponent<Image>();
-        ApplyAchievementBuffs();
+        // Guarded: these are found by name, and a renamed or missing bar used to throw here.
+        GameObject hp = GameObject.Find("HpBar");
+        if (hp != null)
+        {
+            HealthBar = hp.GetComponent<Image>();
+        }
+        GameObject exp = GameObject.Find("ExpBar");
+        if (exp != null)
+        {
+            ExpBar = exp.GetComponent<Image>();
+        }
+        RecalculateStats();
     }
+
     void OnDestroy()
     {
         Controls.onMoveEvent -= tickdownBuffs;
     }
 
-    private void ApplyAchievementBuffs()
+    /// <summary>
+    /// Rebuild every derived bonus from its sources. Idempotent by construction, which is why
+    /// it is safe to call from Awake, OnEnable, an equipment swap and an achievement unlock
+    /// alike. This replaces ApplyAchievementBuffs(), which mutated the base fields in place.
+    /// </summary>
+    public void RecalculateStats()
     {
-        if(achievementManager.bowKill)
+        bonusStrength = 0;
+        bonusDexterity = 0;
+        bonusMaxHealth = 0;
+        achievementExpBonus = 0f;
+
+        if (achievementManager != null)
         {
-            dexterity += 5;
+            if (achievementManager.bowKill)
+            {
+                bonusDexterity += 5;
+            }
+            if (achievementManager.turtleKilled)
+            {
+                bonusMaxHealth += 25;
+            }
+            if (achievementManager.firstFloorCleared)
+            {
+                achievementExpBonus += 0.3f;
+            }
         }
-        if(achievementManager.firstFloorCleared)
+
+        if (equipments != null)
         {
-            expMultiplier += 0.3f;
+            bonusStrength += equipments.GetWearerBonus(BonusStat.Strength);
+            bonusDexterity += equipments.GetWearerBonus(BonusStat.Dexterity);
+            bonusMaxHealth += equipments.GetWearerBonus(BonusStat.MaxHealth);
+
+            // Armor's own value, plus any ItemStatBonus inscriptions on it.
+            bonusMaxHealth += equipments.GetArmorHealthBonus();
         }
-        if(achievementManager.turtleKilled)
+
+        ClampHealthToMax();
+        updateHealthBar();
+    }
+
+    private void ClampHealthToMax()
+    {
+        int max = EffectiveMaxHealth;
+        if (Health > max)
         {
-            MaxHealth += 25;
+            Health = max;
+        }
+        if (Health < 0)
+        {
+            Health = 0;
         }
     }
 
-   
     public void attack(string form, Enemy target)
     {
         if (target == null)
@@ -87,9 +182,10 @@ public class PlayerStats : MonoBehaviour{
                     UIManager.Instance.DrawFlowupText("No melee weapon equipped", transform.position);
                     return;
                 }
-                // No temporary-adjustment term: increaseStatTemp already folds the bonus
-                // into `strength`, so adding it again doubled every elixir's effect.
-                target.takeDamage(strength + equipments.meleeWeapon.getDamage());
+                // Strength is the effective value (base + bonuses + buffs), so it must not be
+                // added twice. Weapon damage comes from the equipped instance so an
+                // ItemStatBonus inscription is included.
+                target.takeDamage(Strength + equipments.GetMeleeDamage());
                 break;
             case "range":
                 if (equipments.rangeWeapon == null)
@@ -97,7 +193,7 @@ public class PlayerStats : MonoBehaviour{
                     UIManager.Instance.DrawFlowupText("No ranged weapon equipped", transform.position);
                     return;
                 }
-                target.takeDamage(dexterity + equipments.rangeWeapon.getDamage());
+                target.takeDamage(Dexterity + equipments.GetRangedDamage());
                 break;        
            }
     }
@@ -124,49 +220,92 @@ public class PlayerStats : MonoBehaviour{
         };
 
         foreach (Color color in damageColors) {
-            spriteRenderer.color = color;
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.color = color;
+            }
             yield return new WaitForSeconds(indicatortimer);
         }
 
-        spriteRenderer.color = Color.white;
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = Color.white;
+        }
     }
 
+    /// <summary>
+    /// Visual hit shake.
+    ///
+    /// This writes transform.position, which is also the value Controls used to derive the
+    /// player's grid cell from -- so it MUST always put the transform back exactly where it
+    /// found it, and it must never run twice at once.
+    ///
+    /// It used to do neither. Two melee enemies attacking in the same turn start two shakes
+    /// 0.1s apart; the second captured an ALREADY OFFSET transform as its origin, so when both
+    /// finished the player was left 0.1 units off the grid. FloorToInt then reported a
+    /// neighbouring cell, EntityManager.MoveEntity could not find the player there, and the
+    /// player could no longer move at all.
+    /// </summary>
     private IEnumerator DamageShake() {
-        Vector3 originalPos = transform.position;
+        if (shaking)
+        {
+            // One shake per volley. Restarting would capture the current (offset) position as
+            // the new origin, which is the exact bug this guard exists to prevent.
+            yield break;
+        }
+
+        shaking = true;
+        shakeOrigin = transform.position;
         float shakeAmount = 0.1f;
         float shakeInterval = 0.05f;
 
-        for (int i = 0; i < 6; i++)
+        try
         {
-            transform.position = originalPos + new Vector3(i % 2 == 0 ? shakeAmount : -shakeAmount, 0, 0);
-            yield return new WaitForSeconds(shakeInterval);
+            for (int i = 0; i < 6; i++)
+            {
+                transform.position = shakeOrigin + new Vector3(i % 2 == 0 ? shakeAmount : -shakeAmount, 0, 0);
+                yield return new WaitForSeconds(shakeInterval);
+            }
         }
-
-        transform.position = originalPos;
+        finally
+        {
+            // Always restore, even if the coroutine is disposed mid-shake.
+            transform.position = shakeOrigin;
+            shaking = false;
+        }
     }
 
     public void heal(int amount)
     {
         Health += amount;
-        if (Health > MaxHealth)
+        if (Health > EffectiveMaxHealth)
         {
-            Health = MaxHealth;
+            Health = EffectiveMaxHealth;
         }
         updateHealthBar();
     }
 
     public void updateHealthBar()
     {
-        HealthBar.fillAmount = (float) Health / (float)MaxHealth;
+        if (HealthBar == null)
+        {
+            return;
+        }
+        HealthBar.fillAmount = (float) Health / (float)EffectiveMaxHealth;
     }
 
     public void updateExpBar()
     {
+        if (ExpBar == null)
+        {
+            return;
+        }
         ExpBar.fillAmount = (float) currentExperience / (float) experienceToNextLevel;
     }
+
     public void gainExperience(int amount)
     {
-        currentExperience += (int)(amount * expMultiplier);
+        currentExperience += (int)(amount * ExpMultiplier);
         if (currentLevel < levelCap)
         {
             if (currentExperience >= experienceToNextLevel)
@@ -175,115 +314,120 @@ public class PlayerStats : MonoBehaviour{
                 currentLevel++;
                 experienceToNextLevel = (int)(experienceToNextLevel * 1.5f);
                 onLevelUpEvent(this);
-                Health = MaxHealth;
+                Health = EffectiveMaxHealth;
             }
         }
         updateExpBar();
         updateHealthBar();
-
     }
 
     public int getStrength()
     {
-        return strength;
+        return Strength;
     }
     
     public int getDexterity()
     {
-        return dexterity;
+        return Dexterity;
     }
+
     public int getMaxHealth()
     {
-        return MaxHealth;
+        return EffectiveMaxHealth;
     }
+
+    // ---------------------------------------------------------------------------------
+    // BASE MUTATORS. Only level-up allocation should use these.
+    // ---------------------------------------------------------------------------------
 
     public void increaseStrength()
     {
         strength++;
+        RecalculateStats();
     }
     public void increaseDexterity()
     {
         dexterity++;
+        RecalculateStats();
     }
     public void increaseMaxHealth()
     {
         MaxHealth += 10;
         Health += 10;
+        RecalculateStats();
     }
+
+    /// <summary>Base MaxHealth change. Equipment and inscriptions must NOT use this.</summary>
     public void increaseMaxHealth(int amount)
     {
         MaxHealth += amount;
-        updateHealthBar();
+        RecalculateStats();
     }
+
     public void decreaseStrength()
     {
         strength--;
+        RecalculateStats();
     }
     public void decreaseDexterity()
     {
         dexterity--;
+        RecalculateStats();
     }
+
+    /// <summary>Base MaxHealth change, used by the level-up rollback. Not for equipment.</summary>
     public void decreaseMaxHealth(int amount)
     {
         MaxHealth -= amount;
-        if (Health > MaxHealth)
-        {
-            Health = MaxHealth;
-        }
-        updateHealthBar();
+        RecalculateStats();
     }
+
+    // ---------------------------------------------------------------------------------
+    // TEMPORARY BUFFS. Stored in the table only; the effective accessors add them.
+    // ---------------------------------------------------------------------------------
 
     public void increaseStatTemp(string stat, int amount, int duration)
     {
-        int index;
-        switch (stat)
-        {
-            case "Strength":   index = 0; break;
-            case "Dexterity":  index = 1; break;
-            case "Max Health": index = 2; break;
-            default:
-                Debug.LogWarning($"increaseStatTemp: unknown stat '{stat}'");
-                return;
-        }
-
-        // Re-applying a buff of the same kind must not stack its bonus additively.
-        // Remove whatever is still active first, then apply the new value.
-        RevertTempStat(index);
-
-        temporaryStatAdjustments[index, 0] = amount;
-        temporaryStatAdjustments[index, 1] = duration;
-
-        switch (index)
-        {
-            case 0: strength += amount; break;
-            case 1: dexterity += amount; break;
-            case 2: increaseMaxHealth(amount); break;
-        }
-    }
-
-    private void RevertTempStat(int index)
-    {
-        int applied = temporaryStatAdjustments[index, 0];
-        temporaryStatAdjustments[index, 0] = 0;
-        temporaryStatAdjustments[index, 1] = 0;
-        if (applied == 0)
+        int index = TempStatIndex(stat);
+        if (index < 0)
         {
             return;
         }
-        switch (index)
+
+        // Re-applying a buff of the same kind replaces it rather than stacking, which now
+        // happens for free because the bonus is read from this single slot.
+        temporaryStatAdjustments[index, 0] = amount;
+        temporaryStatAdjustments[index, 1] = duration;
+
+        ClampHealthToMax();
+        updateHealthBar();
+    }
+
+    private int TempStatIndex(string stat)
+    {
+        switch (stat)
         {
-            case 0: strength -= applied; break;
-            case 1: dexterity -= applied; break;
-            case 2: decreaseMaxHealth(applied); break;
+            case "Strength":   return 0;
+            case "Dexterity":  return 1;
+            case "Max Health": return 2;
+            default:
+                Debug.LogWarning($"increaseStatTemp: unknown stat '{stat}'");
+                return -1;
         }
+    }
+
+    private void ClearTempStat(int index)
+    {
+        temporaryStatAdjustments[index, 0] = 0;
+        temporaryStatAdjustments[index, 1] = 0;
     }
 
     /// <summary>
     /// Remaining turns per buff: [0,*] = Strength, [1,*] = Dexterity, [2,*] = Max Health.
-    /// temporaryStatAdjustments[stat, 0] holds the amount to revert when the timer expires.
     /// </summary>
     void tickdownBuffs(Controls controls)
     {
+        bool changed = false;
         for (int stat = 0; stat < 3; stat++)
         {
             if (temporaryStatAdjustments[stat, 1] <= 0)
@@ -297,30 +441,22 @@ public class PlayerStats : MonoBehaviour{
                 continue;
             }
 
-            // Expired: revert the amount that was actually applied. Includes index 2
-            // (Max Health), which used to be skipped entirely, making that buff permanent.
-            RevertTempStat(stat);
+            // Expired. Because the bonus is read live from the table, clearing the slot is the
+            // whole revert -- there is nothing to subtract, so index 2 (Max Health) can no
+            // longer be left applied forever.
+            ClearTempStat(stat);
+            changed = true;
+        }
+
+        if (changed)
+        {
+            ClampHealthToMax();
+            updateHealthBar();
         }
     }
+
     internal void increaseExp(int expValue)
     {
         throw new NotImplementedException();
-    }
-
-    public int getRange()
-    {
-        if (equipments.rangeWeapon != null)
-        {
-            return range;
-        }
-        else
-        {
-            return 0;
-        }
-    }
-    
-    public void setRange(int range)
-    {
-        this.range = range;
     }
 }

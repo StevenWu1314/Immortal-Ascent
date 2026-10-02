@@ -17,6 +17,7 @@ public class TilePlacer : MonoBehaviour
     public Tile chest;
     public TileBase water;
     [SerializeField, Range(0f, 1f)] float flowerDensity;
+    [SerializeField, Range(0f, 1f)] float TreeDensity;
     DungeonSpecifications dungeonSpecifications;
 
    // List of BoundsInt
@@ -441,8 +442,16 @@ public class TilePlacer : MonoBehaviour
 
         }
     }
-    public void generateLootTiles(List<BoundsInt> roomsSpace, Grid grid)
+    /// <summary>
+    /// Place chest cells and report where they are so the generator can spawn an entity at each.
+    ///
+    /// The cell is marked with terrain code 99 (solid) and given a FLOOR tile rather than the
+    /// chest tile: the chest is an entity now, so drawing the tile as well would double up the
+    /// sprite. The floor tile still has to be written, or fillWater would flood the cell.
+    /// </summary>
+    public List<Vector2Int> generateLootTiles(List<BoundsInt> roomsSpace, Grid grid)
     {
+        List<Vector2Int> chestCells = new List<Vector2Int>();
         foreach (BoundsInt room in roomsSpace)
         {
             int spawnLoot = Random.Range(1, 11);
@@ -450,11 +459,12 @@ public class TilePlacer : MonoBehaviour
             {
                 int x = Random.Range(room.xMin+3, room.xMax-3);
                 int y = Random.Range(room.yMin+3, room.yMax-3);
-                Vector3 pos = new Vector3(x, y);
-                grid.SetValueAtLocation((int)pos.x, (int)pos.y, 99);
-                floor.SetTile(new Vector3Int(x, y), chest);
+                floor.SetTile(new Vector3Int(x, y), RandomFloorTile());
+                grid.SetValueAtLocation(x, y, LevelValidation.ChestCode);
+                chestCells.Add(new Vector2Int(x, y));
             }
         }
+        return chestCells;
     }
 
     public void fillWater(Grid grid)

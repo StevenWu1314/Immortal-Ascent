@@ -9,8 +9,6 @@ public class Grid
     private Vector3 originPosition;
     private float cellSize;
     private int[,] gridArray;
-    public delegate void genLoot();
-    public static event genLoot chestOpen;
 
     /// <summary>
     /// Value reported for any cell outside the grid. Counts as blocked so that

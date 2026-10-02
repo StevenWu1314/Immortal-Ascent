@@ -44,11 +44,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 196625a2ef8f84d888e9a2c370101af4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  id: 0
-  ItemName: Iron
-  description: Iron
-  image: {fileID: 0}
-  amount: 1
-  stackLimit: 99
-  itemDisplay: {fileID: 0}
+  definition: {fileID: 11400000, guid: ad19ce6ce6fb44d05a84efee81935af4, type: 2}
   dropRange: {x: 1, y: 1}

@@ -49884,17 +49884,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 399a8a69d30ba4ce8a0b86d072c7448f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lootDistribution: 640000001e000000ffffffff
+  epicChance: 1
+  rareChance: 30
   commonItem:
-  - {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
-  - {fileID: 3748014728830384789, guid: 65bf5f5ef2bbf4ccfb0286f6f37def3a, type: 3}
+  - {fileID: 11400000, guid: 75306d1c06f2e474b9b7f3348678060b, type: 2}
+  - {fileID: 11400000, guid: 75154620cf7cc4e0a998695a33556e01, type: 2}
   rareItem:
-  - {fileID: 8103580277624727149, guid: f5390054861d343ecbcecba456bd5811, type: 3}
-  - {fileID: 3748014728830384789, guid: 65bf5f5ef2bbf4ccfb0286f6f37def3a, type: 3}
-  - {fileID: 1417053570654631579, guid: 72cecad0ffa3a40b888d5fc0f71dc50f, type: 3}
-  - {fileID: 424189716286026104, guid: 50f9807f7c1a94729b969d91e63d2670, type: 3}
-  - {fileID: 9127352406000723282, guid: 87c862b74002b40b7acd2f4a23d2d3dd, type: 3}
+  - {fileID: 11400000, guid: d2069d2ec933e45789d071dfd2ba54ce, type: 2}
+  - {fileID: 11400000, guid: 75154620cf7cc4e0a998695a33556e01, type: 2}
+  - {fileID: 11400000, guid: 57f9d3641ecd04080a26b3a645336524, type: 2}
+  - {fileID: 11400000, guid: f6f64e0a209854be1afae53f341dfe8e, type: 2}
+  - {fileID: 11400000, guid: 958c5a248604b4dbbab57a63aed5c3da, type: 2}
   epicItem: []
+  dropAmount: 1
   playerInventory: {fileID: 0}
 --- !u!114 &1885776933
 MonoBehaviour:
@@ -49948,6 +49950,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1af63a48895b64424afaf001c1232aa8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rooms: []
+  numberofRooms: 0
 --- !u!1 &1888553446
 GameObject:
   m_ObjectHideFlags: 0
