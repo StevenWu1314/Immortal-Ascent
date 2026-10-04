@@ -67,6 +67,7 @@ public class Controls : MonoBehaviour
         {
             bowIndicator = transform.GetChild(1).gameObject;
         }
+        FogManager.Instance.DiscoveredTiles(Vector2Int.FloorToInt(transform.position));
     }
 
     // Update is called once per frame
@@ -200,6 +201,13 @@ public class Controls : MonoBehaviour
                     // inspect the grid values around the player if this is unexpected.
                 }
                 direction = Vector2Int.zero;
+
+                if (grid.Move(transform.position, direction, transform)) {
+                    EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
+                }
+
+                FogManager.Instance.DiscoveredTiles(nextCell);
+                
             }
 
             if (Input.GetKeyDown(KeyCode.Alpha2))
