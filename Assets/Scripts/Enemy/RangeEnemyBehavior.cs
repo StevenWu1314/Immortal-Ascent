@@ -29,26 +29,7 @@ public class RangeEnemyBehavior : EnemyBehavior
             Mathf.FloorToInt(player.transform.position.y)
         );
 
-        Vector2Int dir = playerCell - enemyCell;
-
-    // Try primary axis first, then fallback axis
-        Vector2Int[] steps;
-        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
-        {
-            steps = new Vector2Int[]
-            {
-                new Vector2Int(Mathf.Sign(dir.x) > 0 ? 1 : -1, 0),
-                new Vector2Int(0, Mathf.Sign(dir.y) > 0 ? 1 : -1)
-            };
-        }
-        else
-        {
-            steps = new Vector2Int[]
-            {
-                new Vector2Int(0, Mathf.Sign(dir.y) > 0 ? 1 : -1),
-                new Vector2Int(Mathf.Sign(dir.x) > 0 ? 1 : -1, 0)
-            };
-        }
+        Vector2Int[] steps = NextSteps(enemyCell, playerCell);
 
         foreach (var step in steps)
         {
