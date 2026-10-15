@@ -27,21 +27,17 @@ public class PlayerStats : MonoBehaviour{
     [SerializeField] int levelCap;
     [SerializeField] int experienceToNextLevel;
     [SerializeField] Equipments equipments;
-    [SerializeField] AchievementManager achievementManager;
 
-    /// <summary>Base experience multiplier. Achievement bonus is added on top in <see cref="ExpMultiplier"/>.</summary>
+    /// <summary>Experience gain multiplier, applied in <see cref="gainExperience"/>.</summary>
     [SerializeField] float expMultiplier = 1;
 
     // ---------------------------------------------------------------------------------
     // DERIVED BONUSES. Deliberately not serialized: RecalculateStats() rebuilds them from
-    // scratch, so they cannot drift and cannot be applied twice. The old code added the
-    // achievement bonuses straight onto the serialized fields from OnEnable, so every
-    // disable/enable cycle stacked them again (BUG-13).
+    // scratch, so they cannot drift and cannot be applied twice.
     // ---------------------------------------------------------------------------------
     private int bonusStrength;
     private int bonusDexterity;
     private int bonusMaxHealth;
-    private float achievementExpBonus;
 
     SpriteRenderer spriteRenderer;
 
@@ -49,7 +45,6 @@ public class PlayerStats : MonoBehaviour{
     private bool shaking;
     private Vector3 shakeOrigin;
     public static event Action<PlayerStats> onLevelUpEvent;
-    public static event Action<PlayerStats> onDeath;
 
     public static PlayerStats Instance;
     [SerializeField] Image HealthBar;
@@ -61,8 +56,6 @@ public class PlayerStats : MonoBehaviour{
     public int Strength => strength + bonusStrength + TempBonus(0);
     public int Dexterity => dexterity + bonusDexterity + TempBonus(1);
     public int EffectiveMaxHealth => Mathf.Max(1, MaxHealth + bonusMaxHealth + TempBonus(2));
-    public float ExpMultiplier => expMultiplier + achievementExpBonus;
-
     /// <summary>Base strength, before equipment/inscription/achievement/buff bonuses.</summary>
     public int BaseStrength => strength;
     public int BaseDexterity => dexterity;
@@ -117,23 +110,6 @@ public class PlayerStats : MonoBehaviour{
         bonusStrength = 0;
         bonusDexterity = 0;
         bonusMaxHealth = 0;
-        achievementExpBonus = 0f;
-
-        if (achievementManager != null)
-        {
-            if (achievementManager.bowKill)
-            {
-                bonusDexterity += 5;
-            }
-            if (achievementManager.turtleKilled)
-            {
-                bonusMaxHealth += 25;
-            }
-            if (achievementManager.firstFloorCleared)
-            {
-                achievementExpBonus += 0.3f;
-            }
-        }
 
         if (equipments != null)
         {
@@ -305,7 +281,7 @@ public class PlayerStats : MonoBehaviour{
 
     public void gainExperience(int amount)
     {
-        currentExperience += (int)(amount * ExpMultiplier);
+        currentExperience += (int)(amount * expMultiplier);
         if (currentLevel < levelCap)
         {
             if (currentExperience >= experienceToNextLevel)
@@ -453,10 +429,5 @@ public class PlayerStats : MonoBehaviour{
             ClampHealthToMax();
             updateHealthBar();
         }
-    }
-
-    internal void increaseExp(int expValue)
-    {
-        throw new NotImplementedException();
     }
 }

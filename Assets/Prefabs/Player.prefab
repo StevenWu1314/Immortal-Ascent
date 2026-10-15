@@ -418,7 +418,6 @@ MonoBehaviour:
   levelCap: 100
   experienceToNextLevel: 10
   equipments: {fileID: 3665873110269209749}
-  achievementManager: {fileID: 11400000, guid: ea808bb1738014ddf874da0cd7f6b6f0, type: 2}
   expMultiplier: 1
   HealthBar: {fileID: 0}
   ExpBar: {fileID: 0}

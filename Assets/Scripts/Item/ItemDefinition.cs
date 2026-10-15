@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>What an item is for, which decides how <see cref="ItemDefinition.Use"/> behaves.</summary>
@@ -27,13 +28,7 @@ public enum InscriptionEffect
     ItemStatBonus,
 
     /// <summary>Permanent positive effect on the wearer while the item is equipped.</summary>
-    PlayerStatBonus,
-
-    /// <summary>NOT IMPLEMENTED IN PHASE 1 -- needs the enemy status system.</summary>
-    OnHitDebuff,
-
-    /// <summary>NOT IMPLEMENTED IN PHASE 1 -- deferred to phase 2.</summary>
-    CostlyPower
+    PlayerStatBonus
 }
 
 /// <summary>Which equipment an inscription may be applied to.</summary>
@@ -96,7 +91,7 @@ public class ItemDefinition : ScriptableObject
     [SerializeField] private int effectDuration;
 
     [Header("Inscription")]
-    [Tooltip("What this inscription does once applied. Only ItemStatBonus and PlayerStatBonus are implemented in phase 1.")]
+    [Tooltip("What this inscription does once applied.")]
     [SerializeField] private InscriptionEffect inscriptionEffect = InscriptionEffect.ItemStatBonus;
     [Tooltip("Which stat the bonus applies to.")]
     [SerializeField] private BonusStat inscriptionStat = BonusStat.Strength;
@@ -104,6 +99,18 @@ public class ItemDefinition : ScriptableObject
     [SerializeField] private int inscriptionAmount;
     [Tooltip("Which equipment this inscription may be applied to.")]
     [SerializeField] private InscriptionTarget inscriptionTarget = InscriptionTarget.AnyEquipment;
+
+    [Header("Crafting")]
+    [Tooltip("Materials consumed to craft this item. Leave empty for items that cannot be crafted.")]
+    [SerializeField] private List<Ingredient> recipe = new List<Ingredient>();
+
+    /// <summary>One material plus how many units the recipe consumes of it.</summary>
+    [System.Serializable]
+    public struct Ingredient
+    {
+        public ItemDefinition material;
+        public int amount;
+    }
 
     public string Id => string.IsNullOrEmpty(id) ? name : id;
 
@@ -133,14 +140,6 @@ public class ItemDefinition : ScriptableObject
     public int InscriptionAmount => inscriptionAmount;
     public InscriptionTarget InscriptionTarget => inscriptionTarget;
 
-    /// <summary>
-    /// Phase 1 implements ItemStatBonus and PlayerStatBonus only. The other two are declared so
-    /// existing assets and UI can round-trip them, and are rejected loudly rather than silently
-    /// doing nothing.
-    /// </summary>
-    public bool IsInscriptionImplemented =>
-        inscriptionEffect == InscriptionEffect.ItemStatBonus ||
-        inscriptionEffect == InscriptionEffect.PlayerStatBonus;
 
     /// <summary>
     /// May this inscription be applied to the given equipment definition?
@@ -181,10 +180,6 @@ public class ItemDefinition : ScriptableObject
                     return $"+{inscriptionAmount} {statName} to the item";
                 case InscriptionEffect.PlayerStatBonus:
                     return $"+{inscriptionAmount} {statName} while equipped";
-                case InscriptionEffect.OnHitDebuff:
-                    return "Applies a debuff on hit (not implemented yet)";
-                case InscriptionEffect.CostlyPower:
-                    return "Powerful effect with a cost (not implemented yet)";
                 default:
                     return "";
             }
@@ -240,4 +235,104 @@ public class ItemDefinition : ScriptableObject
     /// PlayerStats.increaseStatTemp (which keys off "Max Health", not the enum name).
     /// </summary>
     public string StatDisplayName => StatLabel;
+
+    // ---------------------------------------------------------------------------------
+    // CRAFTING. An item with an empty recipe simply cannot be crafted; everything else
+    // (materials, amounts, and the craft itself) lives on this asset.
+    // ---------------------------------------------------------------------------------
+
+    /// <summary>True when this item has a recipe at all.</summary>
+    public bool IsCraftable => recipe != null && recipe.Count > 0;
+
+    /// <summary>Can this item be crafted right now, from the player's inventory?</summary>
+    public bool CanCraft()
+    {
+        // Quiet: the crafting panel asks this once per craftable item, so a missing material
+        // must not log here.
+        return TryResolveMaterials(out _, false);
+    }
+
+    /// <summary>
+    /// Consume the materials and put one of this item into the inventory. The whole recipe and
+    /// the output space are validated before anything is removed, so a missing material or a full
+    /// inventory can never eat the inputs.
+    /// </summary>
+    public void Craft()
+    {
+        Inventory inventory = Inventory.Instance;
+        if (inventory == null)
+        {
+            Debug.LogError($"ItemDefinition '{name}': no Inventory instance; nothing was crafted.");
+            return;
+        }
+        if (!TryResolveMaterials(out List<(ItemDefinition material, int amount)> toRemove, true))
+        {
+            return;
+        }
+        if (!inventory.hasRoomFor(this, 1))
+        {
+            Debug.LogWarning($"ItemDefinition '{name}': inventory has no room for {DisplayName}; " +
+                             "materials were not consumed.");
+            return;
+        }
+
+        foreach (var (material, amount) in toRemove)
+        {
+            inventory.removeItem(material, amount);
+        }
+        inventory.addItem(this, 1);
+        Debug.Log($"Crafted: {DisplayName}");
+    }
+
+    /// <summary>
+    /// Work out which definitions satisfy this recipe without changing anything. Entries for the
+    /// same material are summed first, so two lines asking for 5 Iron each require 10 in stock
+    /// instead of passing two independent "has 5" checks and then under-consuming.
+    /// </summary>
+    private bool TryResolveMaterials(out List<(ItemDefinition material, int amount)> toRemove, bool logMissing)
+    {
+        toRemove = new List<(ItemDefinition, int)>();
+
+        if (!IsCraftable)
+        {
+            if (logMissing)
+            {
+                Debug.LogWarning($"ItemDefinition '{name}' has no recipe; refusing to craft.");
+            }
+            return false;
+        }
+
+        Inventory inventory = Inventory.Instance;
+        if (inventory == null)
+        {
+            return false;
+        }
+
+        Dictionary<ItemDefinition, int> demand = new Dictionary<ItemDefinition, int>();
+        foreach (Ingredient entry in recipe)
+        {
+            if (entry.material == null)
+            {
+                Debug.LogError($"ItemDefinition '{name}': a recipe entry has no ItemDefinition assigned.");
+                return false;
+            }
+            demand.TryGetValue(entry.material, out int total);
+            demand[entry.material] = total + entry.amount;
+        }
+
+        foreach (var entry in demand)
+        {
+            if (inventory.countOf(entry.Key) < entry.Value)
+            {
+                if (logMissing)
+                {
+                    Debug.Log($"Missing material: {entry.Key.DisplayName} (need {entry.Value})");
+                }
+                return false;
+            }
+            toRemove.Add((entry.Key, entry.Value));
+        }
+        return true;
+    }
 }
+

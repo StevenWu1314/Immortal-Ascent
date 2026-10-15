@@ -8,9 +8,6 @@ using UnityEngine;
 /// </summary>
 public static class InscriptionService
 {
-    /// <summary>Inscriptions one item can hold.</summary>
-    public static int SlotCount => EquipmentInstance.MaxInscriptions;
-
     /// <summary>
     /// Every equipment instance this inscription could legally go on, equipped items first
     /// (applying to what you are holding is the common case), then the rest of the backpack.
@@ -82,14 +79,6 @@ public static class InscriptionService
         if (!inscription.CanApplyTo(target.definition))
         {
             reason = $"{inscription.DisplayName} cannot be applied to {target.DisplayName}";
-            return false;
-        }
-        if (!inscription.IsInscriptionImplemented)
-        {
-            // Phase 1 ships ItemStatBonus and PlayerStatBonus only. Say so rather than
-            // consuming the item and doing nothing.
-            reason = $"{inscription.DisplayName} uses {inscription.InscriptionEffect}, " +
-                     "which is not implemented yet";
             return false;
         }
 

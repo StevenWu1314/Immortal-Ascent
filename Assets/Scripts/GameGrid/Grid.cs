@@ -19,7 +19,7 @@ public class Grid
 
     /// <summary>
     /// The grid currently backing the level. Exactly one component should own the
-    /// level grid (see PerlinNoiseMap), and everything else should read it from
+    /// level grid (see RoomFirstDungeonGenerator), and everything else should read it from
     /// here rather than creating or searching for its own instance.
     /// </summary>
     public static Grid Current { get; set; }
@@ -36,37 +36,9 @@ public class Grid
         this.originPosition = originPosition;
         gridArray = new int[width, height];
         Current = this;
-
-
-        // for (int x = 0; x < gridArray.GetLength(0); x++)
-        // {
-        //     Debug.DrawLine(GetWorldPosition(x, 0), GetWorldPosition(x, height), Color.white, 100f);
-        // }
-        // for (int y = 0 ; y < gridArray.GetLength(1); y++)
-        // {
-        //     Debug.DrawLine(GetWorldPosition(0, y), GetWorldPosition(width, y), Color.white, 100f);
-                
-        // }
     }
-
-    private Vector3 GetWorldPosition(int x, int y)
-    {
-        return new Vector3(x, y) * cellSize + originPosition;
-    }
-    
     public int GetValueAtLocation(int x, int y)
     {
-        if (!InBounds(x, y))
-        {
-            return OutOfBounds;
-        }
-        return gridArray[x, y];
-    }
-
-    public int GetValueAtWorldLocation(Vector3 worldPos)
-    {
-        int x, y;
-        getXY(worldPos, out x, out y);
         if (!InBounds(x, y))
         {
             return OutOfBounds;
@@ -82,28 +54,11 @@ public class Grid
             return;
         }
         gridArray[x, y] = value;
-        //Debug.Log("x: " + x + " y: " + y);
-        //utilityFunction.createWorldText(gridArray[x, y].ToString(), null, GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f, 20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
     }
 
     public bool InBounds(int x, int y)
     {
         return x >= 0 && y >= 0 && x < width && y < height;
-    }
-
-    public void SetValueAtWorldLocation(Vector3 location, int value)
-    {
-        int worldx, worldy;
-        worldx = (int)location.x;
-        worldy = (int)location.y;
-        int x, y;
-        getXY(new Vector3(worldx, worldy), out x, out y);
-        if (!InBounds(x, y))
-        {
-            return;
-        }
-        gridArray[x, y] = value;
-        utilityFunction.createWorldText(gridArray[x, y].ToString(), null, new Vector3(worldx, worldy) + new Vector3(cellSize, cellSize) * 0.5f, 20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
     }
     public int GetSize(int dimension)
     {
@@ -112,7 +67,7 @@ public class Grid
 
     /// <summary>
     /// Single definition of "an entity may stand here". Terrain codes are written by
-    /// PerlinNoiseMap/TilePlacer: 0 = grass/floor/corridor, 1 = wall/shallow water,
+    /// TilePlacer: 0 = floor/corridor, 1 = wall/shallow water,
     /// 2 = deep water, 5 = bridge (legacy), 99 = chest. Anything unknown is treated
     /// as blocked so a malformed map cannot silently let entities walk off it.
     /// </summary>
@@ -135,65 +90,14 @@ public class Grid
 
     /// <summary>
     /// True when the player may step from their current cell in <paramref name="direction"/>.
-    /// The <paramref name="entity"/> parameter is retained for call-site compatibility; occupancy
-    /// is owned by EntityManager, not by this static terrain grid.
+    /// Occupancy is owned by EntityManager, not by this static terrain grid.
     /// </summary>
-    public bool Move(Vector3 position, Vector2Int direction, Transform entity)
+    public bool Move(Vector3 position, Vector2Int direction)
     {
         int x, y;
         getXY(position, out x, out y);
         Vector2Int target = new Vector2Int(x, y) + direction;
         // IsWalkableTerrain(OutOfBounds) is false, so the map edge blocks movement.
         return IsWalkableTerrain(GetValueAtLocation(target.x, target.y));
-    }
-
-    public void printGrid() {
-        GameObject[] worldtexts = GameObject.FindGameObjectsWithTag("worldtexts");
-        for(int i = 0; i < worldtexts.GetLength(0); i++)
-        {
-            spawnPointBehavior.Destroy(worldtexts[i]);
-        }
-        for (int x = 0; x < gridArray.GetLength(0); x++)
-        {
-            for (int y = 0; y < gridArray.GetLength(1); y++)
-            {
-                if(gridArray[x, y] != 0)
-                {
-                    utilityFunction.createWorldText(gridArray[x, y].ToString(), null, GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f, 20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
-                }
-                
-            }
-        }
-    }
-
-
-    public Enemy detectEnemiesInALine(Vector3 position, Vector2Int direction, int range)
-    {
-        int x, y;
-        getXY(position, out x, out y);
-        for (int i = 0; i < range; i++)
-        {
-            x += direction.x;
-            y += direction.y;
-            if (!InBounds(x, y))
-            {
-                return null;
-            }
-            int value = gridArray[x, y];
-            if (value == 3) {
-                Collider2D[] targets = Physics2D.OverlapCircleAll(position + new Vector3(i * direction.x, i * direction.y), 1);
-                Enemy target = null;
-                foreach (Collider2D collider in targets)
-                {
-                    if (collider.gameObject.GetComponent<Enemy>() != null) {
-                    
-                        target = collider.gameObject.GetComponent<Enemy>();
-                    }
-                }
-                return target;
-            }     
-        }
-        return null;
-        
     }
 }

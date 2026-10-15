@@ -7,12 +7,9 @@ using UnityEngine;
 /// </summary>
 public class Equipments : MonoBehaviour
 {
-    [SerializeField] private GameObject inventoryContainer;
     [SerializeField] public EquipmentInstance meleeWeapon;
     [SerializeField] public EquipmentInstance rangeWeapon;
     [SerializeField] public EquipmentInstance armor;
-    [SerializeField] private GameObject ItemContainer;
-    [SerializeField] private ItemDisplay itemDisplay;
 
     public static Equipments Instance;
 
@@ -116,16 +113,6 @@ public class Equipments : MonoBehaviour
         {
             total += armor.WearerBonus(stat);
         }
-        return total;
-    }
-
-    /// <summary>Total inscriptions currently granting an effect, for the diagnostics/UI readout.</summary>
-    public int CountInscriptions()
-    {
-        int total = 0;
-        if (meleeWeapon != null) total += meleeWeapon.Inscriptions.Count;
-        if (rangeWeapon != null) total += rangeWeapon.Inscriptions.Count;
-        if (armor != null) total += armor.Inscriptions.Count;
         return total;
     }
 }

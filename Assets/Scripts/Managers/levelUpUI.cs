@@ -1,16 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Drawing;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class levelUpUI : MonoBehaviour
 {
-    [SerializeField] private PlayerStats playerStats;
-    [SerializeField] private Button[] addButtons;
+    private PlayerStats playerStats;
+    private Button[] addButtons = new Button[3];
     [SerializeField] private TMP_Text str;
     [SerializeField] private TMP_Text dex;
     [SerializeField] private TMP_Text health;
@@ -42,19 +37,9 @@ public class levelUpUI : MonoBehaviour
         health.text = playerStats.getMaxHealth().ToString();
         pointsLeft.text = points.ToString();
 
-        if(points <= 0)
+        for (int i = 0; i < addButtons.Length; i++)
         {
-            for(int i = 0; i < addButtons.Length; i++)
-            {
-                addButtons[i].interactable = false;
-            }
-        }
-        if(points > 0)
-        {
-            for(int i = 0; i < addButtons.Length; i++)
-            {
-                addButtons[i].interactable = true;
-            }
+            addButtons[i].interactable = points > 0;
         }
     }
 

@@ -1,12 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.AI;
 using Vector3 = UnityEngine.Vector3;
 
 public class EnemyBehavior : MonoBehaviour
@@ -136,18 +128,6 @@ public class EnemyBehavior : MonoBehaviour
             becomeAlerted();
         }
     }
-
-    protected void notifyNearbyEnemies()
-    {
-        Collider2D[] objectInRange = Physics2D.OverlapCircleAll(transform.position, detectionRadius/2);
-        List<EnemyBehavior> others = (from unit in objectInRange where unit.GetComponent<EnemyBehavior>() != null select unit.GetComponent<EnemyBehavior>()).ToList();
-        foreach(EnemyBehavior other in others)
-        {
-            other.becomeAlerted();
-            
-        }
-    }
-
     public void becomeAlerted()
     {
         Controls.onMoveEvent -= checkForPlayerInRoom;
@@ -196,9 +176,22 @@ public class EnemyBehavior : MonoBehaviour
             }
         }
     }
+    /// <summary>
+    /// Preferred then fallback single step toward <paramref name="to"/>: the dominant axis first.
+    /// Shared by chase and return, which each carried their own copy of this.
+    /// </summary>
+    protected static Vector2Int[] NextSteps(Vector2Int from, Vector2Int to)
+    {
+        Vector2Int dir = to - from;
+        Vector2Int horizontal = new Vector2Int(Mathf.Sign(dir.x) > 0 ? 1 : -1, 0);
+        Vector2Int vertical = new Vector2Int(0, Mathf.Sign(dir.y) > 0 ? 1 : -1);
+        return Mathf.Abs(dir.x) > Mathf.Abs(dir.y)
+            ? new[] { horizontal, vertical }
+            : new[] { vertical, horizontal };
+    }
+
     protected virtual void chasePlayer()
     {
-        Debug.Log("chasing player");
         Vector2Int enemyCell = new Vector2Int(
             Mathf.FloorToInt(transform.position.x),
             Mathf.FloorToInt(transform.position.y)
@@ -208,26 +201,7 @@ public class EnemyBehavior : MonoBehaviour
             Mathf.FloorToInt(player.transform.position.y)
         );
 
-        Vector2Int dir = playerCell - enemyCell;
-
-    // Try primary axis first, then fallback axis
-        Vector2Int[] steps;
-        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
-        {
-            steps = new Vector2Int[]
-            {
-                new Vector2Int(Mathf.Sign(dir.x) > 0 ? 1 : -1, 0),
-                new Vector2Int(0, Mathf.Sign(dir.y) > 0 ? 1 : -1)
-            };
-        }
-        else
-        {
-            steps = new Vector2Int[]
-            {
-                new Vector2Int(0, Mathf.Sign(dir.y) > 0 ? 1 : -1),
-                new Vector2Int(Mathf.Sign(dir.x) > 0 ? 1 : -1, 0)
-            };
-        }
+        Vector2Int[] steps = NextSteps(enemyCell, playerCell);
 
         foreach (var step in steps)
         {
@@ -254,7 +228,6 @@ public class EnemyBehavior : MonoBehaviour
             {
                 // Move and update entity manager
                 EntityManager.Instance.MoveEntity(gameObject, enemyCell, nextCell);
-                transform.position = new Vector3(nextCell.x, nextCell.y, 0f);
             }
 
             return; // stop after first valid move
@@ -272,26 +245,7 @@ public class EnemyBehavior : MonoBehaviour
             Mathf.FloorToInt(spawnPos.y)
         );
 
-        Vector2Int dir = spawnCell - enemyCell;
-
-    // Try primary axis first, then fallback axis
-        Vector2Int[] steps;
-        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
-        {
-            steps = new Vector2Int[]
-            {
-                new Vector2Int(Mathf.Sign(dir.x) > 0 ? 1 : -1, 0),
-                new Vector2Int(0, Mathf.Sign(dir.y) > 0 ? 1 : -1)
-            };
-        }
-        else
-        {
-            steps = new Vector2Int[]
-            {
-                new Vector2Int(0, Mathf.Sign(dir.y) > 0 ? 1 : -1),
-                new Vector2Int(Mathf.Sign(dir.x) > 0 ? 1 : -1, 0)
-            };
-        }
+        Vector2Int[] steps = NextSteps(enemyCell, spawnCell);
 
         foreach (var step in steps)
         {
@@ -314,7 +268,6 @@ public class EnemyBehavior : MonoBehaviour
             {
                 // Move and update entity manager
                 EntityManager.Instance.MoveEntity(gameObject, enemyCell, nextCell);
-                transform.position = new Vector3(nextCell.x, nextCell.y, 0f);
             }
 
             return; // stop after first valid move

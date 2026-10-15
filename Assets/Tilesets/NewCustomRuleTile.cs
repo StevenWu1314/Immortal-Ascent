@@ -49,12 +49,6 @@ public class NewCustomRuleTile : RuleTile<NewCustomRuleTile.Neighbor>
         return _cachedAdditionalTilemaps;
     }
 
-    // Call this if you load a new scene or need to force a refresh
-    public void InvalidateTilemapCache()
-    {
-        _cachedAdditionalTilemaps = null;
-        _cacheInitialized = false;
-    }
 
     public class Neighbor : RuleTile.TilingRule.Neighbor
     {

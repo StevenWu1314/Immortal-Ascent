@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] private GameObject levelUpMenu;
     public static event Action<UIManager> openMenu;
     public static UIManager Instance;
 
@@ -21,9 +20,7 @@ public class UIManager : MonoBehaviour
 
     private void toggleLevelUpMenu(PlayerStats stats)
     {
-        Debug.Log("trying to find");
         this.transform.Find("Level Up UI").gameObject.SetActive(true);
-        Debug.Log("trying to enable");
         openMenu(this);
     }
 
@@ -36,11 +33,6 @@ public class UIManager : MonoBehaviour
         GameObject.FindGameObjectWithTag("Player").GetComponent<Controls>().MenuIsOpen = false;
     }
 
-    public void DrawFlowupDamageText(int damage, Vector3 position)
-    {
-        TextMesh damageText = utilityFunction.createWorldText("-" + damage.ToString(), null, position, 20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);
-        StartCoroutine(FlowupDamageText(damageText));
-    }
     public void DrawFlowupText(string text, Vector3 position)
     {
         TextMesh damageText = utilityFunction.createWorldText(text, null, position, 20, Color.white, TextAnchor.MiddleCenter, TextAlignment.Center, 1);

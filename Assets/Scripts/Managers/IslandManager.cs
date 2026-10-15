@@ -33,7 +33,6 @@ public static class IslandManager
     private static bool initialized;
 
     public static bool IsInitialized => initialized;
-    public static int IslandCount => islandCount;
 
     /// <summary>
     /// Assign island ids from the room layout. Cells inside a room's interior get that room's
@@ -185,24 +184,6 @@ public static class IslandManager
     }
 
     /// <summary>
-    /// Whether a cell belongs to the given island. Used to keep enemies inside their own room:
-    /// a passage cell never matches a room id, so enemies refuse to step onto corridors.
-    /// </summary>
-    public static bool IsOnIsland(Vector2Int cell, int islandId)
-    {
-        if (!initialized)
-        {
-            return true; // never confine when islands are unavailable
-        }
-        if (islandId <= Passage)
-        {
-            // Enemy has no valid room island; only the terrain check applies.
-            return GetIsland(cell) != Unassigned;
-        }
-        return GetIsland(cell) == islandId;
-    }
-
-    /// <summary>
     /// Room island id whose rectangle contains the cell (border ring included), or Unassigned.
     /// </summary>
     public static int GetRoomContaining(Vector2Int cell)
@@ -221,6 +202,33 @@ public static class IslandManager
             }
         }
         return Unassigned;
+    }
+
+    /// <summary>
+    /// Re-tag a cell that became walkable after <see cref="Rebuild"/> (an opened chest) as part of
+    /// the room it sits in, or as <see cref="Passage"/> when no room contains it.
+    ///
+    /// Island ids are a snapshot of walkability taken at generation time, so a cell that was solid
+    /// then is stored as <see cref="Unassigned"/>. Leaving it that way after the terrain changed
+    /// would keep the exit gate from letting the player step onto it, and would make
+    /// <see cref="CountLivingEnemies"/> miss an enemy standing there, so the room could read as
+    /// cleared while one is still alive.
+    /// </summary>
+    public static void MarkWalkable(Vector2Int cell)
+    {
+        if (!initialized || islandIds == null ||
+            cell.x < 0 || cell.y < 0 || cell.x >= width || cell.y >= height)
+        {
+            return;
+        }
+        Grid grid = Grid.Current;
+        if (grid == null || !Grid.IsWalkableTerrain(grid.GetValueAtLocation(cell.x, cell.y)))
+        {
+            return;
+        }
+
+        int room = GetRoomContaining(cell);
+        islandIds[cell.x, cell.y] = room > Passage ? room : Passage;
     }
 
     /// <summary>

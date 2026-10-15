@@ -62,11 +62,6 @@ public class EquipmentInstance
 
     public string DisplayName => definition != null ? definition.DisplayName : "(empty equipment)";
 
-    public bool IsFull => Inscriptions.Count >= MaxInscriptions;
-
-    /// <summary>Number of slots the UI should draw: always MaxInscriptions, filled or not.</summary>
-    public int SlotCount => MaxInscriptions;
-
     public bool HasInscriptionAt(int slot)
     {
         return slot >= 0 && slot < Inscriptions.Count && Inscriptions[slot] != null;

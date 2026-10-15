@@ -4,10 +4,11 @@ using UnityEngine;
 /// <summary>
 /// A chest the player opens from an adjacent cell.
 ///
-/// The chest cell keeps terrain code 99 (solid) because the Grid remains the single authority
-/// for movement -- this component only supplies the visual and the interaction. Its contents are
-/// rolled once at generation time, so a level can be inspected (and reproduced from a seed) long
-/// before anyone opens it.
+/// The cell starts as terrain code 99 (solid) so the chest is opened from a neighbouring cell
+/// rather than stood on. Opening it makes the cell passable: the Grid stays the single authority
+/// for movement, and this component is what tells the Grid (and IslandManager) that it changed.
+/// Contents are rolled once at generation time, so a level can be inspected (and reproduced from a
+/// seed) long before anyone opens it.
 /// </summary>
 public class Chest : MonoBehaviour
 {
@@ -87,6 +88,16 @@ public class Chest : MonoBehaviour
             }
         }
 
+        // An opened chest stops being an obstacle. The Grid is the authority for movement, and
+        // IslandManager snapshotted this cell as blocked, so both have to be updated or the room
+        // gate keeps refusing the step.
+        Vector2Int cell = Cell;
+        if (Grid.Current != null)
+        {
+            Grid.Current.SetValueAtLocation(cell.x, cell.y, 0);
+        }
+        IslandManager.MarkWalkable(cell);
+
         // Visual feedback that this one is spent.
         if (spriteRenderer != null)
         {
@@ -106,14 +117,12 @@ public class Chest : MonoBehaviour
 }
 
 /// <summary>
-/// Cell -> chest lookup so the player can find a chest to open without a physics query. Mirrors
-/// CollectableMap; rebuilt every generation.
+/// Cell -> chest lookup so the player can find a chest to open without a physics query.
+/// Rebuilt every generation.
 /// </summary>
 public static class ChestRegistry
 {
     private static readonly Dictionary<Vector2Int, Chest> chests = new Dictionary<Vector2Int, Chest>();
-
-    public static int Count => chests.Count;
 
     public static void Register(Chest chest)
     {
@@ -143,8 +152,8 @@ public static class ChestRegistry
     }
 
     /// <summary>
-    /// The unopened chest directly next to <paramref name="from"/>, if any. Chests are solid, so
-    /// "adjacent" is the only way the player can ever be near one.
+    /// The unopened chest directly next to <paramref name="from"/>, if any. An unopened chest is
+    /// solid, so "adjacent" is the only way the player can ever be near one.
     /// </summary>
     public static bool TryGetAdjacent(Vector2Int from, out Chest chest)
     {

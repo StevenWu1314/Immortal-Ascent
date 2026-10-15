@@ -1,9 +1,5 @@
 using UnityEngine;
-using System;
-using System.Collections.Generic;
 using System.Collections;
-using System.Linq.Expressions;
-using UnityEngine.Rendering;
 
 public abstract class Enemy : MonoBehaviour
 {
@@ -21,7 +17,7 @@ public abstract class Enemy : MonoBehaviour
     public void takeDamage(int damage)
     {
         health -= damage;
-        uiManager.DrawFlowupDamageText(damage, this.transform.position);
+        uiManager.DrawFlowupText("-" + damage, this.transform.position);
         StartCoroutine(DamageIndicator());
         if(health <= 0)
         {
@@ -58,16 +54,6 @@ public abstract class Enemy : MonoBehaviour
     {
         target.takeDamage(damage);
     }
-    IEnumerator FlowupDamageText(TextMesh damageText)
-    {
-        for(int i = 0; i < 100; i++)
-        {
-            damageText.transform.position += new Vector3(0, 0.1f, 0);
-            yield return new WaitForSeconds(0.01f);
-        }
-        Destroy(damageText);
-    }
-
     private void Die()
     {
         Kill(true);
@@ -107,7 +93,6 @@ public abstract class Enemy : MonoBehaviour
             {
                 LootGen.Instance.rollTable();
             }
-            Debug.Log("enemy eliminated");
         }
         Destroy(gameObject);
     }

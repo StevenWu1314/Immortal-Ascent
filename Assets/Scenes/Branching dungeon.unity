@@ -678,7 +678,6 @@ GameObject:
   m_Component:
   - component: {fileID: 143402533}
   - component: {fileID: 143402534}
-  - component: {fileID: 143402535}
   m_Layer: 5
   m_Name: itemholder
   m_TagString: Untagged
@@ -745,18 +744,6 @@ MonoBehaviour:
   m_Spacing: {x: 0, y: 0}
   m_Constraint: 0
   m_ConstraintCount: 2
---- !u!114 &143402535
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 143402532}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0dba8afc7b12b49e1969baf2c355bbf4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &171720095
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2227,7 +2214,6 @@ GameObject:
   m_Component:
   - component: {fileID: 454440043}
   - component: {fileID: 454440045}
-  - component: {fileID: 454440044}
   - component: {fileID: 454440047}
   - component: {fileID: 454440046}
   m_Layer: 5
@@ -2256,18 +2242,6 @@ RectTransform:
   m_AnchoredPosition: {x: 190, y: -70}
   m_SizeDelta: {x: 400, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &454440044
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 454440042}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0dba8afc7b12b49e1969baf2c355bbf4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &454440045
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9100,7 +9074,6 @@ GameObject:
   - component: {fileID: 1885776931}
   - component: {fileID: 1885776932}
   - component: {fileID: 1885776933}
-  - component: {fileID: 1885776934}
   - component: {fileID: 1885776935}
   - component: {fileID: 1885776936}
   m_Layer: 0
@@ -9175,18 +9148,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78df6629b62db4f36a573b1f782d4d03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1885776934
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1885776928}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0852fd154ee7642f791461d18e4d4803, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1885776935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9199,8 +9160,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae66233c94d844608ae1fe37af6d3819, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  recipes:
-  - {fileID: 11400000, guid: 2691d8b1771d046b29bc70c337ae2f79, type: 2}
   CraftingPanel: {fileID: 77753518}
   buttonTemplate: {fileID: 9152952134107605797, guid: 071a0a9e68132401a829b51265a8081d, type: 3}
 --- !u!114 &1885776936

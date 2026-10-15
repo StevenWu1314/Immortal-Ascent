@@ -1,18 +1,11 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-
 public class RoomFirstDungeonGenerator : MonoBehaviour
 {
     // Start is called before the first frame update
-   [SerializeField] private BoundsInt Space;
-    [SerializeField] private int minWidth;
-    [SerializeField] private int minHeight;
     [SerializeField] private int numberOfRooms;
     /// <summary>
     /// Inclusive enemy count per room (x = minimum, y = maximum). Replaces the hardcoded
@@ -66,17 +59,6 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         }
         return grid;
     }
-
-    public void generateDungeon()
-    {
-        tilePlacer.clear();
-        List<BoundsInt> rooms = ProceduralGenerationAlgorithm.BinarySpacePartitioning(Space, minWidth, minHeight, numberOfRooms);
-        tilePlacer.PlaceTiles(rooms, grid);    
-        rooms = RoomConnector.SortRoomsByDistance(rooms);
-        //Debug.Log(ProceduralGenerationAlgorithm.BrachingRooms(5, 10));
-        tilePlacer.createCorridors(rooms);
-    }
-
     public void generateBranchingDungeon()
     {
         // Self-heal the grid: at runtime Start() has already built it, but the editor
@@ -90,10 +72,6 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         {
             EntityManager.Instance.Reset();
         }
-        if (CollectableMap.Instance != null)
-        {
-            CollectableMap.Instance.Reset();
-        }
         spawnedPlayer = null;
 
         tilePlacer.clear();
@@ -105,7 +83,6 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         int startingRoomIndex = -1;
         for (int i = 0; i < rooms.Count; i++)
         {
-            Debug.Log(rooms[i].body);
             roomsSpace.Add(rooms[i].body);
             TurnManager.Instance.rooms[i] = rooms[i].body;
             if(rooms[i].type == "Starting")
@@ -222,10 +199,10 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
     }
 
     /// <summary>
-    /// Spawn an entity chest on every cell generateLootTiles reported. The cell keeps terrain
-    /// code 99 (solid), so the chest blocks movement and the player opens it from a neighbour.
-    /// Contents are rolled here, once, rather than at open time, so the level's loot is fully
-    /// determined the moment it is generated.
+    /// Spawn an entity chest on every cell generateLootTiles reported. The cell starts as terrain
+    /// code 99 (solid), so the chest blocks movement until it is opened and the player opens it
+    /// from a neighbour. Contents are rolled here, once, rather than at open time, so the level's
+    /// loot is fully determined the moment it is generated.
     /// </summary>
     private void spawnChests(List<Vector2Int> cells)
     {

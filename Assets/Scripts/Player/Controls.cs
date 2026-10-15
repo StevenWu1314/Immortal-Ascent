@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
@@ -20,16 +19,12 @@ public class Controls : MonoBehaviour
     [SerializeField] public bool MenuIsOpen;
     [SerializeField] private PlayerStats playerStats;
     public TMP_Text positionDisplay;
-    Collectables collectable;
-    public GameObject CollectButton;
-    internal Vector3Int portalPos;
 
     public bool takingTurn;
 
     [SerializeField] GameObject shotArrow;
 
     public static event Action<Controls> onMoveEvent;
-    public static event UnityAction onShootEvent;
 
     [SerializeField] private bowBehavior bow;
 
@@ -44,7 +39,6 @@ public class Controls : MonoBehaviour
         positionDisplay = GameObject.Find("CurrentPos").GetComponent<TMP_Text>();
         UIManager.openMenu += detectMenu;
         self = gameObject.transform;
-        onMoveEvent += checkForCollectables;
         positionDisplay.text = $"{Vector2Int.FloorToInt(transform.position)}";
 
         var bows = GetComponentsInChildren<bowBehavior>(true);
@@ -156,24 +150,6 @@ public class Controls : MonoBehaviour
                 }
                 Vector2Int nextCell = currentCell + direction;
 
-                if (nextCell == (Vector2Int) portalPos)
-                {
-                    // Generating the map teleports the player to a new spawn and resets
-                    // EntityManager, so the cells computed above become meaningless.
-                    // Do the move bookkeeping for the portal cell first, then regenerate
-                    // and stop: continuing would move the player a second time from the
-                    // new spawn using pre-generation coordinates.
-                    EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
-                    PerlinNoiseMap map = FindFirstObjectByType<PerlinNoiseMap>();
-                    if (map != null)
-                    {
-                        map.GenerateMap();
-                    }
-                    positionDisplay.text = $"{Vector2Int.FloorToInt(transform.position)}";
-                    direction = Vector2Int.zero;
-                    return;
-                }
-
                 // Island rule: while inside a room that still holds enemies you may not step
                 // outside that room. Corridors themselves are never gated, so once the room is
                 // clear you can walk out and choose the next one.
@@ -188,7 +164,7 @@ public class Controls : MonoBehaviour
                     return;
                 }
 
-                if (grid != null && grid.Move(transform.position, direction, transform))
+                if (grid != null && grid.Move(transform.position, direction))
                 {
                     EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
                     // Only report the destination once the move actually happened.
@@ -207,8 +183,8 @@ public class Controls : MonoBehaviour
                 TryEnterAimMode();
             }
 
-            // Chests are solid terrain, so the player can only ever be next to one. Opening is
-            // deliberately free (it does not fire onMoveEvent), so looting is not a turn.
+            // An unopened chest is solid terrain, so the player can only ever be next to one.
+            // Opening is deliberately free (it does not fire onMoveEvent), so looting is not a turn.
             if (Input.GetKeyDown(KeyCode.E))
             {
                 TryOpenAdjacentChest();
@@ -218,11 +194,6 @@ public class Controls : MonoBehaviour
         {
             runningCooldown -= Time.deltaTime;
         }
-
-        // if (Input.GetKeyUp(KeyCode.Space))
-        // {
-        //     grid.printGrid();
-        // }
 
     }
     /// <summary>Cell currently under the mouse, in range-indicator tilemap space.</summary>
@@ -457,33 +428,8 @@ public class Controls : MonoBehaviour
         }
     }
 
-    private void checkForCollectables(Controls controls)    {
-        // Registry cell, not a rounded transform: the damage shake offsets the transform and
-        // would make this miss the pickup (same root cause as the movement lock).
-        Vector2Int currentCell;
-        if (EntityManager.Instance == null ||
-            !EntityManager.Instance.TryGetCell(gameObject, out currentCell))
-        {
-            currentCell = Vector2Int.FloorToInt(transform.position);
-        }
-        if (collectable != null)
-        {
-            collectable = null;
-        }
-        collectable = CollectableMap.Instance.GetCollectableAt(currentCell);
-        if (collectable != null)
-        {
-            collectable.collectThis();
-            CollectableMap.Instance.unregisterCollectable(currentCell);
-            PerlinNoiseMap map = GameObject.Find("map generator").GetComponent<PerlinNoiseMap>();
-            map.setToGrass(currentCell);
-
-        }
-    }
-
     private void OnDestroy()
     {
-        onMoveEvent -= checkForCollectables;
         UIManager.openMenu -= detectMenu;
     }
 }

@@ -34,8 +34,6 @@ public struct ItemStack
 
     public bool IsEmpty => definition == null || amount <= 0;
 
-    public bool IsEquipment => instance != null;
-
     public string DisplayName => definition != null ? definition.DisplayName : "(empty)";
 
     public override string ToString()

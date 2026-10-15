@@ -50,7 +50,6 @@ public class ItemBox : MonoBehaviour, IPointerClickHandler
     {
         if (stack.IsEmpty || stack.definition == null)
         {
-            Debug.Log("No item");
             return;
         }
 

@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class TurnManager : MonoBehaviour
 {
-    [SerializeField] private Queue<EnemyBehavior> enemies;
+    private Queue<EnemyBehavior> enemies;
     private HashSet<EnemyBehavior> enemiestable; 
     public static TurnManager Instance;
 
@@ -16,7 +16,6 @@ public class TurnManager : MonoBehaviour
     public BoundsInt[] rooms;
     private PlayerStats player;
     public int numberofRooms;
-    //public static event Action<TurnManager> finishTurn;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -55,7 +54,6 @@ public class TurnManager : MonoBehaviour
         if(enemiestable.Add(enemy))
         {
             enemies.Enqueue(enemy);
-            Debug.Log("queued up: " + enemy.name);
         }
     }
 
@@ -141,12 +139,10 @@ public class TurnManager : MonoBehaviour
 
         try
         {
-            Debug.Log("taking turns: " + enemies.Count);
             if (enemies.Count != 0)
                 yield return new WaitForSeconds(0.4f);
             while (enemies.Count != 0)
             {
-                Debug.Log("looping: " + enemies.Count + " left");
                 EnemyBehavior enemy = enemies.Dequeue();
                 enemiestable.Remove(enemy);
                 if (enemy == null)
@@ -170,8 +166,6 @@ public class TurnManager : MonoBehaviour
                     controls.takingTurn = false;
                 }
             }
-            Debug.Log("Turn Manager Finished: Player Unlocked");
-            //finishTurn(this);
         }
         
     }

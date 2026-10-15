@@ -129,20 +129,22 @@ else common. **An empty pool falls through to the next tier**, so a drop is neve
 
 ### d) Crafting recipes
 
-`Assets/Resources/crafting/*.asset` → `Recipe`:
+The recipe lives on the item itself. `ItemDefinition` has an optional `recipe` list; an item with
+an empty recipe simply cannot be crafted.
 
 | Field | Meaning |
 |---|---|
-| `result` | The `ItemDefinition` produced. **This is the only path used in a player build.** If it is empty, `craft()` logs an error and refuses to craft rather than consuming materials for nothing. |
-| `resultName` | Text only — used by the `Recipies.txt` import/export channel. |
-| `sprite` | Icon on the crafting button. |
-| `recipe` | List of `{ material, amount }`. |
+| `recipe` | List of `{ material, amount }`. Empty = this item is not craftable. Each `material` is an `ItemDefinition`. |
 
-> Recipe assets must stay under `Assets/Resources/crafting/` — `CraftingManager` loads them
-> with `Resources.LoadAll("crafting")`.
->
-> `craft()` validates the entire recipe and checks `hasRoomFor()` **before** removing anything,
-> so a partially available recipe or a full inventory can no longer eat the inputs.
+`CraftingManager.LoadAvailableRecipies()` walks `Resources.LoadAll<ItemDefinition>("ItemDefinitions")`
+and shows a button for every craftable item the player can currently afford. **Item definitions must
+stay under `Assets/Resources/ItemDefinitions/`** or the crafting panel will not see them.
+
+> `ItemDefinition.Craft()` validates the entire recipe and checks `hasRoomFor()` **before** removing
+> anything, so a partially available recipe or a full inventory cannot eat the inputs.
+
+The button icon is `ItemDefinition.Icon` and the recipe is edited in the normal Inspector — there is
+no separate recipe asset and no text import/export step.
 
 ---
 
@@ -234,12 +236,12 @@ Migrated consumables therefore behave exactly as before the refactor.
 | Asset | Kind | Values as migrated |
 |---|---|---|
 | `Iron.asset` | Material | `stackLimit` 99. Also a world pickup via `Iron.prefab`. |
-| `Arrow.asset` | Ammo | `stackLimit` 100. |
+| `Arrow.asset` | Ammo | `stackLimit` 100. Recipe: 1 `Iron`. |
 | `ConPill.asset` | Consumable | Max Health +10 for 50 turns. |
 | `DexPill.asset` | Consumable | Dexterity +10 for 50 turns. |
 | `StrPill.asset` | Consumable | Strength +10 for 50 turns. |
 | `healthPill.asset` | Consumable | Heal 10 (immediate; duration ignored). |
-| `normal sword.asset` | Weapon | damage 15, melee. |
+| `normal sword.asset` | Weapon | damage 15, melee. Recipe: 5 `Iron`. |
 | `rusty sword.asset` | Weapon | damage 10, melee. |
 | `Wooden Bow.asset` | Weapon | damage 10, ranged, range 10. |
 | `Studded Leather Armor.asset` | Armor | `healthBonus` 50. |
@@ -260,7 +262,5 @@ Migrated consumables therefore behave exactly as before the refactor.
   `ItemDefinition` assets. They were deliberately *not* deleted, because deleting them could
   break any scene instance placed by hand. They can be removed once you confirm nothing
   references them.
-- `Assets/Prefabs/Equipments/Recipe.asset` is a stray recipe asset living outside
-  `Resources/crafting/`, so `CraftingManager` will never load it. Worth moving or deleting.
 - **`epicItem` pools are empty in all three scenes.** The epic tier is structurally reachable
   but grants nothing until you populate them.

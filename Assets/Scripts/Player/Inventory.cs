@@ -11,7 +11,6 @@ public class Inventory : MonoBehaviour
         public int amount;
     }
 
-    [SerializeField] private GameObject inventoryContainer; // parent with the ItemBox slot children
     [SerializeField] private List<ItemStack> items = new List<ItemStack>();
     [SerializeField] private List<StarterItem> StarterItems;
     [SerializeField] private ItemDisplay itemDisplay;
@@ -30,7 +29,7 @@ public class Inventory : MonoBehaviour
 
     private void Start()
     {
-        inventoryContainer = GameObject.Find("UIManager").transform.Find("Inventory").transform.Find("itemholder").gameObject;
+        GameObject inventoryContainer = GameObject.Find("UIManager").transform.Find("Inventory").transform.Find("itemholder").gameObject;
         // cache references to all slot ItemBox components.
         // includeInactive: true is required — the Inventory panel starts disabled, so a
         // default search would find zero slots and every pickup would report "full".
@@ -262,12 +261,6 @@ public class Inventory : MonoBehaviour
         this.itemDisplay = itemDisplay;
         updateInventory();
     }
-
-    public ItemDisplay getItemDisplay()
-    {
-        return itemDisplay;
-    }
-
     public List<ItemStack> getItems()
     {
         return items;

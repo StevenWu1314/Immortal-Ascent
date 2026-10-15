@@ -1,41 +1,24 @@
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 [CustomEditor(typeof(RoomFirstDungeonGenerator), true)]
 public class EditorDungeonGenerator : Editor
 {
-    [SerializeField]
-    public TilePlacer tilePlacer;
-    public BoundsInt Space;
-    public int minWidth;
-    public int minHeight;
-    public int numberOfRooms;
-    RoomFirstDungeonGenerator generator;
-    public PerlinNoiseMap perlinNoiseMap;
+    private RoomFirstDungeonGenerator generator;
 
-    void Awake()
+    // OnEnable, not Awake: Awake is not guaranteed on an Editor instance, and a null generator
+    // made the button below throw.
+    private void OnEnable()
     {
         generator = (RoomFirstDungeonGenerator)target;
-        //perlinNoiseMap = (PerlinNoiseMap)target;
     }
-
 
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        if (GUILayout.Button("Create Dungeon"))
-        {
-            generator.generateDungeon();
-        }
         if (GUILayout.Button("Create Branching Dungeon"))
         {
             generator.generateBranchingDungeon();
         }
-        
-        if (GUILayout.Button("Create Perlin Noise Map"))
-        {
-            //perlinNoiseMap.GenerateMap();
-        }
     }
-    
 }
