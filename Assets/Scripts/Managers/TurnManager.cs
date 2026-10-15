@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class TurnManager : MonoBehaviour
@@ -10,6 +8,12 @@ public class TurnManager : MonoBehaviour
     private Queue<EnemyBehavior> enemies;
     private HashSet<EnemyBehavior> enemiestable; 
     public static TurnManager Instance;
+
+    [Header("Enemy turn pacing (seconds)")]
+    [Tooltip("Beat before the first enemy acts, so the player sees their own move land first.")]
+    [SerializeField] private float turnStartDelay = 0.15f;
+    [Tooltip("Gap between enemies, so the player can follow who moved.")]
+    [SerializeField] private float turnStepDelay = 0.05f;
 
     private void Awake()
     {
@@ -90,7 +94,7 @@ public class TurnManager : MonoBehaviour
         try
         {
             if (enemies.Count != 0)
-                yield return new WaitForSeconds(0.4f);
+                yield return new WaitForSeconds(turnStartDelay);
             while (enemies.Count != 0)
             {
                 EnemyBehavior enemy = enemies.Dequeue();
@@ -102,7 +106,7 @@ public class TurnManager : MonoBehaviour
                     continue;
                 }
                 enemy.takeTurn();
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(turnStepDelay);
             }
         }
         finally
