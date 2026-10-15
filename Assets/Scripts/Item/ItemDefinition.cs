@@ -230,11 +230,6 @@ public class ItemDefinition : ScriptableObject
         }
     }
 
-    /// <summary>
-    /// Display spelling of the consumable's stat, used by the item panel and by
-    /// PlayerStats.increaseStatTemp (which keys off "Max Health", not the enum name).
-    /// </summary>
-    public string StatDisplayName => StatLabel;
 
     // ---------------------------------------------------------------------------------
     // CRAFTING. An item with an empty recipe simply cannot be crafted; everything else

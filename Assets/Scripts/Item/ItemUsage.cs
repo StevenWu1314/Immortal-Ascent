@@ -69,7 +69,7 @@ public static class ItemUsage
             return;
         }
 
-        PlayerStats.Instance.increaseStatTemp(definition.StatDisplayName,
+        PlayerStats.Instance.increaseStatTemp(definition.Stat,
                                               definition.EffectAmount,
                                               definition.EffectDuration);
     }

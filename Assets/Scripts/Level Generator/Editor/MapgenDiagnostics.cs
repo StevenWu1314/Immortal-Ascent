@@ -1,16 +1,18 @@
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Headless assertions for the generation-side invariants, in the project's `[DIAG]` style.
+/// Headless assertions for this project's runtime contracts, in the project's `[DIAG]` style.
 /// Run from Tools &gt; Diagnose, or drive them from outside the editor through the
 /// UnityAgentClient bridge:
 /// <c>POST /execute_method {"type":"MapgenDiagnostics","method":"ChestWalkability"}</c>.
 ///
-/// These build a synthetic grid rather than driving a real generation run on purpose: generation
-/// destroys and re-instantiates the player, enemies and chests, so invoking it from a menu item
-/// would throw away whatever the user has open in the scene.
+/// The chest and grid checks build a synthetic grid rather than driving a real generation run on
+/// purpose: generation destroys and re-instantiates the player, enemies and chests, so invoking it
+/// from a menu item would throw away whatever the user has open in the scene. The checks that need
+/// real runtime state say so and require Play mode.
 /// </summary>
 public static class MapgenDiagnostics
 {
@@ -168,5 +170,61 @@ public static class MapgenDiagnostics
         Debug.Log(failures == 0
             ? "[DIAG] real chest: all checks passed"
             : $"[DIAG] real chest: {failures} check(s) FAILED");
+    }
+
+    /// <summary>
+    /// The consumable buff path: a timed buff must raise the effective stat, hold while turns
+    /// remain, and fall back to the pre-buff value once the duration runs out. This is the check
+    /// the string-stat removal needs, because ItemUsage is the only caller of
+    /// <see cref="PlayerStats.increaseStatTemp(ConsumableStat, int, int)"/>.
+    ///
+    /// Play mode only, because it reads the live player. It does not touch saved state.
+    /// </summary>
+    [MenuItem("Tools/Diagnose/Consumable Buff Round Trip (Play mode)")]
+    public static void ConsumableBuff()
+    {
+        if (!EditorApplication.isPlaying)
+        {
+            Debug.LogWarning("[DIAG] needs Play mode: the buff lives on the running PlayerStats.");
+            return;
+        }
+
+        PlayerStats stats = PlayerStats.Instance;
+        if (stats == null)
+        {
+            Debug.LogError("[DIAG] no PlayerStats instance in the scene.");
+            return;
+        }
+
+        failures = 0;
+
+        int before = stats.Strength;
+        Check("no buff on Strength to start", stats.BaseStrength == before,
+              $"base={stats.BaseStrength} effective={before}");
+
+        stats.increaseStatTemp(ConsumableStat.Strength, 10, 2);
+        Check("a timed buff raises the effective stat", stats.Strength == before + 10,
+              $"{before} -> {stats.Strength}");
+
+        // tickdownBuffs is private and normally driven by Controls.onMoveEvent, so drive it here.
+        MethodInfo tick = typeof(PlayerStats).GetMethod("tickdownBuffs",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        if (tick == null)
+        {
+            Debug.LogError("[DIAG] PlayerStats.tickdownBuffs not found; cannot check expiry.");
+            return;
+        }
+
+        tick.Invoke(stats, new object[] { null });   // turns remaining 2 -> 1
+        Check("buff holds while turns remain", stats.Strength == before + 10,
+              $"Strength={stats.Strength}");
+
+        tick.Invoke(stats, new object[] { null });   // 1 -> 0, expires
+        Check("buff expires back to the base stat", stats.Strength == before,
+              $"Strength={stats.Strength}");
+
+        Debug.Log(failures == 0
+            ? "[DIAG] consumable buff: all checks passed"
+            : $"[DIAG] consumable buff: {failures} check(s) FAILED");
     }
 }

@@ -327,7 +327,7 @@ public class PlayerStats : MonoBehaviour{
     // TEMPORARY BUFFS. Stored in the table only; the effective accessors add them.
     // ---------------------------------------------------------------------------------
 
-    public void increaseStatTemp(string stat, int amount, int duration)
+    public void increaseStatTemp(ConsumableStat stat, int amount, int duration)
     {
         int index = TempStatIndex(stat);
         if (index < 0)
@@ -344,15 +344,16 @@ public class PlayerStats : MonoBehaviour{
         updateHealthBar();
     }
 
-    private int TempStatIndex(string stat)
+    private int TempStatIndex(ConsumableStat stat)
     {
         switch (stat)
         {
-            case "Strength":   return 0;
-            case "Dexterity":  return 1;
-            case "Max Health": return 2;
+            case ConsumableStat.Strength:  return 0;
+            case ConsumableStat.Dexterity: return 1;
+            case ConsumableStat.MaxHealth: return 2;
             default:
-                Debug.LogWarning($"increaseStatTemp: unknown stat '{stat}'");
+                // Heal is applied straight away by ItemUsage, never as a timed buff.
+                Debug.LogWarning($"increaseStatTemp: '{stat}' is not a timed buff");
                 return -1;
         }
     }
