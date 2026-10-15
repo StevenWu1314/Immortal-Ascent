@@ -32,9 +32,9 @@ public class levelUpUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        str.text = playerStats.getStrength().ToString();
-        dex.text = playerStats.getDexterity().ToString();
-        health.text = playerStats.getMaxHealth().ToString();
+        str.text = playerStats.Strength.ToString();
+        dex.text = playerStats.Dexterity.ToString();
+        health.text = playerStats.EffectiveMaxHealth.ToString();
         pointsLeft.text = points.ToString();
 
         for (int i = 0; i < addButtons.Length; i++)

@@ -276,20 +276,6 @@ public class PlayerStats : MonoBehaviour{
         updateHealthBar();
     }
 
-    public int getStrength()
-    {
-        return Strength;
-    }
-    
-    public int getDexterity()
-    {
-        return Dexterity;
-    }
-
-    public int getMaxHealth()
-    {
-        return EffectiveMaxHealth;
-    }
 
     // ---------------------------------------------------------------------------------
     // BASE MUTATORS. Only level-up allocation should use these.
