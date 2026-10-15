@@ -59,9 +59,12 @@ public class RangeEnemyBehavior : EnemyBehavior
                         this.GetComponent<Enemy>().Attack(player.GetComponent<PlayerStats>());
                     }
                     attacking = false;
-                    rangeAttackCooldown--;
+                    // Clamp: the check below is "<= 0", so a cooldown driven far negative was
+                    // meaningless state rather than a longer wait.
+                    rangeAttackCooldown = Mathf.Max(0, rangeAttackCooldown - 1);
                     Destroy(existingAttackIndicator);
-                    lastAttackPos = new Vector3(-10000, -10000);
+                    // lastAttackPos is only ever read while attacking, and starting an attack is what
+                    // set it, so there was no sentinel to reset here.
                     return;
                 }       
                 if(rangeAttackCooldown <= 0 && utilityFunction.ClearLine(collidableMap, enemyCell, playerCell))
@@ -102,7 +105,7 @@ public class RangeEnemyBehavior : EnemyBehavior
                         else
                             return; // nowhere to strafe, skip turn
                     }
-                    rangeAttackCooldown--;
+                    rangeAttackCooldown = Mathf.Max(0, rangeAttackCooldown - 1);
                     EntityManager.Instance.MoveEntity(gameObject, enemyCell, nextCell);
                     return; // stop after first valid move
                 }

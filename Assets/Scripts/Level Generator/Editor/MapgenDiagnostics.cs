@@ -269,4 +269,69 @@ public static class MapgenDiagnostics
             ? "[DIAG] turn pipeline: all checks passed"
             : $"[DIAG] turn pipeline: {failures} check(s) FAILED");
     }
+
+    /// <summary>
+    /// Stress the room builder on its own. BrachingRooms is pure static code plus UnityEngine.Random,
+    /// so this runs in the editor without entering Play mode or touching a scene.
+    /// </summary>
+    [MenuItem("Tools/Diagnose/Room Builder Stress")]
+    public static void RoomBuilderStress()
+    {
+        const int runs = 300;
+        const int gridSize = 120;
+        int[] maxima = { 5, 10, 20, 40 };
+
+        foreach (int maxRooms in maxima)
+        {
+            int threw = 0, overlapping = 0, atLeastTwo = 0;
+            int minRooms = int.MaxValue, maxRoomsSeen = 0;
+            string firstFailure = null;
+
+            for (int run = 0; run < runs; run++)
+            {
+                List<Rooms> rooms;
+                try
+                {
+                    rooms = ProceduralGenerationAlgorithm.BrachingRooms(5, maxRooms, gridSize);
+                }
+                catch (System.Exception e)
+                {
+                    threw++;
+                    if (firstFailure == null)
+                    {
+                        firstFailure = $"{e.GetType().Name}: {e.Message}";
+                    }
+                    continue;
+                }
+
+                minRooms = Mathf.Min(minRooms, rooms.Count);
+                maxRoomsSeen = Mathf.Max(maxRoomsSeen, rooms.Count);
+                if (rooms.Count >= 2)
+                {
+                    atLeastTwo++;
+                }
+
+                for (int a = 0; a < rooms.Count; a++)
+                {
+                    for (int b = a + 1; b < rooms.Count; b++)
+                    {
+                        if (Overlaps(rooms[a].body, rooms[b].body))
+                        {
+                            overlapping++;
+                        }
+                    }
+                }
+            }
+
+            Debug.Log($"[DIAG] rooms(5,{maxRooms}): {runs} runs, {threw} threw, " +
+                      $"count {minRooms}..{maxRoomsSeen}, {overlapping} overlapping pairs" +
+                      (firstFailure != null ? $" | first: {firstFailure}" : ""));
+        }
+    }
+
+    /// <summary>BoundsInt has no Intersects; Bounds does. Half-open on both edges, like BoundsInt.</summary>
+    private static bool Overlaps(BoundsInt a, BoundsInt b)
+    {
+        return a.xMin < b.xMax && b.xMin < a.xMax && a.yMin < b.yMax && b.yMin < a.yMax;
+    }
 }

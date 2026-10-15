@@ -71,7 +71,9 @@ public class TurnManager : MonoBehaviour
         // Never return early from here: Controls has already set takingTurn, and the
         // finally block in TakeTurns is the only place that releases it. An early return
         // would lock the player out of every future input.
-        StartCoroutine("TakeTurns");
+        // Typed call, not StartCoroutine("TakeTurns"): a string name is resolved by reflection, is
+        // slower, silently does nothing if the method is renamed, and cannot be stopped by handle.
+        StartCoroutine(TakeTurns());
     }
     public void OnDestroy()
     {

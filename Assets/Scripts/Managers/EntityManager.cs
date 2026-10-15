@@ -35,7 +35,12 @@ public class EntityManager : MonoBehaviour
     }
 
     /// <summary> Move entity from one cell to another. </summary>
-    public void MoveEntity(GameObject entity, Vector2Int oldCell, Vector2Int newCell)
+    /// <summary>
+    /// Move <paramref name="entity"/> from oldCell to newCell, resolving a melee bump when newCell is
+    /// taken by a player and an enemy. Returns false when the registry did not have the entity in
+    /// oldCell at all, which means the caller and the registry disagree about where it is.
+    /// </summary>
+    public bool MoveEntity(GameObject entity, Vector2Int oldCell, Vector2Int newCell)
     {
         if (entityGrid.TryGetValue(oldCell, out var occupant) && occupant == entity)
         {
@@ -65,11 +70,13 @@ public class EntityManager : MonoBehaviour
                 // because the z term was the position's own z.
                 entity.transform.position = new Vector3(newCell.x, newCell.y, entity.transform.position.z);
             }
+            return true;
         }
-        else
-        {
-            Debug.Log("Error, the entity you're trying to move does not exits in this cell");
-        }
+
+        // An invariant violation, not a routine miss: it means the caller's idea of the entity's cell
+        // has drifted from the registry's.
+        Debug.LogWarning($"MoveEntity: {entity.name} is not registered in {oldCell}; move to {newCell} ignored.");
+        return false;
     }
 
     /// <summary> Unregister entity completely. </summary>

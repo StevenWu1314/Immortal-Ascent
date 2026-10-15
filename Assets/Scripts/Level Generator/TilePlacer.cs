@@ -17,7 +17,10 @@ public class TilePlacer : MonoBehaviour
 
     private Tile RandomFloorTile()
     {   
-        return (Random.Range(0, 1) < flowerDensity) ? floorTile[Random.Range(1, floorTile.Length)] : floorTile[0];
+        // Random.Range(int, int) is [min, max), so Range(0, 1) was always 0 and this read
+        // "0 < flowerDensity": every floor tile got a flower whenever the density was non-zero,
+        // and the density itself did nothing. Random.value restores the intended fraction.
+        return (Random.value < flowerDensity) ? floorTile[Random.Range(1, floorTile.Length)] : floorTile[0];
     }
     public void PlaceTiles(List<BoundsInt> boundsList, Grid grid)
     {
