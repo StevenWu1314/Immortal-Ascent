@@ -41,7 +41,7 @@ public class EntityManager : MonoBehaviour
         {
             if (entityGrid.ContainsKey(newCell))
             {
-                Debug.LogWarning($"initiating combat between {occupant} and {entityGrid[newCell].name}");
+                Debug.Log($"initiating combat between {occupant} and {entityGrid[newCell].name}");
                 if (entity.GetComponent<PlayerStats>() != null)
                 {
                     entityGrid.TryGetValue(newCell, out var enemy);

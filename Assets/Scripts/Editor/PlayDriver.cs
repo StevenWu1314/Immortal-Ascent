@@ -179,6 +179,48 @@ public static class PlayDriver
     }
 
     /// <summary>
+    /// Dump every registered entity's cell next to its transform. A display-versus-code offset
+    /// shows up either as the derived cell disagreeing with the registry, or as a fractional
+    /// position: tiles are drawn centred on cell + 0.5, and entities spawn on the integer corner,
+    /// so a pose is only "clean" if derived == registered.
+    /// </summary>
+    [MenuItem("Tools/Play/Dump Entity Positions")]
+    public static void DumpPositions()
+    {
+        if (!EditorApplication.isPlaying)
+        {
+            Debug.LogWarning($"{Tag} needs Play mode.");
+            return;
+        }
+
+        Grid grid = Grid.Current;
+        if (grid == null || EntityManager.Instance == null)
+        {
+            Debug.LogWarning($"{Tag} no Grid.Current or EntityManager.");
+            return;
+        }
+
+        Debug.Log($"{Tag} --- registered entities ---");
+        foreach (var pair in EntityManager.Instance.AllEntities)
+        {
+            GameObject entity = pair.Value;
+            if (entity == null)
+            {
+                continue;
+            }
+
+            string kind = entity.GetComponent<Enemy>() != null ? "enemy"
+                        : entity.GetComponent<PlayerStats>() != null ? "player"
+                        : "other";
+            Vector3 p = entity.transform.position;
+            Vector2Int derived = Grid.CellFromWorld(p);
+            Debug.Log($"{Tag} {kind} {entity.name,-18} reg={pair.Key} " +
+                      $"pos=({p.x:0.###}, {p.y:0.###}, {p.z:0.###}) derived={derived} " +
+                      $"{(derived == pair.Key ? "cell-ok" : "CELL-MISMATCH")}");
+        }
+    }
+
+    /// <summary>
     /// The body of one movement step, mirroring the movement branch of Controls.Update.
     /// </summary>
     private static void Step(Controls controls, Vector2Int from, Vector2Int direction)
@@ -227,8 +269,12 @@ public static class PlayDriver
         RaiseMoveEvent(controls);
 
         int health = ReadHealth(PlayerStats.Instance);
-        Debug.Log($"{Tag} stepped {from} -> {to} hp={health} island={IslandManager.GetIsland(to)} " +
-                  $"enemies={CountEnemies()}");
+        Vector3 pose = controls.transform.position;
+        Vector2Int derived = Grid.CellFromWorld(pose);
+        Debug.Log($"{Tag} stepped {from} -> {to} hp={health} str={PlayerStats.Instance.Strength} " +
+                  $"island={IslandManager.GetIsland(to)} enemies={CountEnemies()} " +
+                  $"pos=({pose.x:0.##},{pose.y:0.##}) " +
+                  $"derived={(derived == to ? "ok" : derived.ToString())}");
     }
 
     /// <summary>
