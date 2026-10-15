@@ -58,7 +58,12 @@ public class EntityManager : MonoBehaviour
             {
                 entityGrid.Remove(oldCell);
                 entityGrid[newCell] = entity;
-                entity.transform.position += new Vector3(newCell.x - oldCell.x, newCell.y - oldCell.y, entity.transform.position.z);
+                // Assign the cell position outright instead of adding a delta. The transform must end
+                // up exactly where the registry says it is: accumulating deltas preserved any residue
+                // (a hit shake leaves up to 0.1), and since an integer position is a cell corner,
+                // FloorToInt would then report the previous cell. The old += also doubled z every step
+                // because the z term was the position's own z.
+                entity.transform.position = new Vector3(newCell.x, newCell.y, entity.transform.position.z);
             }
         }
         else

@@ -42,8 +42,12 @@ public class PlayerStats : MonoBehaviour{
     SpriteRenderer spriteRenderer;
 
     /// <summary>Guard so overlapping hits cannot stack shakes (see <see cref="DamageShake"/>).</summary>
-    private bool shaking;
-    private Vector3 shakeOrigin;
+    private const float ShakeAmount = 0.1f;
+    private const float ShakeInterval = 0.05f;
+    private const int ShakeFrames = 6;
+    /// <summary>Time.time when the running shake is due to finish. Self-expiring, so a coroutine that
+    /// is disposed early cannot wedge the shake off for the rest of the run.</summary>
+    private float shakeEndsAt;
     public static event Action<PlayerStats> onLevelUpEvent;
 
     public static PlayerStats Instance;
@@ -189,45 +193,50 @@ public class PlayerStats : MonoBehaviour{
 
 
     /// <summary>
-    /// Visual hit shake.
+    /// Visual hit shake. Jitters +-0.1 on x for ShakeFrames frames.
     ///
-    /// This writes transform.position, which is also the value Controls used to derive the
-    /// player's grid cell from -- so it MUST always put the transform back exactly where it
-    /// found it, and it must never run twice at once.
+    /// This writes transform.position, which is also what the rest of the map reads, so:
     ///
-    /// It used to do neither. Two melee enemies attacking in the same turn start two shakes
-    /// 0.1s apart; the second captured an ALREADY OFFSET transform as its origin, so when both
-    /// finished the player was left 0.1 units off the grid. FloorToInt then reported a
-    /// neighbouring cell, EntityManager.MoveEntity could not find the player there, and the
-    /// player could no longer move at all.
+    ///  - the jitter is centred on the cell EntityManager says the player is in, read fresh every
+    ///    frame, instead of a position captured on entry. Capturing one meant a move made during the
+    ///    shake was silently undone when the shake restored its stale origin, leaving the sprite a
+    ///    whole cell from the cell the player was registered in;
+    ///  - the LAST frame writes the exact cell position rather than only a finally block doing it,
+    ///    and the guard is a self-expiring timestamp rather than a bool, so neither an early dispose
+    ///    nor an interrupted coroutine can leave the transform parked off the grid;
+    ///  - the position is always ASSIGNED, never rebuilt by arithmetic. An integer position is a cell
+    ///    corner here, so a 1e-7 residue from (x + d) - d would make FloorToInt report the previous
+    ///    cell, permanently, since EntityManager only ever adds integer deltas.
     /// </summary>
     private IEnumerator DamageShake() {
-        if (shaking)
+        if (Time.time < shakeEndsAt)
         {
-            // One shake per volley. Restarting would capture the current (offset) position as
-            // the new origin, which is the exact bug this guard exists to prevent.
+            // One shake per volley.
             yield break;
         }
+        shakeEndsAt = Time.time + ShakeFrames * ShakeInterval;
 
-        shaking = true;
-        shakeOrigin = transform.position;
-        float shakeAmount = 0.1f;
-        float shakeInterval = 0.05f;
+        for (int i = 0; i < ShakeFrames; i++)
+        {
+            bool restore = i == ShakeFrames - 1;
+            float offset = restore ? 0f : (i % 2 == 0 ? ShakeAmount : -ShakeAmount);
+            transform.position = CellPosition() + new Vector3(offset, 0f, 0f);
+            yield return new WaitForSeconds(ShakeInterval);
+        }
+    }
 
-        try
+    /// <summary>
+    /// The exact world position of the cell this entity is registered in, or the current position
+    /// when it is not registered at all.
+    /// </summary>
+    private Vector3 CellPosition()
+    {
+        Vector2Int cell;
+        if (EntityManager.Instance != null && EntityManager.Instance.TryGetCell(gameObject, out cell))
         {
-            for (int i = 0; i < 6; i++)
-            {
-                transform.position = shakeOrigin + new Vector3(i % 2 == 0 ? shakeAmount : -shakeAmount, 0, 0);
-                yield return new WaitForSeconds(shakeInterval);
-            }
+            return new Vector3(cell.x, cell.y, transform.position.z);
         }
-        finally
-        {
-            // Always restore, even if the coroutine is disposed mid-shake.
-            transform.position = shakeOrigin;
-            shaking = false;
-        }
+        return transform.position;
     }
 
     public void heal(int amount)

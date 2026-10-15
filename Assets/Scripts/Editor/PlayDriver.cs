@@ -215,7 +215,7 @@ public static class PlayDriver
             Vector3 p = entity.transform.position;
             Vector2Int derived = Grid.CellFromWorld(p);
             Debug.Log($"{Tag} {kind} {entity.name,-18} reg={pair.Key} " +
-                      $"pos=({p.x:0.###}, {p.y:0.###}, {p.z:0.###}) derived={derived} " +
+                      $"pos=({p.x:R}, {p.y:R}, {p.z:R}) derived={derived} " +
                       $"{(derived == pair.Key ? "cell-ok" : "CELL-MISMATCH")}");
         }
     }
@@ -273,7 +273,7 @@ public static class PlayDriver
         Vector2Int derived = Grid.CellFromWorld(pose);
         Debug.Log($"{Tag} stepped {from} -> {to} hp={health} str={PlayerStats.Instance.Strength} " +
                   $"island={IslandManager.GetIsland(to)} enemies={CountEnemies()} " +
-                  $"pos=({pose.x:0.##},{pose.y:0.##}) " +
+                  $"pos=({pose.x:R},{pose.y:R}) " +
                   $"derived={(derived == to ? "ok" : derived.ToString())}");
     }
 

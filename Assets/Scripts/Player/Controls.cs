@@ -164,7 +164,10 @@ public class Controls : MonoBehaviour
                     return;
                 }
 
-                if (grid != null && grid.Move(transform.position, direction))
+                // Terrain is checked from the registry cell for the same reason currentCell is:
+                // Grid.Move rounds its position, and the hit shake leaves transform.position up to
+                // 0.1 off the cell, which is enough to round to a neighbour.
+                if (grid != null && grid.Move(currentWorld, direction))
                 {
                     EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
                     // Only report the destination once the move actually happened.
