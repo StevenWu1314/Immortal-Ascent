@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 /// <summary>
 /// Editor-only driver for hands-on testing of the running game.
@@ -221,6 +222,126 @@ public static class PlayDriver
     }
 
     /// <summary>
+    /// Is any enemy standing outside the room island it spawned on? Records each enemy's spawn
+    /// island on first sight and compares, so an enemy that got alerted out of its room, or that
+    /// spawned before IslandManager existed, shows up instead of being invisible.
+    /// </summary>
+    private static readonly Dictionary<int, int> spawnIslandByEnemy = new Dictionary<int, int>();
+
+    /// <summary>
+    /// How is the doorway a corridor carves through a room's wall classified? The corridor is drawn
+    /// with bridgeTile, and the doorway cell sits at the room's own wall column -- inside its
+    /// rectangle. If it carries the room's island id then the confinement rule, and the player's
+    /// island gate, both treat a bridge tile as part of the room.
+    /// </summary>
+    [MenuItem("Tools/Play/Audit Bridge Tiles")]
+    public static void AuditBridgeTiles()
+    {
+        if (!EditorApplication.isPlaying)
+        {
+            Debug.LogWarning($"{Tag} needs Play mode.");
+            return;
+        }
+
+        TilePlacer[] placers = Object.FindObjectsByType<TilePlacer>(FindObjectsSortMode.None);
+        if (placers.Length == 0 || placers[0].corridor == null)
+        {
+            Debug.LogWarning($"{Tag} no TilePlacer with a corridor tilemap.");
+            return;
+        }
+        Tilemap corridor = placers[0].corridor;
+        Grid grid = Grid.Current;
+
+        int total = 0, inRoom = 0, inPassage = 0, unassigned = 0;
+        string examples = "";
+        foreach (Vector3Int tile in corridor.cellBounds.allPositionsWithin)
+        {
+            if (!corridor.HasTile(tile))
+            {
+                continue;
+            }
+            total++;
+            Vector2Int cell = new Vector2Int(tile.x, tile.y);
+            int island = IslandManager.GetIsland(cell);
+            if (island >= 1) { inRoom++; if (examples.Length < 90) examples += $"{cell}=room{island} "; }
+            else if (island == IslandManager.Passage) inPassage++;
+            else unassigned++;
+        }
+
+        Debug.Log($"{Tag} bridge tiles: {total} total, {inRoom} classified as part of a ROOM, " +
+                  $"{inPassage} passage, {unassigned} unassigned");
+        if (examples.Length > 0)
+        {
+            Debug.Log($"{Tag} bridge cells that count as room cells: {examples}");
+        }
+    }
+
+    [MenuItem("Tools/Play/Audit Enemy Rooms")]
+    public static void AuditEnemyRooms()
+    {
+        if (!EditorApplication.isPlaying)
+        {
+            Debug.LogWarning($"{Tag} needs Play mode.");
+            return;
+        }
+
+        Grid grid = Grid.Current;
+        if (grid == null || EntityManager.Instance == null)
+        {
+            Debug.LogWarning($"{Tag} no Grid.Current or EntityManager.");
+            return;
+        }
+
+        // The doorway a corridor carves through a room's wall sits INSIDE the room rectangle, so its
+        // island id is the room's and an island test cannot see it. Ask the tilemap instead: a tile
+        // in the corridor tilemap is a bridge, and nothing should be standing on one.
+        Tilemap corridor = null;
+        TilePlacer[] placers = Object.FindObjectsByType<TilePlacer>(FindObjectsSortMode.None);
+        if (placers.Length > 0)
+        {
+            corridor = placers[0].corridor;
+        }
+
+        int enemies = 0, violations = 0;
+        foreach (var pair in EntityManager.Instance.AllEntities)
+        {
+            GameObject entity = pair.Value;
+            if (entity == null || entity.GetComponent<Enemy>() == null)
+            {
+                continue;
+            }
+            enemies++;
+
+            int id = entity.GetInstanceID();
+            int island = IslandManager.GetIsland(pair.Key);
+            if (!spawnIslandByEnemy.ContainsKey(id))
+            {
+                spawnIslandByEnemy[id] = island;
+            }
+            int home = spawnIslandByEnemy[id];
+
+            bool walkable = Grid.IsWalkableTerrain(grid.GetValueAtLocation(pair.Key.x, pair.Key.y));
+            bool onBridge = corridor != null && corridor.HasTile(new Vector3Int(pair.Key.x, pair.Key.y, 0));
+
+            // island <= 0 is Unassigned (-1) or Passage (0). A room enemy on either has escaped the
+            // confinement rule, and one that SPAWNED there has HomeIsland < 0, which makes CanStepOnto
+            // skip the rule entirely -- the old version of this audit recorded that as its baseline and
+            // so could never report it.
+            if (!walkable || island <= 0 || island != home || onBridge)
+            {
+                violations++;
+                Debug.LogWarning($"{Tag} ENEMY OUT OF PLACE {entity.name} cell={pair.Key} island={island} " +
+                                 $"spawnIsland={home} walkable={walkable} " +
+                                 $"spawnedOutsideARoom={home <= 0} onBridgeTile={onBridge}");
+            }
+        }
+
+        string islands = string.Join(",", spawnIslandByEnemy.Values);
+        Debug.Log($"{Tag} enemy audit: {enemies} alive, {violations} out of place; " +
+                  $"spawn islands [{islands}]; player island {IslandManager.GetIsland(Grid.CellFromWorld(PlayerStats.Instance.transform.position))}");
+    }
+
+    /// <summary>
     /// The body of one movement step, mirroring the movement branch of Controls.Update.
     /// </summary>
     private static void Step(Controls controls, Vector2Int from, Vector2Int direction)
@@ -234,6 +355,15 @@ public static class PlayDriver
         if (controls.takingTurn)
         {
             Debug.Log($"{Tag} the turn pipeline is still running; wait a moment and step again.");
+            return;
+        }
+
+        // The driver has no sense of self-preservation and used to fight until the player died, which
+        // ends the Play session by loading the UI scene. Stop short of that.
+        int currentHealth = ReadHealth(PlayerStats.Instance);
+        if (currentHealth >= 0 && currentHealth <= 30)
+        {
+            Debug.Log($"{Tag} hp={currentHealth}: stopping the drive rather than dying. Heal, then carry on.");
             return;
         }
 
