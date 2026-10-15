@@ -252,7 +252,7 @@ public static class PlayDriver
         Tilemap corridor = placers[0].corridor;
         Grid grid = Grid.Current;
 
-        int total = 0, inRoom = 0, inPassage = 0, unassigned = 0;
+        int total = 0, inRoom = 0, inPassage = 0, unassigned = 0, stillAllowed = 0;
         string examples = "";
         foreach (Vector3Int tile in corridor.cellBounds.allPositionsWithin)
         {
@@ -263,13 +263,30 @@ public static class PlayDriver
             total++;
             Vector2Int cell = new Vector2Int(tile.x, tile.y);
             int island = IslandManager.GetIsland(cell);
-            if (island >= 1) { inRoom++; if (examples.Length < 90) examples += $"{cell}=room{island} "; }
+            // IsPartOfRoom keys off GetRoomContaining, not off the island id, so that is the
+            // predicate that matters here: a bridge tile inside a room rectangle is a doorway, and
+            // before the strict-interior rule an enemy was allowed to stand on it.
+            int containing = IslandManager.GetRoomContaining(cell);
+            if (containing >= 1)
+            {
+                inRoom++;
+                if (IslandManager.IsPartOfRoom(cell, containing))
+                {
+                    stillAllowed++;
+                }
+                if (examples.Length < 90)
+                {
+                    examples += $"{cell}=room{containing} ";
+                }
+            }
             else if (island == IslandManager.Passage) inPassage++;
             else unassigned++;
         }
 
         Debug.Log($"{Tag} bridge tiles: {total} total, {inRoom} classified as part of a ROOM, " +
-                  $"{inPassage} passage, {unassigned} unassigned");
+                  $"{inPassage} passage, {unassigned} unassigned; " +
+                  $"{stillAllowed} of the {inRoom} inside a room rectangle still accepted by IsPartOfRoom " +
+                  $"(must be 0; it was the doorway count before the strict-interior rule)");
         if (examples.Length > 0)
         {
             Debug.Log($"{Tag} bridge cells that count as room cells: {examples}");

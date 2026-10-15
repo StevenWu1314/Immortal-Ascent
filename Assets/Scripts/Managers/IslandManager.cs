@@ -232,14 +232,14 @@ public static class IslandManager
     }
 
     /// <summary>
-    /// Whether the cell belongs to room <paramref name="islandId"/> itself, as opposed to the
-    /// corridors that surround it. Requires BOTH:
-    ///   * the cell is inside that room's rectangle, and
-    ///   * the cell is not part of a corridor.
+    /// May an enemy stand on <paramref name="cell"/> while confined to room <paramref name="islandId"/>?
     ///
-    /// Corridor cells are detected structurally: a walkable cell that does not lie inside ANY
-    /// room rectangle is corridor. This lets an enemy pursue the player through a doorway the
-    /// corridor carved open without ever stepping into the corridor beyond it.
+    /// The cell must be strictly inside the room's own walls. Rectangle containment is not enough:
+    /// the corridor carves its doorway through the room's wall column, which lies inside the room
+    /// rectangle, and that doorway is drawn with the bridge tile -- so a rectangle test let a
+    /// pursuing enemy stand on a bridge tile. Enemies now stop at the inner face of the wall.
+    ///
+    /// Corridor cells beyond the doorway belong to no room, so those were never allowed anyway.
     /// </summary>
     public static bool IsPartOfRoom(Vector2Int cell, int islandId)
     {
@@ -252,10 +252,20 @@ public static class IslandManager
             return false;
         }
         Grid grid = Grid.Current;
-        if (grid == null)
+        if (grid == null || roomBounds == null || islandId > roomBounds.Length)
         {
             return false;
         }
+
+        // PlaceTiles walls off xMin, xMax-1, yMin and yMax-1, so the walkable interior is the open
+        // range below. The doorway sits in that wall ring and is excluded with it.
+        BoundsInt room = roomBounds[islandId - 1];
+        if (cell.x <= room.xMin || cell.x >= room.xMax - 1 ||
+            cell.y <= room.yMin || cell.y >= room.yMax - 1)
+        {
+            return false;
+        }
+
         return Grid.IsWalkableTerrain(grid.GetValueAtLocation(cell.x, cell.y));
     }
 

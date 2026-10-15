@@ -178,6 +178,10 @@ public class PlayerStats : MonoBehaviour{
            }
     }
 
+    [Header("Death")]
+    [Tooltip("Build index loaded when health reaches zero. 0 is Assets/Scenes/ui.unity.")]
+    [SerializeField] private int deathSceneIndex;
+
     public void takeDamage(int damage)
     {
         Health -= damage;
@@ -187,7 +191,7 @@ public class PlayerStats : MonoBehaviour{
         StartCoroutine(DamageShake());
         if (Health <= 0)
         {
-            SceneManager.LoadScene(0);
+            SceneManager.LoadScene(deathSceneIndex);
         }
     }
 
