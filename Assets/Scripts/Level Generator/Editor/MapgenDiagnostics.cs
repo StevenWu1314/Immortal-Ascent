@@ -227,4 +227,46 @@ public static class MapgenDiagnostics
             ? "[DIAG] consumable buff: all checks passed"
             : $"[DIAG] consumable buff: {failures} check(s) FAILED");
     }
+
+    /// <summary>
+    /// Play mode smoke check for the turn pipeline, which no longer keeps a per-room enemy index:
+    /// the generator must still spawn enemies, TurnManager must be there to queue them, and
+    /// engaging an enemy must put it into Chase.
+    /// </summary>
+    [MenuItem("Tools/Diagnose/Turn Pipeline Smoke (Play mode)")]
+    public static void TurnPipeline()
+    {
+        if (!EditorApplication.isPlaying)
+        {
+            Debug.LogWarning("[DIAG] needs Play mode: enemies only exist in a generated level.");
+            return;
+        }
+
+        failures = 0;
+
+        EnemyBehavior[] enemies = Object.FindObjectsByType<EnemyBehavior>(FindObjectsSortMode.None);
+        Check("the generator spawned enemies", enemies.Length > 0, $"found {enemies.Length}");
+        Check("TurnManager is present", TurnManager.Instance != null,
+              TurnManager.Instance != null ? "ok" : "missing");
+
+        foreach (EnemyBehavior enemy in enemies)
+        {
+            enemy.becomeAlerted();
+        }
+
+        int chasing = 0;
+        foreach (EnemyBehavior enemy in enemies)
+        {
+            if (enemy.currentstate == EnemyBehavior.state.Chase)
+            {
+                chasing++;
+            }
+        }
+        Check("engaging every enemy puts it into Chase", enemies.Length > 0 && chasing == enemies.Length,
+              $"{chasing}/{enemies.Length}");
+
+        Debug.Log(failures == 0
+            ? "[DIAG] turn pipeline: all checks passed"
+            : $"[DIAG] turn pipeline: {failures} check(s) FAILED");
+    }
 }

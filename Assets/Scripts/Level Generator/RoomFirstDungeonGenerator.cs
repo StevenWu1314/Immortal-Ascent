@@ -77,14 +77,10 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         tilePlacer.clear();
         List<Rooms> rooms = ProceduralGenerationAlgorithm.BrachingRooms(5, numberOfRooms, gridSize);
         List<BoundsInt> roomsSpace = new List<BoundsInt>();
-        TurnManager.Instance.numberofRooms = rooms.ToArray().Length;
-        TurnManager.Instance.initialize();
-        
         int startingRoomIndex = -1;
         for (int i = 0; i < rooms.Count; i++)
         {
             roomsSpace.Add(rooms[i].body);
-            TurnManager.Instance.rooms[i] = rooms[i].body;
             if(rooms[i].type == "Starting")
             {
                 startingRoomIndex = i;
@@ -188,12 +184,7 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
                     continue;
                 }
 
-                enemy.room = roomsSpace[n];
                 EntityManager.Instance.RegisterEntity(newEnemy, cell);
-                if (TurnManager.Instance.AllEnemies != null && n < TurnManager.Instance.AllEnemies.Length)
-                {
-                    TurnManager.Instance.AllEnemies[n].Add(enemy);
-                }
             }
         }
     }

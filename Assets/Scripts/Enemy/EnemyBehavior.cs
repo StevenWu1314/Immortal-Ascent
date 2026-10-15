@@ -8,7 +8,6 @@ public class EnemyBehavior : MonoBehaviour
     public float detectionRadius;
     protected bool playerDetected;
 
-    public BoundsInt room;
 
     public Vector3 spawnPos;
     [SerializeField] protected int chaseRange;
@@ -64,7 +63,6 @@ public class EnemyBehavior : MonoBehaviour
 
     protected void OnEnable()
     {
-        Controls.onMoveEvent += checkForPlayerInRoom;
         Controls.onMoveEvent += queup;
         // The level grid has exactly one owner. Read it from Grid.Current instead of
         // searching the scene for a specific generator: the world-map scene has no
@@ -80,7 +78,6 @@ public class EnemyBehavior : MonoBehaviour
     
 
     protected void OnDestroy() {
-        Controls.onMoveEvent -= checkForPlayerInRoom;
         Controls.onMoveEvent -= queup;
         // Catch-all for every destruction path (killed by the player, a regeneration sweep,
         // scene teardown). Without this the queue kept a destroyed component and TakeTurns()
@@ -100,7 +97,7 @@ public class EnemyBehavior : MonoBehaviour
     }
     protected void checkForPlayerInRoom(Controls controls)
     {
-        if (currentstate != state.Idle || player == null)
+        if (player == null)
         {
             return;
         }
@@ -128,15 +125,28 @@ public class EnemyBehavior : MonoBehaviour
             becomeAlerted();
         }
     }
+    /// <summary>
+    /// Start chasing. This used to unsubscribe checkForPlayerInRoom, which meant an enemy that
+    /// drifted home mid-fight stopped noticing the player until it reached Idle again; queup now
+    /// re-checks every move instead, so there is nothing to unsubscribe.
+    /// </summary>
     public void becomeAlerted()
     {
-        Controls.onMoveEvent -= checkForPlayerInRoom;
         currentstate = state.Chase;
     }
+    /// <summary>
+    /// The single always-on handler for a player move: wake up if the player is on this enemy's
+    /// island, then queue for a turn if engaged. These were two subscriptions, and the alerting
+    /// one unsubscribed itself the moment the enemy engaged.
+    /// </summary>
     private void queup(Controls controls)
     {
-        if(currentstate != state.Idle)
+        checkForPlayerInRoom(controls);
+
+        if (currentstate != state.Idle)
+        {
             TurnManager.Instance.queupToMove(this);
+        }
     }
 
     public virtual void takeTurn()
@@ -172,7 +182,6 @@ public class EnemyBehavior : MonoBehaviour
             if(transform.position == spawnPos)
             {
                 currentstate = state.Idle;
-                Controls.onMoveEvent += checkForPlayerInRoom;
             }
         }
     }

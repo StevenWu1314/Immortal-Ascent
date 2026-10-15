@@ -11,11 +11,6 @@ public class TurnManager : MonoBehaviour
     private HashSet<EnemyBehavior> enemiestable; 
     public static TurnManager Instance;
 
-    public List<EnemyBehavior>[] AllEnemies;
-
-    public BoundsInt[] rooms;
-    private PlayerStats player;
-    public int numberofRooms;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -31,19 +26,8 @@ public class TurnManager : MonoBehaviour
         enemies = new Queue<EnemyBehavior>();
         enemiestable = new HashSet<EnemyBehavior>();
         Controls.onMoveEvent += callTaketurn;
-        player = PlayerStats.Instance;
-        
     }
 
-    public void initialize()
-    {
-        AllEnemies = new List<EnemyBehavior>[numberofRooms];
-        for(int i = 0; i < numberofRooms; i++)
-        {
-            AllEnemies[i] = new List<EnemyBehavior>();
-        }
-        rooms = new BoundsInt[numberofRooms];
-    }
 
     public void queupToMove(EnemyBehavior enemy)
     {
@@ -58,7 +42,7 @@ public class TurnManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Drop an enemy from the pending-turn queue and from the per-room alert lists.
+    /// Drop an enemy from the pending-turn queue.
     /// Enemy.ForceDie()/Die() call this on teardown: without it the queue kept a destroyed
     /// component, and TakeTurns() then called takeTurn() on it and threw
     /// MissingReferenceException, which aborted the coroutine for every enemy still queued
@@ -76,47 +60,13 @@ public class TurnManager : MonoBehaviour
             enemies = new Queue<EnemyBehavior>(enemies.Where(e => e != null && e != enemy));
         }
         enemiestable?.Remove(enemy);
-        if (AllEnemies != null)
-        {
-            for (int i = 0; i < AllEnemies.Length; i++)
-            {
-                AllEnemies[i]?.Remove(enemy);
-            }
-        }
     }
 
     public void callTaketurn(Controls controls)
     {
-        if (player == null)
-        {
-            player = PlayerStats.Instance;
-        }
-
         // Never return early from here: Controls has already set takingTurn, and the
         // finally block in TakeTurns is the only place that releases it. An early return
         // would lock the player out of every future input.
-        if (player != null && rooms != null && AllEnemies != null)
-        {
-            Vector3 playerpos = player.transform.position;
-            for (int i = 0; i < rooms.Length && i < AllEnemies.Length; i++)
-            {
-                if (AllEnemies[i] == null)
-                {
-                    continue;
-                }
-                if(!rooms[i].Contains(new Vector3Int((int)playerpos.x, (int)playerpos.y)))
-                {
-                    continue;
-                }
-                foreach(EnemyBehavior enemy in AllEnemies[i])
-                {
-                    if (enemy != null)
-                    {
-                        enemy.becomeAlerted();
-                    }
-                }
-            }
-        }
         StartCoroutine("TakeTurns");
     }
     public void OnDestroy()
