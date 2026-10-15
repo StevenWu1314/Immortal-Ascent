@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 
 public abstract class Enemy : MonoBehaviour
 {
@@ -18,7 +17,8 @@ public abstract class Enemy : MonoBehaviour
     {
         health -= damage;
         uiManager.DrawFlowupText("-" + damage, this.transform.position);
-        StartCoroutine(DamageIndicator());
+        StartCoroutine(utilityFunction.FlashSprite(spriteRenderer,
+            new[] { new Color(1f, 0f, 0f, 1f), Color.white }, 0.3f));
         if(health <= 0)
         {
             PlayerStats.Instance.gainExperience(expValue);
@@ -26,21 +26,6 @@ public abstract class Enemy : MonoBehaviour
         }
     }
 
-    private IEnumerator DamageIndicator() {
-        float indicatortimer = 0.3f;
-
-        Color[] damageColors = {
-            new Color(1f, 0f, 0f, 1f),
-            new Color(1f, 1f, 1f, 1f),
-        };
-
-        foreach (Color color in damageColors) {
-            spriteRenderer.color = color;
-            yield return new WaitForSeconds(indicatortimer);
-        }
-
-        spriteRenderer.color = Color.white;
-    }
 
     public void ForceDie()
     {

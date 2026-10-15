@@ -178,7 +178,8 @@ public class PlayerStats : MonoBehaviour{
     {
         Health -= damage;
         updateHealthBar();
-        StartCoroutine(DamageIndicator());
+        StartCoroutine(utilityFunction.FlashSprite(spriteRenderer,
+            new[] { new Color(1f, 0f, 0f, 1f), Color.white, Color.white }, 0.3f));
         StartCoroutine(DamageShake());
         if (Health <= 0)
         {
@@ -186,28 +187,6 @@ public class PlayerStats : MonoBehaviour{
         }
     }
 
-    private IEnumerator DamageIndicator() {
-        float indicatortimer = 0.3f;
-
-        Color[] damageColors = {
-            new Color(1f, 0f, 0f, 1f),
-            Color.white,
-            Color.white
-        };
-
-        foreach (Color color in damageColors) {
-            if (spriteRenderer != null)
-            {
-                spriteRenderer.color = color;
-            }
-            yield return new WaitForSeconds(indicatortimer);
-        }
-
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = Color.white;
-        }
-    }
 
     /// <summary>
     /// Visual hit shake.

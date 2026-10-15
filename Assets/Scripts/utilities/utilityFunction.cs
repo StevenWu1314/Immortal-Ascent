@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -18,6 +19,27 @@ public static class utilityFunction
         textMesh.alignment = textAlignment;
         textMesh.GetComponent<MeshRenderer>().sortingOrder = sortingOrder;
         return textMesh;
+    }
+
+    /// <summary>
+    /// Flashes a sprite through <paramref name="colors"/>, then restores white. Shared by the
+    /// player and enemy hit indicators, which each carried their own copy of this.
+    /// </summary>
+    public static IEnumerator FlashSprite(SpriteRenderer renderer, Color[] colors, float interval)
+    {
+        foreach (Color color in colors)
+        {
+            if (renderer != null)
+            {
+                renderer.color = color;
+            }
+            yield return new WaitForSeconds(interval);
+        }
+
+        if (renderer != null)
+        {
+            renderer.color = Color.white;
+        }
     }
 
     /// <summary>
