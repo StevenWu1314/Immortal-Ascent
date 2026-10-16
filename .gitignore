@@ -77,3 +77,7 @@ crashlytics-build.properties
 
 # Mono/Unity crash dumps
 mono_crash.*.json
+
+# Python bytecode (Docs/gdd_build is a Python tool)
+__pycache__/
+*.pyc

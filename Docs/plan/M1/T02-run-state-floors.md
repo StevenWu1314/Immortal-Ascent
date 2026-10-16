@@ -1,0 +1,88 @@
+# T02 — RunState, floor progression, death and victory
+
+**Depends on:** T01.
+**GDD:** sections 3.1-3.4 (loop, run structure, floor exit, win/lose), 16.2 (systems to add), 16.3 (save
+format — shaped now, implemented in M3).
+
+## Goal
+
+The game becomes a run: a realm with floors, stairs that advance the floor, a boss floor that completes
+the run, and death or victory returning to the menu. M1 only needs the Plains realm populated, but the
+data shape must already allow three realms.
+
+## Files
+
+| Path | Change |
+| --- | --- |
+| `Assets/Scripts/Managers/RunState.cs` | new: run state machine (pure logic separated from MonoBehaviour) |
+| `Assets/Scripts/RealmDefinition.cs` (or `Assets/Scripts/Managers/`) | new ScriptableObject: realm config |
+| `Assets/Resources/Realms/Plains.asset` | new data asset (created by a `[MenuItem]` wiring step, values listed below) |
+| `Assets/Scripts/Level Generator/RoomFirstDungeonGenerator.cs` | generate the floor requested by `RunState` |
+| `Assets/Scripts/Player/Controls.cs` | stairs interaction (E on a stairs cell) |
+| `Assets/Scripts/Managers/UI Manager.cs` | floor/realm indicator data source; death and victory panels |
+| `Assets/Scripts/Managers/SceneChange.cs` | used for returning to the menu |
+| `Assets/Scripts/Player/PlayerStats.cs` | death path already uses a serialized scene field — keep it, verify it |
+| `Assets/Tests/EditMode/RunStateTests.cs` | new pure tests |
+
+## Implementation notes
+
+1. **Separate pure logic from MonoBehaviour.** `RunSequence` (pure, testable): holds realm index, floor
+   index, floors per realm, and answers `IsBossFloor`, `AdvanceFloor()`, `IsRunComplete`,
+   `Reset()`. `RunState` (MonoBehaviour singleton) owns the instance, the seed, and events; it delegates
+   decisions to `RunSequence`. This is what makes M3's save/resume cheap.
+2. **RealmDefinition fields (data-driven):** realm index, display name, floors in this realm, islands per
+   floor, enemy pool, loot table reference, vision radius, aggro mode (`RoomWide` / `DetectionRadius`),
+   hazard flags. M1 creates **only** `Plains.asset` with: 2 floors, 6-8 islands, room-wide aggro,
+   unlimited vision. Desert/Tundra assets are M2 — do not create stubs.
+3. **Floor advance flow:** stairs interaction → `RunState.AdvanceFloor()` → regenerate the floor in the
+   same scene: clear grid/entities/chests/islands, generate the new floor, respawn the player on the
+   starting island, respawn enemies and chests. Reuse the existing reset path in the generator rather than
+   loading a new scene.
+4. **Boss floor:** on a realm's last floor the stairs do not exist; the boss room's door opens only when
+   the boss dies (T10 implements the boss; this task implements the gate flag and the run completion).
+5. **Death:** keep the existing serialized death-scene field and the current behaviour (reload
+   `ui.unity`, build index 0). Confirm it still works — it was recently fixed and must not regress.
+6. **Victory (M1 placeholder):** when the boss dies on the final floor of the final realm, show a simple
+   summary panel ("run complete") with kills / floors / time if cheap, then return to the menu. The full
+   ending screen is M3.
+7. **Seed:** `RunState` generates and stores one seed per run; every floor derives its layout seed from
+   (run seed, floor index) so a floor is reproducible. Tests rely on this.
+8. Do not add saving in this task. M1 has no persistence; the shape above is enough for M3.
+
+## Test list (EditMode, pure)
+
+- New run starts at realm 0, floor 0.
+- `AdvanceFloor` moves within a realm and wraps into the next realm at the realm boundary.
+- `IsBossFloor` is true only on the last floor of a realm.
+- `IsRunComplete` only after advancing past the final realm's last floor.
+- `Reset` returns to realm 0 / floor 0 and clears completion.
+- Floor seed derivation is deterministic: same run seed + floor index → same layout seed; consecutive
+  floors differ.
+- A 3-realm sequence with floors-per-realm 2-3 covers every floor exactly once.
+
+## Test list (PlayMode)
+
+- Interacting with the stairs cell advances the floor: the player is back on a starting island, enemies
+  exist again, and islands are rebuilt (assert via `IslandManager` and `EntityManager`).
+- No stairs cell exists on a boss floor.
+- Player death reloads the menu scene (assert the active scene name after the load).
+
+## Verification
+
+1. EditMode + PlayMode tests green.
+2. `execute_method` → `PlayDriver.Status` (player registered, position sane) and
+   `Tools/Play/Audit Bridge Tiles`.
+3. `execute_method` → `MapgenDiagnostics.ChestWalkability`.
+4. Designer checkpoint: play two plains floors, descend, confirm the floor indicator and that the second
+   floor is a fresh map.
+
+## Checkpoint
+
+Report the run-state tests, what the victory placeholder shows, and the exact steps the designer should
+follow to walk from floor 1 to floor 2. Include the `[MenuItem]` name for creating `Plains.asset` if the
+asset is generated by script rather than authored.
+
+## Out of scope
+
+Saving/resuming (M3). The ending screen and run-summary statistics beyond a placeholder (M3). Desert and
+tundra realms. The boss entity, its AI and its drops (T10).
