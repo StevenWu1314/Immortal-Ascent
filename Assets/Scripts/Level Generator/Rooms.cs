@@ -55,15 +55,15 @@ public class Rooms
         return direction;
 
     }
-    public Rooms Branch(int direction)
+    public Rooms Branch(int direction, int forcedSize = 0)
     {
         Rooms nextRoom;
-        int xsize = Random.Range(5, 10)*2+1;
+        int xsize = forcedSize > 0 ? forcedSize : Random.Range(5, 10)*2+1;
         if(xsize % 2 == 0)
         {
             xsize++;
         }
-        int ysize = Random.Range(5, 10)*2+1;
+        int ysize = forcedSize > 0 ? forcedSize : Random.Range(5, 10)*2+1;
         if(ysize % 2 == 0)
         {
             ysize++;

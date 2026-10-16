@@ -37,8 +37,9 @@ Scenes: `Assets/Scenes/ui.unity` is build index **0** (the death screen loads it
 
 Verified against the code, not the docs:
 
-- **No run structure.** One endless map, **exactly 5 rooms**, room kinds only `Starting` and
-  `Combat`. No floors, stairs, boss, real win state or save.
+- **No run structure.** One endless map of 6-8 islands. T01 marks the last island `Stairs`, or a large
+  `Boss` room when `generateBranchingDungeon(bossFloor: true)` is used, but nothing consumes those kinds
+  yet: no floor progression, no boss encounter, no save.
 - **No status system** of any kind. Only flat damage, 3 temporary stat buffs and a heal exist.
 - **No material source.** Iron/Web/Tusk/Skin drop from nothing, so both recipes and the arrow
   economy are dead ends.
@@ -48,18 +49,25 @@ Verified against the code, not the docs:
   enemies never move (no roaming).
 - **Test assemblies exist** (T00): `Assets/Tests/EditMode` (pure rules, runnable through the bridge) and
   `Assets/Tests/PlayMode` (batchmode or the Test Runner window only - never the bridge).
+- **Fog is code-only and unwired.** `FogManager` has serialized Tilemap/TileBase fields, but no scene
+  object references it and nothing calls its `Initialize`/`ClearFog`. Both of its calls in `Controls` are
+  null-guarded; the feature does nothing until someone wires it.
 
 `Docs/Immortal-Ascent-GDD-v2.md` Appendix B is the full gap list. Appendix A is the open
 decisions list — check it before treating a number as settled.
 
 ## 3. Workflow: one plan task at a time
 
-1. Read `Docs/plan/M1/README.md` (working agreement, task order, dependencies).
-2. Open **exactly one** task file from `Docs/plan/M1/`.
-3. Implement it, write its tests, run the verification ladder in that file.
-4. Stop at the task's **checkpoint** and post the report it asks for. Do not start the next
+1. **Check the tree before trusting it.** `git log --oneline -3` and compile. A collaborator merges into
+   this branch from the remote, and one such merge left a duplicated movement block in `Controls.cs` that
+   did not compile, plus an unguarded call into an unwired system that threw on every spawn. HEAD is not
+   guaranteed green.
+2. Read `Docs/plan/M1/README.md` (working agreement, task order, dependencies).
+3. Open **exactly one** task file from `Docs/plan/M1/`.
+4. Implement it, write its tests, run the verification ladder in that file.
+5. Stop at the task's **checkpoint** and post the report it asks for. Do not start the next
    task, and do not commit, until the designer replies `pass`.
-5. Only then commit and continue.
+6. Only then commit and continue.
 
 Values in the GDD marked **proposed** are starting points for playtesting, not balance. Never
 "fix" a number to match a doc without saying so.

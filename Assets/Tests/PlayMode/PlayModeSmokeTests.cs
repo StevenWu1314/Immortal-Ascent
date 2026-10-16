@@ -122,5 +122,37 @@ public class PlayModeSmokeTests
         }
 
         Assert.IsTrue(playerRegistered, "the player entity is not in the entity registry");
+
+        // The floor must actually use the 6-8 island band. This is the check that catches the new
+        // serialized band fields deserializing as 0: a one-room floor still spawns a player and still
+        // initialises islands, so every assertion above would pass while the game was broken.
+        int islands = CountIslands();
+        Assert.That(islands, Is.InRange(6, 8),
+            $"the generated floor has {islands} islands, expected the 6-8 band from the GDD");
+    }
+
+    /// <summary>Distinct island ids over the walkable terrain: one per room, corridors excluded.</summary>
+    private static int CountIslands()
+    {
+        var ids = new HashSet<int>();
+        Grid grid = Grid.Current;
+        for (int x = 0; x < grid.Width; x++)
+        {
+            for (int y = 0; y < grid.Height; y++)
+            {
+                if (!Grid.IsWalkableTerrain(grid.GetValueAtLocation(x, y)))
+                {
+                    continue;
+                }
+
+                int id = IslandManager.GetIsland(new Vector2Int(x, y));
+                if (id > 0)
+                {
+                    ids.Add(id);
+                }
+            }
+        }
+
+        return ids.Count;
     }
 }

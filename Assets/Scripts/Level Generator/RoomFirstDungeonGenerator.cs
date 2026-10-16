@@ -6,7 +6,10 @@ using Random = UnityEngine.Random;
 public class RoomFirstDungeonGenerator : MonoBehaviour
 {
     // Start is called before the first frame update
-    [SerializeField] private int numberOfRooms;
+    [Tooltip("Islands per floor, inclusive band (GDD 5: 6-8). Replaces the old string of a single " +
+             "numberOfRooms, which the builder could undershoot or overshoot.")]
+    [SerializeField] private int minRoomsPerFloor = 6;
+    [SerializeField] private int maxRoomsPerFloor = 8;
     /// <summary>
     /// Inclusive enemy count per room (x = minimum, y = maximum). Replaces the hardcoded
     /// Random.Range(0, 2), whose exclusive upper bound made "0 or 1" an accident rather than
@@ -59,7 +62,12 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         }
         return grid;
     }
-    public void generateBranchingDungeon()
+    /// <summary>
+    /// Build one floor. <paramref name="bossFloor"/> makes the last island a large Boss arena instead
+    /// of the Stairs room; the run state (T02) decides which floors those are, so the default keeps
+    /// <see cref="Start"/> and the editor tools on a normal floor.
+    /// </summary>
+    public void generateBranchingDungeon(bool bossFloor = false)
     {
         // Self-heal the grid: at runtime Start() has already built it, but the editor
         // diagnostics entry point reaches this method directly.
@@ -75,7 +83,8 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         spawnedPlayer = null;
 
         tilePlacer.clear();
-        List<Rooms> rooms = ProceduralGenerationAlgorithm.BrachingRooms(5, numberOfRooms, gridSize);
+        List<Rooms> rooms = ProceduralGenerationAlgorithm.BrachingRooms(
+            minRoomsPerFloor, maxRoomsPerFloor, gridSize, bossFloor);
         List<BoundsInt> roomsSpace = new List<BoundsInt>();
         int startingRoomIndex = -1;
         for (int i = 0; i < rooms.Count; i++)

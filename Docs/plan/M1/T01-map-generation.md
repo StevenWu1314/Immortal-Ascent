@@ -102,3 +102,38 @@ confirm the maps look right (island spread, no rooms jammed against the grid edg
 
 Ore veins and their mining (T06). Stairs *behaviour* — interaction, progression, boss gate (T02). The
 boss entity itself (T10). Desert and tundra layouts.
+
+## Outcome (implemented)
+
+- The count is a real contract: the loop stops exactly at the target, and a room that placed a child is
+  re-queued until its free directions run out. Re-queueing is what fixed the shortfall — the first
+  version placed one child per visit, so the frontier died in the grid's corners (seed 40 of 200 came out
+  with 5 rooms against a request of 6).
+- Index math indexes `0..Count-1`; the `overlap` flag now lives inside the candidate loop; `body.y` was
+  already `yMin` for `BoundsInt`, so there was no bug to fix there.
+- Room sizes were **not** changed (still 11-19 including the wall ring, larger than the GDD's 3-12 island
+  band). Fitting the 6-8 band needed the frontier fix instead. Aligning room sizes with GDD 5.2 is a T09
+  tuning job.
+- Skipped the planned `LayoutRequest`/`RoomLayout`/injected-RNG extraction: `Random.InitState` already
+  makes layouts reproducible and the existing signature carries the band, so the new types would have been
+  abstraction with no payer.
+- `numberOfRooms` is replaced by `minRoomsPerFloor`/`maxRoomsPerFloor` (initialisers 6/8, so the scene
+  needs no Inspector work). The scene's orphaned `numberOfRooms: 5` is ignored by Unity; no data loss.
+- `generateBranchingDungeon(bool bossFloor = false)` — the default keeps `Start()` and the inspector
+  button working; T02 passes the run state in.
+
+### Merge casualties fixed here
+
+HEAD was a merge of remote fog work into `Testing` that left the tree **not compiling**:
+
+- `Controls.cs` kept both sides of the movement block; the stale copy called a 3-argument `grid.Move`
+  that does not exist, after `direction` had already been zeroed. The duplicate was removed.
+- `FogManager` is code-only: no scene object references it and nothing calls its `Initialize`/`ClearFog`,
+  so its two unguarded calls in `Controls` threw a `NullReferenceException` on every player spawn. Both
+  are now null-guarded; the feature stays inert until someone wires it.
+
+### Verified
+
+EditMode 22/22; PlayMode 2/2 including the real-scene test's new 6-8 island assertion; `RoomBuilderStress`
+1200 runs with 0 threw and 0 overlapping and exact counts (`5..5` for a request of 5, was `4..6`);
+`ChestWalkability` 7/7.
