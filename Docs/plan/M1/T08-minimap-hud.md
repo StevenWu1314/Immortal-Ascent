@@ -84,3 +84,45 @@ matters more than the tests).
 ## Out of scope
 
 Status icons beyond Root (M2). Tooltips, damage log, bestiary. Localization of the new strings.
+
+## Outcome (implemented)
+
+- `MinimapRules` (pure): the visited set (a repeat visit is not news, so nothing repaints), the entered
+  islands, and the stairs-discovery flag. Enemies are never shown (`ShowsEnemies` is `false` for every
+  realm), the stairs marker appears only once the player walks into the stairs' room, chest and vein markers
+  appear when their island is entered, and `Reset` forgets the floor.
+- `Minimap` draws all of that on one Tilemap: a tile is written only for a cell that has just been revealed,
+  and an island's markers are painted once, when it is first entered. No per-frame work, no GameObject per
+  pixel. `Controls` reveals the cell it steps into (and the spawn cell when it starts) and the generator
+  calls `ResetForFloor` for a new floor.
+- `HudReadout` fills the HUD from data that already existed: ammo (red at zero), the equipped weapons,
+  whose turn it is plus the aim state, realm and floor, and the Root icon with its remaining rounds. Every
+  field is optional and every value is written only when it changes, so a half-wired HUD still runs.
+- `QuickUse` holds one selected pill, uses it on `Q` through `ItemUsage` - the same path the inventory
+  button uses - and spends exactly one turn, but only when the item was really consumed, so a failed use
+  stays free. It respects the input lock and open menus.
+- `Controls.SpendTurn(TurnAction)` is the public way for a non-movement action to spend a turn, keeping
+  `TurnRules` the single gate.
+- `ChestRegistry.Cells` and `OreVeinRegistry.Cells` were added so the minimap can mark a room's contents.
+- `HudWiring` (`Tools/Content/Wire HUD References`) creates the minimap object with its own Grid and
+  Tilemap, adds `HudReadout` to the canvas, assigns what it can find by name, and reports what is left.
+
+### Checkpoint answers
+
+- **Reveal rules:** explored cells persist for the floor; the stairs appear when their room is entered;
+  chests and veins appear when their island is entered; enemies never; a descent resets everything.
+- **Quick-use key:** `Q` (`QuickUse.UseKey`). Change it at the checkpoint if you would rather have another.
+- **Menu item to run:** `Tools/Content/Wire HUD References`. Then assign the minimap's two tiles
+  (visited / marker) and the five text objects. Name them `ammoText`, `weaponText`, `turnText`, `realmText`
+  and `rootText` and the menu item wires them itself, or drag them in by hand.
+- **Legibility:** the one thing here that tests cannot judge. The strings are `Arrows N`,
+  `Melee: X / Bow: Y`, `Your turn` / `Enemies…`, `Plains — Floor 2` and `Rooted (N)`. Please check them at
+  1080p and tell me what to shorten.
+
+### Verified
+
+EditMode 103/103 (6 new minimap tests); PlayMode 22/22 - the three new ones assert that stepping reveals a
+cell, that quick use consumes one pill and costs exactly one turn, and that an empty quick-use slot is free.
+
+Not verified: anything visual. The minimap's tiles, its scale and its placement, and the HUD's legibility
+need your eyes; `HudWiring` only builds the structure and lists the references it could not fill.

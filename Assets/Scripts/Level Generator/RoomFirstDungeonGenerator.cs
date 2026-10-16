@@ -120,6 +120,11 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         // terrain (room rings = 1, chest cells = 99) stayed underneath the new floor and cut through
         // it, which showed up as isolated cells and unreachable chests on every descend.
         grid.Clear();
+        // A new floor forgets what the minimap knew (GDD 14.5).
+        if (Minimap.Instance != null)
+        {
+            Minimap.Instance.ResetForFloor();
+        }
         List<Rooms> rooms = ProceduralGenerationAlgorithm.BrachingRooms(
             minRoomsPerFloor, maxRoomsPerFloor, gridSize, bossFloor);
         List<BoundsInt> roomsSpace = new List<BoundsInt>();

@@ -62,6 +62,10 @@ Verified against the code, not the docs:
   reset by `BeginRun`), and the panel lists every craftable definition as enabled, greyed or locked. The
   ammo path grants `PlayerStats.Arrows` instead of an item stack. Craftable data still needs authoring:
   the shipped items have no recipes yet.
+- **The minimap and HUD are code-complete but not scene-wired** (T08). `MinimapRules` is pure and tested;
+  `Minimap` paints revealed cells and markers on one tilemap; `HudReadout` fills ammo/weapon/turn/floor/root
+  text; `QuickUse` holds the pill on `Q`. Run `Tools/Content/Wire HUD References`, then assign the two
+  minimap tiles and the text objects - until then nothing draws.
 - **Fog is code-only and unwired.** `FogManager` has serialized Tilemap/TileBase fields, but no scene
   object references it and nothing calls its `Initialize`/`ClearFog`. Both of its calls in `Controls` are
   null-guarded; the feature does nothing until someone wires it.

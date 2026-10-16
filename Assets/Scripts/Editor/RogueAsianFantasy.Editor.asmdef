@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "RogueAsianFantasy.Runtime",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [
         "Editor"

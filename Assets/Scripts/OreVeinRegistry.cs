@@ -23,6 +23,9 @@ public static class OreVeinRegistry
 
     public static int Count => veins.Count;
 
+    /// <summary>The cells of the live veins, for the minimap (T08).</summary>
+    public static IEnumerable<Vector2Int> Cells => veins.Keys;
+
     public static void Register(Vector2Int cell, ItemDefinition ore, int remaining)
     {
         veins[cell] = new Vein { ore = ore, remaining = Mathf.Max(1, remaining) };

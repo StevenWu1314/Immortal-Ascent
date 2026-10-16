@@ -281,6 +281,13 @@ public class Controls : MonoBehaviour
         // Only report the destination once the move actually happened.
         positionDisplay.text = $"{nextCell}";
 
+        // The minimap learns where the player has been (T08); guarded like FogManager, since a scene with no
+        // minimap is perfectly valid.
+        if (Minimap.Instance != null)
+        {
+            Minimap.Instance.Reveal(nextCell);
+        }
+
         // Entering a web roots the player and consumes it (GDD 5.4). Consume owns both writes: the grid for
         // movement authority and the island snapshot for the gate.
         if (WebRegistry.HasWeb(nextCell))
@@ -309,6 +316,15 @@ public class Controls : MonoBehaviour
             ConsumeTurn(TurnAction.Move);
         }
         return true;
+    }
+
+    /// <summary>
+    /// Spend the turn for an action that already resolved (using an item, for example). Movement and attacks go
+    /// through <see cref="TryMove"/>; everything else comes here, so the turn table stays the single gate.
+    /// </summary>
+    public void SpendTurn(TurnAction action)
+    {
+        ConsumeTurn(action);
     }
 
     /// <summary>True while a living enemy shares the player's room (GDD 6.1).</summary>

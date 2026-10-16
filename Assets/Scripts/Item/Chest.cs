@@ -148,6 +148,9 @@ public static class ChestRegistry
 {
     private static readonly Dictionary<Vector2Int, Chest> chests = new Dictionary<Vector2Int, Chest>();
 
+    /// <summary>The cells of the unopened chests, for the minimap (T08).</summary>
+    public static IEnumerable<Vector2Int> Cells => chests.Keys;
+
     public static void Register(Chest chest)
     {
         if (chest == null)
