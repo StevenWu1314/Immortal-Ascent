@@ -40,8 +40,8 @@ public class TurnFlowTests
     {
         yield return DungeonSceneFixture.LoadAndWaitForGeneration();
 
-        Controls controls = PlayerAt();
-        Vector2Int start = RegistryCell(controls);
+        Controls controls = DungeonSceneFixture.Player();
+        Vector2Int start = DungeonSceneFixture.RegistryCell(controls);
         Vector2Int direction = OpenDirection(start);
         Assert.AreNotEqual(Vector2Int.zero, direction, "the spawn cell has no walkable neighbour to test");
         Vector2Int blockedCell = start + direction;
@@ -56,7 +56,7 @@ public class TurnFlowTests
             bool moved = controls.TryMove(direction);
 
             Assert.IsFalse(moved, "a wall must refuse the step");
-            Assert.AreEqual(start, RegistryCell(controls), "the player must not have moved");
+            Assert.AreEqual(start, DungeonSceneFixture.RegistryCell(controls), "the player must not have moved");
             Assert.AreEqual(0, turnEvents, "a refused step must not start the enemy phase");
             Assert.IsFalse(controls.takingTurn, "a refused step must not lock input");
         }
@@ -71,8 +71,8 @@ public class TurnFlowTests
     {
         yield return DungeonSceneFixture.LoadAndWaitForGeneration();
 
-        Controls controls = PlayerAt();
-        Vector2Int start = RegistryCell(controls);
+        Controls controls = DungeonSceneFixture.Player();
+        Vector2Int start = DungeonSceneFixture.RegistryCell(controls);
         int island = IslandManager.GetIsland(start);
         Assert.Greater(island, IslandManager.Passage, "the player should spawn inside a room");
         Assert.AreEqual(0, IslandManager.CountLivingEnemies(island),
@@ -84,7 +84,7 @@ public class TurnFlowTests
         bool moved = controls.TryMove(direction);
 
         Assert.IsTrue(moved, "a walkable neighbour in a cleared room should be steppable");
-        Assert.AreEqual(start + direction, RegistryCell(controls), "the player should have stepped one cell");
+        Assert.AreEqual(start + direction, DungeonSceneFixture.RegistryCell(controls), "the player should have stepped one cell");
         Assert.AreEqual(0, turnEvents, "out of combat, movement must not start the enemy phase");
         Assert.IsFalse(controls.takingTurn, "out of combat, movement must not lock input");
     }
@@ -94,12 +94,12 @@ public class TurnFlowTests
     {
         yield return DungeonSceneFixture.LoadAndWaitForGeneration();
 
-        Controls controls = PlayerAt();
-        Vector2Int start = RegistryCell(controls);
+        Controls controls = DungeonSceneFixture.Player();
+        Vector2Int start = DungeonSceneFixture.RegistryCell(controls);
         Vector2Int direction = OpenDirection(start);
         Assert.AreNotEqual(Vector2Int.zero, direction, "the spawn cell has no walkable neighbour to test");
 
-        EquipAMeleeWeapon();
+        DungeonSceneFixture.EquipFirstWeapon(ranged: false);
         Enemy enemy = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None).Length > 0
             ? Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None)[0]
             : null;
@@ -118,12 +118,12 @@ public class TurnFlowTests
         bool acted = controls.TryMove(direction);
 
         Assert.IsTrue(acted, "walking into an enemy is an action");
-        Assert.AreEqual(start, RegistryCell(controls), "the player attacks instead of stepping into it");
+        Assert.AreEqual(start, DungeonSceneFixture.RegistryCell(controls), "the player attacks instead of stepping into it");
         Assert.Less(ReadEnemyHealth(enemy), healthBefore, "the bump must damage the enemy");
         Assert.AreEqual(1, turnEvents, "a melee attack ends the turn");
         Assert.IsTrue(controls.takingTurn, "the input lock is held while the enemy phase runs");
 
-        yield return WaitForEnemyPhase();
+        yield return DungeonSceneFixture.WaitForEnemyPhase();
 
         Assert.IsFalse(controls.takingTurn, "the enemy phase must release the input lock when it finishes");
     }
@@ -133,7 +133,7 @@ public class TurnFlowTests
     {
         yield return DungeonSceneFixture.LoadAndWaitForGeneration();
 
-        Controls controls = PlayerAt();
+        Controls controls = DungeonSceneFixture.Player();
         TurnManager manager = TurnManager.Instance;
         Assert.IsTrue(manager != null, "the scene should have a TurnManager");
 
@@ -150,30 +150,14 @@ public class TurnFlowTests
         // at once, and the first coroutine's finally released the lock underneath the second.
         manager.callTaketurn(controls);
 
-        yield return WaitForEnemyPhase();
+        yield return DungeonSceneFixture.WaitForEnemyPhase();
 
         Assert.IsFalse(controls.takingTurn, "the lock must be released when the phase ends, not left stuck");
     }
 
     // ------------------------------------------------------------------ helpers
 
-    private static Controls PlayerAt()
-    {
-        Assert.IsTrue(PlayerStats.Instance != null, "the scene should have spawned a player");
-        Controls controls = PlayerStats.Instance.GetComponent<Controls>();
-        Assert.IsTrue(controls != null, "the player should have a Controls component");
-        return controls;
-    }
-
-    private static Vector2Int RegistryCell(Controls controls)
-    {
-        Vector2Int cell;
-        if (EntityManager.Instance != null && EntityManager.Instance.TryGetCell(controls.gameObject, out cell))
-        {
-            return cell;
-        }
-        return Vector2Int.FloorToInt(controls.transform.position);
-    }
+    /// <summary>Enemy.health is a protected serialized field with no public getter.</summary>
 
     /// <summary>
     /// A direction whose neighbour is walkable and in the player's own room, so a test that blocks it
@@ -208,21 +192,6 @@ public class TurnFlowTests
         return Vector2Int.zero;
     }
 
-    private static void EquipAMeleeWeapon()
-    {
-        ItemDefinition melee = null;
-        foreach (ItemDefinition definition in Resources.LoadAll<ItemDefinition>("ItemDefinitions"))
-        {
-            if (definition.Kind == ItemKind.Weapon && !definition.Ranged)
-            {
-                melee = definition;
-                break;
-            }
-        }
-        Assert.IsTrue(melee != null, "no melee weapon definition exists under Resources/ItemDefinitions");
-        Equipments.Instance.Equip(new EquipmentInstance(melee));
-    }
-
     /// <summary>Enemy.health is a protected serialized field with no public getter.</summary>
     private static int ReadEnemyHealth(Enemy enemy)
     {
@@ -230,14 +199,4 @@ public class TurnFlowTests
         return field != null ? (int)field.GetValue(enemy) : -1;
     }
 
-    private static IEnumerator WaitForEnemyPhase()
-    {
-        TurnManager manager = TurnManager.Instance;
-        float deadline = Time.realtimeSinceStartup + 10f;
-        while (manager.IsEnemyPhaseRunning && Time.realtimeSinceStartup < deadline)
-        {
-            yield return null;
-        }
-        Assert.IsFalse(manager.IsEnemyPhaseRunning, "the enemy phase never finished");
-    }
 }

@@ -44,10 +44,12 @@ Verified against the code, not the docs:
 - **No status system** of any kind. Only flat damage, 3 temporary stat buffs and a heal exist.
 - **No material source.** Iron/Web/Tusk/Skin drop from nothing, so both recipes and the arrow
   economy are dead ends.
-- **Line of sight is a no-op.** `ClearLine` consults a Tilemap nothing paints, so both sides
-  shoot through walls.
-- **Enemy awareness is island-based only.** `detectionRadius` is effectively dead code; unaware
-  enemies never move (no roaming).
+- **Line of sight is real** (T04). `LineOfSight.HasClearShot` walks the Grid: walls, water and out of
+  bounds block, while webs, bushes and chests do not. `utilityFunction.ClearLine` is dead code (marked as
+  such, no callers) - it read a Tilemap nothing painted.
+- **Awareness is realm-driven** (T04). `RealmDefinition.aggroMode` selects room-wide (Plains) or
+  detection-radius-plus-line-of-sight (desert, tundra, M2 content); `RunState.EnemyAggroMode` is what the
+  enemies read. Unaware enemies roam one step per round inside their own room.
 - **Test assemblies exist** (T00): `Assets/Tests/EditMode` (pure rules, runnable through the bridge) and
   `Assets/Tests/PlayMode` (batchmode or the Test Runner window only - never the bridge).
 - **Fog is code-only and unwired.** `FogManager` has serialized Tilemap/TileBase fields, but no scene
@@ -174,7 +176,6 @@ state on `ItemDefinition`.**
 | `UIManager/Inventory/itemholder` | `Inventory.Start` |
 | `CurrentPos` | `Controls.Start` |
 | `HpBar`, `ExpBar` | `PlayerStats.OnEnable` |
-| `Collidable Plants` (Tilemap) | `RangeAttackTilemap.Start`, `RangeEnemyBehavior.Start` |
 | `Level Up UI` | `UIManager.toggleLevelUpMenu` |
 | `str`, `dex`, `health` | `levelUpUI.OnEnable` |
 | `slot` → `Item` | `ItemBox.EnsureImage` |
@@ -189,6 +190,11 @@ re-registers the existing `PlayerStats`. Instantiating a fresh one while the old
 (`Destroy` is deferred) makes the player-side singleton guards - `PlayerStats`, `Equipments`, `Inventory`,
 which all `Destroy(gameObject)` - delete the whole new player; and it would reset health, level and
 inventory, which the GDD carries between floors.
+
+**9. The range overlay has its own Grid, so its cells are player-relative.** `RangeAttackTilemap.tilemap`
+is a child of the player: `tilemap.WorldToCell` returns overlay cells, while terrain and the entity
+registry are addressed in `Grid.Current` cells (and `Grid.CellFromWorld` gives those). Convert before any
+grid, sight or registry lookup - mixing the two silently paints and queries the wrong cells.
 
 ## 6. Coding conventions
 

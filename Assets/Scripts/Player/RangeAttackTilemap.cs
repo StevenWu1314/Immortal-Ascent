@@ -6,7 +6,6 @@ public class RangeAttackTilemap : MonoBehaviour
 {
     [SerializeField] Tile overlayTile;
     [SerializeField] Tile highlightedTile;
-    Tilemap collidableMap;
     public Tilemap tilemap;
     PlayerStats player;
     public bool overlaying;
@@ -19,7 +18,6 @@ public class RangeAttackTilemap : MonoBehaviour
     {
         player = transform.parent.GetComponent<PlayerStats>();
         tilemap = transform.GetComponentInChildren<Tilemap>();
-        collidableMap = GameObject.Find("Collidable Plants").GetComponent<Tilemap>();
     }
     void Update()
     {
@@ -47,8 +45,12 @@ public class RangeAttackTilemap : MonoBehaviour
     }
     private void DisplayCurrent()
     {
-        Vector2Int center = (Vector2Int) tilemap.WorldToCell(player.transform.position);
-        Vector3Int rayCenter = collidableMap.WorldToCell(player.transform.position);
+        // Two cell spaces. The overlay has its own Grid under the player, so its cells are relative to
+        // wherever that Grid sits; terrain lives in Grid.Current's cells. Painting uses the overlay's
+        // space and the sight test uses the level's.
+        Vector2Int overlayCenter = (Vector2Int) tilemap.WorldToCell(player.transform.position);
+        Vector2Int levelCenter = Grid.CellFromWorld(player.transform.position);
+        Grid level = Grid.Current;
         // Range is owned by the equipped ranged weapon, not by PlayerStats: reading it from
         // the item means equipping a sword can no longer zero out the bow's reach.
         int range = Equipments.Instance != null ? Equipments.Instance.getRange() : 0;
@@ -64,8 +66,11 @@ public class RangeAttackTilemap : MonoBehaviour
             {
                 if(math.distance(new Vector2(0, 0), new Vector2(x, y)) <= range)
                 {
-                    if(utilityFunction.ClearLine(collidableMap, (Vector2Int) rayCenter, new Vector2Int(rayCenter.x + x, rayCenter.y + y)))
-                        tilemap.SetTile(new Vector3Int(x + center.x, y + center.y, 0), overlayTile);
+                    if (LineOfSight.HasClearShot(level, levelCenter,
+                            new Vector2Int(levelCenter.x + x, levelCenter.y + y)))
+                    {
+                        tilemap.SetTile(new Vector3Int(x + overlayCenter.x, y + overlayCenter.y, 0), overlayTile);
+                    }
                 }
             }
         }

@@ -257,7 +257,7 @@ public static class MapgenDiagnostics
         int chasing = 0;
         foreach (EnemyBehavior enemy in enemies)
         {
-            if (enemy.currentstate == EnemyBehavior.state.Chase)
+            if (enemy.currentstate == AwarenessState.Chase)
             {
                 chasing++;
             }

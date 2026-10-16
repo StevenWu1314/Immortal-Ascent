@@ -142,7 +142,7 @@ T11 integration + full-run playtest + desktop builds   (after T10 and T09)
 | T01 | [T01-map-generation.md](T01-map-generation.md) | **done** - EditMode 22/22, PlayMode 2/2, counts exact, 0 throws/overlaps |
 | T02 | [T02-run-state-floors.md](T02-run-state-floors.md) | **done, awaiting checkpoint** - EditMode 36/36, PlayMode 3/3, 3 pre-existing defects fixed |
 | T03 | [T03-turn-state-machine.md](T03-turn-state-machine.md) | **done** - EditMode 39/39, PlayMode 8/8, TurnPipeline + ConsumableBuff pass |
-| T04 | [T04-awareness-roaming-los.md](T04-awareness-roaming-los.md) | not started |
+| T04 | [T04-awareness-roaming-los.md](T04-awareness-roaming-los.md) | **done** - EditMode 56/56, PlayMode 12/12 (bridge harnesses pending a session with the editor) |
 | T05 | [T05-status-root.md](T05-status-root.md) | not started |
 | T06 | [T06-materials-loot.md](T06-materials-loot.md) | not started |
 | T07 | [T07-portable-crafting.md](T07-portable-crafting.md) | not started |

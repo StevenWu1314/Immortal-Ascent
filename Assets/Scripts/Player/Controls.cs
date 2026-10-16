@@ -102,8 +102,14 @@ public class Controls : MonoBehaviour
 
                 if (target != null)
                 {
+                    // The preview only paints cells with a clear line, and the shot re-checks it, so a stale
+                    // or hand-rolled overlay can never fire through a wall (GDD 6.7).
+                    if (!LineOfSight.HasClearShot(grid, PlayerCell(), new Vector2Int(clickCell.x, clickCell.y)))
+                    {
+                        UIManager.Instance.DrawFlowupText("No line of sight", transform.position);
+                    }
                     // Only a shot that actually left the bow costs a turn; an empty quiver is a no-op.
-                    if (shoot(target, cellCenter))
+                    else if (shoot(target, cellCenter))
                     {
                         runningCooldown = 0.5f;
                         // Stay in aiming mode so the player can keep firing; re-paint the
@@ -375,10 +381,15 @@ public class Controls : MonoBehaviour
             }
         }
 
-        // Fallback: the cell may be registered to an enemy even when no collider matched.
+        // Fallback: the cell may be registered to an enemy even when no collider matched. The overlay's
+        // cells are relative to its own Grid under the player, so convert to a level cell first - looking
+        // the overlay cell up directly queried the wrong cell.
         if (EntityManager.Instance != null)
         {
-            GameObject occupant = EntityManager.Instance.GetEntityAt(new Vector2Int(cell.x, cell.y));
+            Vector2Int levelCell = rangeOverlay != null && rangeOverlay.tilemap != null
+                ? Grid.CellFromWorld(rangeOverlay.tilemap.GetCellCenterWorld(cell))
+                : new Vector2Int(cell.x, cell.y);
+            GameObject occupant = EntityManager.Instance.GetEntityAt(levelCell);
             if (occupant != null)
             {
                 return occupant.GetComponent<Enemy>();

@@ -29,4 +29,67 @@ internal static class DungeonSceneFixture
         Assert.IsTrue(IslandManager.IsInitialized,
             "IslandManager was never rebuilt; generation did not complete");
     }
+
+    /// <summary>The player's Controls. Asserts the scene actually produced a driveable player.</summary>
+    public static Controls Player()
+    {
+        Assert.IsTrue(PlayerStats.Instance != null, "the scene should have spawned a player");
+        Controls controls = PlayerStats.Instance.GetComponent<Controls>();
+        Assert.IsTrue(controls != null, "the player should have a Controls component");
+        return controls;
+    }
+
+    /// <summary>The cell the registry says the player is in, falling back to the transform.</summary>
+    public static Vector2Int RegistryCell(Controls controls)
+    {
+        Vector2Int cell;
+        if (EntityManager.Instance != null && EntityManager.Instance.TryGetCell(controls.gameObject, out cell))
+        {
+            return cell;
+        }
+        return Vector2Int.FloorToInt(controls.transform.position);
+    }
+
+    /// <summary>Wait for the enemy phase to drain, then assert it really finished.</summary>
+    public static IEnumerator WaitForEnemyPhase()
+    {
+        TurnManager manager = TurnManager.Instance;
+        float deadline = Time.realtimeSinceStartup + 15f;
+        while (manager.IsEnemyPhaseRunning && Time.realtimeSinceStartup < deadline)
+        {
+            yield return null;
+        }
+        Assert.IsFalse(manager.IsEnemyPhaseRunning, "the enemy phase never finished");
+    }
+
+    /// <summary>
+    /// Run one full enemy phase for a single enemy, the way a player turn would: queue it, take the input
+    /// lock, start the phase and wait it out.
+    /// </summary>
+    public static IEnumerator DriveEnemyPhase(EnemyBehavior enemy)
+    {
+        TurnManager manager = TurnManager.Instance;
+        Controls controls = Player();
+        manager.queupToMove(enemy);
+        controls.takingTurn = true;
+        manager.callTaketurn(controls);
+        yield return WaitForEnemyPhase();
+    }
+
+    /// <summary>Equip the first definition of a kind, for tests that need a weapon in hand.</summary>
+    public static void EquipFirstWeapon(bool ranged)
+    {
+        ItemDefinition found = null;
+        foreach (ItemDefinition definition in Resources.LoadAll<ItemDefinition>("ItemDefinitions"))
+        {
+            if (definition.Kind == ItemKind.Weapon && definition.Ranged == ranged)
+            {
+                found = definition;
+                break;
+            }
+        }
+        Assert.IsTrue(found != null,
+            $"no {(ranged ? "ranged" : "melee")} weapon definition exists under Resources/ItemDefinitions");
+        Equipments.Instance.Equip(new EquipmentInstance(found));
+    }
 }

@@ -11,12 +11,31 @@ public class RangeEnemyBehavior : EnemyBehavior
     [SerializeField] private Vector3 lastAttackPos;
     private bool attacking;
     [SerializeField] int rangeAttackCooldown;
-    Tilemap collidableMap;
 
     protected override void Start()
     {
         base.Start();
-        collidableMap = GameObject.Find("Collidable Plants").GetComponent<Tilemap>();
+    }
+
+    /// <summary>
+    /// The first step from which the player would be in line of sight, dominant axis first, or zero when no
+    /// neighbour gains it. This is what stops a blocked archer from strafing on the spot forever (GDD 6.5).
+    /// </summary>
+    private Vector2Int StepGainingSight(Vector2Int enemyCell, Vector2Int playerCell)
+    {
+        foreach (Vector2Int step in NextSteps(enemyCell, playerCell))
+        {
+            Vector2Int candidate = enemyCell + step;
+            if (!CanStepOnto(candidate) || EntityManager.Instance.IsOccupied(candidate))
+            {
+                continue;
+            }
+            if (LineOfSight.HasClearShot(grid, candidate, playerCell))
+            {
+                return step;
+            }
+        }
+        return Vector2Int.zero;
     }
     protected override void chasePlayer()
     {
@@ -67,7 +86,7 @@ public class RangeEnemyBehavior : EnemyBehavior
                     // set it, so there was no sentinel to reset here.
                     return;
                 }       
-                if(rangeAttackCooldown <= 0 && utilityFunction.ClearLine(collidableMap, enemyCell, playerCell))
+                if(rangeAttackCooldown <= 0 && LineOfSight.HasClearShot(grid, enemyCell, playerCell))
                 {
                     existingAttackIndicator = Instantiate(attackIndicator, player.transform.position, quaternion.identity, transform);
                     attacking = true;
@@ -77,6 +96,8 @@ public class RangeEnemyBehavior : EnemyBehavior
                 }
                 else
                 {
+                    // No shot from here: prefer a step that opens one, then fall back to the strafe.
+                    Vector2Int sightStep = StepGainingSight(enemyCell, playerCell);
                     Vector2Int strafeDir;
                     bool horizontal = math.abs(transform.position.x - player.transform.position.x) 
                                     < math.abs(transform.position.y - player.transform.position.y);
@@ -92,7 +113,11 @@ public class RangeEnemyBehavior : EnemyBehavior
 
                     bool candWalkable = CanStepOnto(candidate);
 
-                    if (candWalkable && !EntityManager.Instance.IsOccupied(candidate))
+                    if (sightStep != Vector2Int.zero)
+                    {
+                        nextCell = enemyCell + sightStep;
+                    }
+                    else if (candWalkable && !EntityManager.Instance.IsOccupied(candidate))
                     {
                         nextCell = candidate;
                         

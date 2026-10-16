@@ -44,8 +44,11 @@ public static class utilityFunction
 
     /// <summary>
     /// True when nothing is painted on <paramref name="blockers"/> along the cell line between
-    /// the two points. Moved here verbatim from RangeAttackTilemap and RangeEnemyBehavior, which
-    /// each carried their own identical copy.
+    /// the two points.
+    ///
+    /// DEAD SINCE T04 - no callers. It read a Tilemap, and nothing ever painted the "Collidable Plants"
+    /// map it was handed, so every line came back clear. Sight is now <see cref="LineOfSight"/>, which
+    /// walks the Grid. Kept only until someone deletes it; do not wire new code to this.
     /// </summary>
     public static bool ClearLine(Tilemap blockers, Vector2Int start, Vector2Int target)
     {

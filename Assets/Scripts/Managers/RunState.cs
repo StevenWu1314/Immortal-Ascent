@@ -30,6 +30,9 @@ public static class RunState
 
     public static string RealmName => CurrentRealm?.displayName ?? "Plains";
 
+    /// <summary>How this realm's enemies notice the player (GDD 13.4).</summary>
+    public static AggroMode EnemyAggroMode => CurrentRealm != null ? CurrentRealm.aggroMode : AggroMode.RoomWide;
+
     /// <summary>1-based, for the HUD. Storage stays 0-based.</summary>
     public static int DisplayFloor => FloorIndex + 1;
 

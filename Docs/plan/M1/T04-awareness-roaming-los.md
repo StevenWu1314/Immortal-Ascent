@@ -92,3 +92,50 @@ play mode.
 ## Out of scope
 
 Awareness sharing between enemies (not in the GDD). A* pathfinding. Statuses. Boss AI (T10).
+
+## Outcome (implemented)
+
+- `LineOfSight` (pure): `BlocksSight(terrain)` is the GDD 5.4 sight list - code 1 (wall, water, out of
+  bounds) blocks; floor, the legacy codes, spider webs and chests do not. `HasClearShot` walks Bresenham
+  exclusive of both endpoints and orders the endpoints canonically, so A->B always equals B->A. It takes a
+  "is this cell blocked" delegate, which is what the tests drive, plus a Grid overload for callers.
+- `Awareness` (pure): `Notices(mode, enemyIsland, playerIsland, distance, radius, hasSight)` implements
+  GDD 6.5 - room-wide realms compare rooms, radius realms need range plus sight, and both fall back to the
+  radius when the island map is missing (an editor-generated level). Corridors are not rooms.
+  `Next(current, notices, shouldReturn, atPost)` is the Idle/Chase/Return cycle.
+- `Roaming` (pure): `ChooseStep(from, rotation, canStepOnto, isOccupied)` returns one direction, or zero
+  when boxed in.
+- `RealmDefinition.aggroMode` (new field, default RoomWide) and `RunState.EnemyAggroMode` feed the rule, so
+  the realm decides how its enemies notice the player.
+- `EnemyBehavior`: the state field keeps its name and the enum keeps its member order (`AwarenessState`),
+  so serialized values still mean the same thing. Awareness is re-evaluated on every player action and at
+  the start of the enemy's own turn; Chase breaks off when beyond `chaseRange` - or when sight is lost in
+  radius mode - and Return walks home and goes Idle. Idle enemies now roam one step per round instead of
+  standing still. `queup` queues every enemy, because roaming is what Idle enemies do; the phase still only
+  runs on a real player turn, so free out-of-combat travel costs no time.
+- `RangeEnemyBehavior`: sight comes from the grid, the `Collidable Plants` lookup is gone, and a blocked
+  archer prefers a step that opens a sight line before falling back to its strafe.
+- `RangeAttackTilemap` paints only cells with a clear line, and `Controls` re-checks sight before a shot
+  lands, so a wall (or an empty quiver) costs nothing.
+- `playerDetected`, which nothing assigned, was deleted.
+
+### Two cell spaces - the bug this uncovered
+
+The range overlay has its own `Grid` under the player, so `tilemap.WorldToCell` returns player-relative
+cells, while terrain lives in `Grid.Current`'s cells. The old code painted in overlay space and checked
+sight in level space through a *different* Tilemap; mixing the two broke the preview outright
+(`center=(17,52)` for a player at `(65,65)`). Both conversions are now explicit - and
+`Controls.FindEnemyInCell`'s registry fallback converts the overlay cell to a level cell before looking an
+enemy up, where it previously queried the wrong cell whenever the physics box missed.
+
+### Verified
+
+EditMode 56/56 (7 sight tests, 10 awareness and roaming tests); PlayMode 12/12 - the four new ones assert
+that another room is not noticed in a room-wide realm, that roaming is observable and never leaves the
+room, that an alerted enemy commits and closes the distance, and that the aim preview only paints cells
+with a clear line.
+
+Not verified through the bridge: `MapgenDiagnostics.TurnPipeline` and `PlayDriver.AuditEnemyRooms` want the
+editor open, and the editor would not start in this session (batchmode does not need it). The PlayMode
+suite drives the same pipeline - queue a phase through `TurnManager` and assert the resulting states - so
+the same ground is covered, but those two harnesses should be re-run in the designer's session.

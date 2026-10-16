@@ -16,4 +16,7 @@ public class RealmDefinition : ScriptableObject
 
     [Tooltip("Floors in this realm, including its boss floor.")]
     public int floorsInRealm = 2;
+
+    [Tooltip("How this realm's enemies notice the player (GDD 13.4). Plains is room-wide.")]
+    public AggroMode aggroMode = AggroMode.RoomWide;
 }
