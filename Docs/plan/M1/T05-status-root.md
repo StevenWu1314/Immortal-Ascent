@@ -88,3 +88,44 @@ all five kinds. Ask the designer to confirm the Root duration (2 rounds) feels r
 
 Fire, Poison, Enfeeblement, Explosive. Damage over time. Resistances and immunities. Enemy-applied
 statuses. On-hit rune effects. Status icons beyond a minimal indicator (T08 draws it).
+
+## Outcome (implemented)
+
+- `StatusKind` carries all five kinds from the start (Root, Fire, Poison, Enfeeblement, Explosive), so
+  serialized values never need renumbering. `StatusSet.IsImplemented` admits **Root only**: the other four
+  are refused with a reason the caller logs, and a test pins that down.
+- `StatusSet` (pure) implements GDD 9.3/9.4 - re-applying refreshes the duration and keeps the stronger
+  magnitude without ever adding a second entry, `Tick()` decrements every entry and drops what reaches
+  zero, and `BlocksMovement` is Root.
+- `StatusController` wraps one entity's set, logs refusals, and exposes `Active`/`IsRooted` for the HUD
+  (T08) plus `TickRound()`. `PlayerStats.Awake` attaches one when the prefab has none, so the scene needs
+  no wiring; moving it onto the prefab later changes nothing.
+- A web cell is terrain `6` (walkable, `WebRegistry.WebCode`) plus a `WebRegistry` entry - the chest split
+  of terrain versus registry, minus the GameObject. `WebRegistry.Consume` performs the chest path's **two
+  writes**, so the island snapshot keeps up and the cell can be walked through afterwards.
+- `TilePlacer.generateWebTiles` sprinkles 0-2 webs per combat island: never the starting island, never a
+  chest cell, never the same cell twice. The new `webTile` marker is optional and falls back to the bridge
+  tile, so webs are visible until T09 supplies art.
+- `Controls.TryMove` routes Root through the `TurnRules.IsMovementAllowed(..., rooted)` gate the plan asked
+  for, and entering a web applies Root (2 rounds) and consumes it.
+- `TurnManager` ticks the player's statuses in its `finally`, so a status expires once per completed round,
+  after the enemies have acted.
+
+### The one behaviour worth a second look
+
+A rooted player who tries to walk **spends the round** (with a "Rooted" float) rather than getting a free
+refusal. Otherwise a web on an otherwise empty island would leave the player unable to spend the turn Root
+needs in order to expire - a soft lock, since M1 has no wait key. Terrain and island refusals stay free as
+T03 specified; only Root costs. If a wait key arrives later, this can go back to a free refusal.
+
+The bump-attack also had to move *before* the movement gate: attacking has to stay legal while rooted
+(GDD 6.2), and the first cut refused it - the PlayMode test caught that.
+
+### Verified
+
+EditMode 69/69 (9 status-set tests, 4 web tests); PlayMode 14/14 - the two new ones assert that a web roots
+for exactly two spent rounds and then releases, and that a rooted player still attacks an adjacent enemy.
+
+Not verified through the bridge: `ChestWalkability` and `TurnPipeline` want the editor open, and it would
+not start this session. The web destroy path is the same two writes as the chest path and is covered by
+`Consume_DoesBothWrites`; the chest path itself was last seen green in the T03-era bridge run.

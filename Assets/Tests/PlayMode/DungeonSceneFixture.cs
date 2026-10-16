@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -91,5 +92,42 @@ internal static class DungeonSceneFixture
         Assert.IsTrue(found != null,
             $"no {(ranged ? "ranged" : "melee")} weapon definition exists under Resources/ItemDefinitions");
         Equipments.Instance.Equip(new EquipmentInstance(found));
+    }
+
+    /// <summary>
+    /// A direction whose neighbour is walkable and on the same island, so a test that blocks or webs it
+    /// afterwards is not fighting the island gate. Zero when there is no such neighbour.
+    /// </summary>
+    public static Vector2Int OpenDirection(Vector2Int from)
+    {
+        Grid grid = Grid.Current;
+        int island = IslandManager.GetIsland(from);
+        Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+
+        foreach (Vector2Int direction in directions)
+        {
+            Vector2Int cell = from + direction;
+            if (!Grid.IsWalkableTerrain(grid.GetValueAtLocation(cell.x, cell.y)))
+            {
+                continue;
+            }
+            if (IslandManager.GetIsland(cell) != island)
+            {
+                continue;
+            }
+            if (EntityManager.Instance != null && EntityManager.Instance.IsOccupied(cell))
+            {
+                continue;
+            }
+            return direction;
+        }
+        return Vector2Int.zero;
+    }
+
+    /// <summary>Enemy.health is a protected serialized field with no public getter.</summary>
+    public static int ReadEnemyHealth(Enemy enemy)
+    {
+        FieldInfo field = typeof(Enemy).GetField("health", BindingFlags.Instance | BindingFlags.NonPublic);
+        return field != null ? (int)field.GetValue(enemy) : -1;
     }
 }

@@ -162,6 +162,14 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         {
             grid.SetValueAtLocation(spawnCell.x, spawnCell.y, 0);
         }
+
+        // Spider webs (T05) live on the combat islands. They have no objects to sweep, so the registry is
+        // cleared with the floor rather than by destroying entities.
+        WebRegistry.Reset();
+        foreach (Vector2Int webCell in tilePlacer.generateWebTiles(roomsSpace, grid, startingRoomIndex))
+        {
+            WebRegistry.Register(webCell);
+        }
         // Corridors must span the gap between rooms (Rooms.distanceApart) plus enough to
         // punch through the neighbour's wall ring. A length shorter than the gap leaves the
         // corridor as a dead end and the player can never reach the next island.

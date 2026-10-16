@@ -133,6 +133,14 @@ public class TurnManager : MonoBehaviour
             // The player input lock must always be released, even when an enemy throws.
             if (PlayerStats.Instance != null)
             {
+                // End of round (GDD 9.4): statuses expire here, once per completed round, after the enemies
+                // have acted. PlayerStats' temporary stat buffs tick on onMoveEvent instead, which is also
+                // exactly once per round because only a real action raises that event.
+                if (PlayerStats.Instance.Statuses != null)
+                {
+                    PlayerStats.Instance.Statuses.TickRound();
+                }
+
                 Controls controls = PlayerStats.Instance.gameObject.GetComponent<Controls>();
                 if (controls != null)
                 {

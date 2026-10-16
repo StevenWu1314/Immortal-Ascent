@@ -84,12 +84,13 @@ public class Grid
     /// <summary>
     /// Single definition of "an entity may stand here". Terrain codes are written by
     /// TilePlacer: 0 = floor/corridor, 1 = wall/shallow water,
-    /// 2 = deep water, 5 = bridge (legacy), 99 = chest. Anything unknown is treated
-    /// as blocked so a malformed map cannot silently let entities walk off it.
+    /// 2 = deep water, 5 = bridge (legacy), 6 = spider web (walkable until it is entered, T05),
+    /// 99 = chest. Anything unknown is treated as blocked so a malformed map cannot silently let
+    /// entities walk off it.
     /// </summary>
     public static bool IsWalkableTerrain(int terrain)
     {
-        return terrain == 0 || terrain == 5;
+        return terrain == 0 || terrain == 5 || terrain == 6;
     }
 
     /// <summary>Grid-aligned cell for a world position, matching the AI's FloorToInt convention.</summary>

@@ -219,19 +219,10 @@ public class Controls : MonoBehaviour
         // cell is passed as a world position.
         Vector3 currentWorld = new Vector3(currentCell.x, currentCell.y, 0f);
 
-        bool islandAllows = IslandManager.CanMoveTo(currentWorld, nextCell);
-        bool terrainWalkable = grid != null && grid.Move(currentWorld, direction);
-        if (!TurnRules.IsMovementAllowed(terrainWalkable, islandAllows, rooted: false))
-        {
-            // Only the island gate explains itself; being blocked by a wall needs no caption.
-            if (!islandAllows && UIManager.Instance != null)
-            {
-                UIManager.Instance.DrawFlowupText(IslandManager.DescribeBlock(currentWorld), currentWorld);
-            }
-            return false;
-        }
+        bool rooted = playerStats != null && playerStats.Statuses != null && playerStats.Statuses.IsRooted;
 
-        // An enemy in the destination is attacked, not walked into. This used to live inside
+        // An enemy in the destination is attacked rather than walked into, and attacking stays legal while
+        // rooted (GDD 6.2) - so the bump is resolved before the movement gate. This used to live inside
         // EntityManager.MoveEntity, which made the registry the owner of an action-economy decision.
         GameObject occupant = EntityManager.Instance != null ? EntityManager.Instance.GetEntityAt(nextCell) : null;
         Enemy enemy = occupant != null ? occupant.GetComponent<Enemy>() : null;
@@ -251,6 +242,31 @@ public class Controls : MonoBehaviour
             return true;
         }
 
+        bool islandAllows = IslandManager.CanMoveTo(currentWorld, nextCell);
+        bool terrainWalkable = grid != null && grid.Move(currentWorld, direction);
+        if (!TurnRules.IsMovementAllowed(terrainWalkable, islandAllows, rooted))
+        {
+            if (rooted)
+            {
+                // A rooted player who tries to walk is struggling in the web rather than failing at a wall,
+                // so the round passes. Otherwise a web on an otherwise empty island would leave them no way
+                // to spend the turn that Root needs in order to expire - a soft lock.
+                if (UIManager.Instance != null)
+                {
+                    UIManager.Instance.DrawFlowupText("Rooted", transform.position);
+                }
+                ConsumeTurn(TurnAction.Move);
+                return false;
+            }
+
+            // Only the island gate explains itself; being blocked by a wall needs no caption.
+            if (!islandAllows && UIManager.Instance != null)
+            {
+                UIManager.Instance.DrawFlowupText(IslandManager.DescribeBlock(currentWorld), currentWorld);
+            }
+            return false;
+        }
+
         if (EntityManager.Instance == null ||
             !EntityManager.Instance.MoveEntity(gameObject, currentCell, nextCell))
         {
@@ -259,6 +275,21 @@ public class Controls : MonoBehaviour
 
         // Only report the destination once the move actually happened.
         positionDisplay.text = $"{nextCell}";
+
+        // Entering a web roots the player and consumes it (GDD 5.4). Consume owns both writes: the grid for
+        // movement authority and the island snapshot for the gate.
+        if (WebRegistry.HasWeb(nextCell))
+        {
+            WebRegistry.Consume(nextCell, grid);
+            if (playerStats != null && playerStats.Statuses != null)
+            {
+                playerStats.Statuses.Apply(StatusKind.Root, 0, StatusController.RootRounds);
+            }
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.DrawFlowupText("Rooted", transform.position);
+            }
+        }
 
         // Fog reveal for the cell the player just stepped into. Guarded: FogManager ships with no
         // scene object, so an unguarded call threw on every move.

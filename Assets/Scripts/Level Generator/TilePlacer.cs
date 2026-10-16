@@ -10,6 +10,12 @@ public class TilePlacer : MonoBehaviour
     public Tilemap corridor;
     public Tile[] floorTile; // Reference to the floor tile
     public RuleTile bridgeTile;
+
+    /// <summary>
+    /// Marker drawn on a spider web cell. Unassigned in the scene, in which case the bridge tile is reused
+    /// so webs stay visible; real web art belongs to T09.
+    /// </summary>
+    public TileBase webTile;
     public TileBase water;
     [SerializeField, Range(0f, 1f)] float flowerDensity;
 
@@ -178,6 +184,46 @@ public class TilePlacer : MonoBehaviour
     public void MarkStairs(Vector2Int cell)
     {
         corridor.SetTile(new Vector3Int(cell.x, cell.y, 0), bridgeTile);
+    }
+
+    /// <summary>
+    /// Sprinkle spider webs (terrain <see cref="WebRegistry.WebCode"/>) on the combat islands. A web is
+    /// walkable until it is entered, which is when it roots whoever stepped in and is consumed - so it is
+    /// never placed on the island the player starts on, on a chest cell, or on another web.
+    /// </summary>
+    public List<Vector2Int> generateWebTiles(List<BoundsInt> roomsSpace, Grid grid, int startingRoomIndex)
+    {
+        List<Vector2Int> webCells = new List<Vector2Int>();
+        TileBase marker = webTile != null ? webTile : bridgeTile;
+
+        for (int i = 0; i < roomsSpace.Count; i++)
+        {
+            if (i == startingRoomIndex)
+            {
+                continue;
+            }
+
+            BoundsInt room = roomsSpace[i];
+            int wanted = Random.Range(0, 3);
+            for (int n = 0; n < wanted; n++)
+            {
+                int x = Random.Range(room.xMin + 3, room.xMax - 3);
+                int y = Random.Range(room.yMin + 3, room.yMax - 3);
+                if (grid.GetValueAtLocation(x, y) != 0)
+                {
+                    continue;   // a chest or another web is already there
+                }
+
+                if (marker != null)
+                {
+                    corridor.SetTile(new Vector3Int(x, y, 0), marker);
+                }
+                grid.SetValueAtLocation(x, y, WebRegistry.WebCode);
+                webCells.Add(new Vector2Int(x, y));
+            }
+        }
+
+        return webCells;
     }
 
     public void fillWater(Grid grid)

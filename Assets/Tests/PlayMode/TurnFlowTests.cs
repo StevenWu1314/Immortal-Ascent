@@ -42,7 +42,7 @@ public class TurnFlowTests
 
         Controls controls = DungeonSceneFixture.Player();
         Vector2Int start = DungeonSceneFixture.RegistryCell(controls);
-        Vector2Int direction = OpenDirection(start);
+        Vector2Int direction = DungeonSceneFixture.OpenDirection(start);
         Assert.AreNotEqual(Vector2Int.zero, direction, "the spawn cell has no walkable neighbour to test");
         Vector2Int blockedCell = start + direction;
 
@@ -78,7 +78,7 @@ public class TurnFlowTests
         Assert.AreEqual(0, IslandManager.CountLivingEnemies(island),
             "the generator never spawns an enemy into the starting room, so the run starts out of combat");
 
-        Vector2Int direction = OpenDirection(start);
+        Vector2Int direction = DungeonSceneFixture.OpenDirection(start);
         Assert.AreNotEqual(Vector2Int.zero, direction, "the spawn cell has no walkable neighbour to test");
 
         bool moved = controls.TryMove(direction);
@@ -96,7 +96,7 @@ public class TurnFlowTests
 
         Controls controls = DungeonSceneFixture.Player();
         Vector2Int start = DungeonSceneFixture.RegistryCell(controls);
-        Vector2Int direction = OpenDirection(start);
+        Vector2Int direction = DungeonSceneFixture.OpenDirection(start);
         Assert.AreNotEqual(Vector2Int.zero, direction, "the spawn cell has no walkable neighbour to test");
 
         DungeonSceneFixture.EquipFirstWeapon(ranged: false);
@@ -104,7 +104,7 @@ public class TurnFlowTests
             ? Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None)[0]
             : null;
         Assert.IsTrue(enemy != null, "the floor should have spawned enemies");
-        int healthBefore = ReadEnemyHealth(enemy);
+        int healthBefore = DungeonSceneFixture.ReadEnemyHealth(enemy);
         Assert.Greater(healthBefore, 0, "could not read the enemy's health");
 
         // Stand it next to the player: that is also what makes the room turn-based.
@@ -119,7 +119,7 @@ public class TurnFlowTests
 
         Assert.IsTrue(acted, "walking into an enemy is an action");
         Assert.AreEqual(start, DungeonSceneFixture.RegistryCell(controls), "the player attacks instead of stepping into it");
-        Assert.Less(ReadEnemyHealth(enemy), healthBefore, "the bump must damage the enemy");
+        Assert.Less(DungeonSceneFixture.ReadEnemyHealth(enemy), healthBefore, "the bump must damage the enemy");
         Assert.AreEqual(1, turnEvents, "a melee attack ends the turn");
         Assert.IsTrue(controls.takingTurn, "the input lock is held while the enemy phase runs");
 
@@ -157,46 +157,5 @@ public class TurnFlowTests
 
     // ------------------------------------------------------------------ helpers
 
-    /// <summary>Enemy.health is a protected serialized field with no public getter.</summary>
-
-    /// <summary>
-    /// A direction whose neighbour is walkable and in the player's own room, so a test that blocks it
-    /// afterwards is testing terrain rather than the island gate. Zero when there is no such neighbour.
-    /// </summary>
-    private static Vector2Int OpenDirection(Vector2Int from)
-    {
-        Grid grid = Grid.Current;
-        int island = IslandManager.GetIsland(from);
-        Vector2Int[] directions =
-        {
-            Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
-        };
-
-        foreach (Vector2Int direction in directions)
-        {
-            Vector2Int cell = from + direction;
-            if (!Grid.IsWalkableTerrain(grid.GetValueAtLocation(cell.x, cell.y)))
-            {
-                continue;
-            }
-            if (IslandManager.GetIsland(cell) != island)
-            {
-                continue;
-            }
-            if (EntityManager.Instance != null && EntityManager.Instance.IsOccupied(cell))
-            {
-                continue;
-            }
-            return direction;
-        }
-        return Vector2Int.zero;
-    }
-
-    /// <summary>Enemy.health is a protected serialized field with no public getter.</summary>
-    private static int ReadEnemyHealth(Enemy enemy)
-    {
-        FieldInfo field = typeof(Enemy).GetField("health", BindingFlags.Instance | BindingFlags.NonPublic);
-        return field != null ? (int)field.GetValue(enemy) : -1;
-    }
 
 }

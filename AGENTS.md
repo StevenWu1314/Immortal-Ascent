@@ -41,7 +41,10 @@ Verified against the code, not the docs:
   pure `RunSequence` + `RealmDefinition`), a per-floor seed and stairs that rebuild the floor in place.
   A run completes when the last realm's boss floor is left, but the boss entity (T10), the victory UI
   and saving (M3) do not exist yet.
-- **No status system** of any kind. Only flat damage, 3 temporary stat buffs and a heal exist.
+- **Statuses exist, but only Root** (T05). `StatusKind` carries all five GDD kinds so serialized values
+  never renumber, while `StatusSet.IsImplemented` admits Root alone and refuses the rest out loud.
+  `StatusController` lives on the player (auto-attached by `PlayerStats.Awake` if the prefab lacks one);
+  `TurnManager` ticks it once per completed round.
 - **No material source.** Iron/Web/Tusk/Skin drop from nothing, so both recipes and the arrow
   economy are dead ends.
 - **Line of sight is real** (T04). `LineOfSight.HasClearShot` walks the Grid: walls, water and out of
@@ -123,10 +126,10 @@ Read the call sites before changing any of these.
 **1. The grid is terrain only; entities are separate.** `Grid` (`Assets/Scripts/GameGrid/Grid.cs`)
 holds terrain codes; `RoomFirstDungeonGenerator.EnsureGrid()` is the single owner and publishes
 `Grid.Current`. Everything reads `Grid.Current`. Terrain codes: `0` floor/corridor (walkable),
-`1` wall + water + **out of bounds** (blocked), `99` unopened chest (blocked). `2`, `3`, `5` are
-legacy values nobody writes (`5` is still accepted as walkable); code `6` is reserved for spider
-webs in M1 T05. Route movement checks through `Grid.IsWalkableTerrain(int)` and cell lookups
-through `Grid.CellFromWorld(Vector3)` — never compare codes inline.
+`1` wall + water + **out of bounds** (blocked), `6` spider web (walkable until entered, T05),
+`99` unopened chest (blocked). `2`, `3`, `5` are legacy values nobody writes (`5` is still accepted as
+walkable). Route movement checks through `Grid.IsWalkableTerrain(int)` and cell lookups through
+`Grid.CellFromWorld(Vector3)` — never compare codes inline.
 
 **Entity occupancy is not in `Grid`.** `EntityManager` owns a one-entity-per-cell dictionary.
 Register, move and unregister every moving entity through it or collision/combat silently ignores
@@ -195,6 +198,11 @@ inventory, which the GDD carries between floors.
 is a child of the player: `tilemap.WorldToCell` returns overlay cells, while terrain and the entity
 registry are addressed in `Grid.Current` cells (and `Grid.CellFromWorld` gives those). Convert before any
 grid, sight or registry lookup - mixing the two silently paints and queries the wrong cells.
+
+**10. Root costs the round; terrain and island refusals do not.** A rooted player who tries to step spends
+the turn - and so the round, which is what lets Root expire. M1 has no wait key, so a free refusal would
+soft-lock the run on an island with nothing to attack. Attacking stays legal while rooted, which is why
+`Controls.TryMove` resolves the bump-attack *before* the movement gate.
 
 ## 6. Coding conventions
 

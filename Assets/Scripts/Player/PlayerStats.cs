@@ -51,6 +51,11 @@ public class PlayerStats : MonoBehaviour{
     public static event Action<PlayerStats> onLevelUpEvent;
 
     public static PlayerStats Instance;
+
+    private StatusController statuses;
+
+    /// <summary>This entity's statuses; Root lives here. The HUD indicator reads it (T08).</summary>
+    public StatusController Statuses => statuses;
     [SerializeField] Image HealthBar;
     [SerializeField] Image ExpBar;
 
@@ -83,6 +88,15 @@ public class PlayerStats : MonoBehaviour{
         }
         Instance = this;
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        statuses = GetComponent<StatusController>();
+        if (statuses == null)
+        {
+            // The prefab does not carry one yet. Adding it here keeps the status rules working without
+            // requiring prefab wiring, and the designer can move it onto the prefab whenever they like.
+            statuses = gameObject.AddComponent<StatusController>();
+        }
+
         RecalculateStats();
     }
 
