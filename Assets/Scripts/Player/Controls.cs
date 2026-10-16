@@ -95,36 +95,16 @@ public class Controls : MonoBehaviour
             if (Input.GetMouseButtonDown(0))
             {
                 Vector3Int clickCell = MouseCell();
-                Vector3 cellCenter = rangeOverlay.tilemap.GetCellCenterWorld(clickCell);
-                // Resolve the target BEFORE the overlay changes: InRange reads the overlay
-                // tiles, so it is only meaningful while the preview is painted.
-                Enemy target = IsValidShootTarget(clickCell) ? FindEnemyInCell(clickCell) : null;
-
-                if (target != null)
+                if (!TryFireAt(clickCell))
                 {
-                    // The preview only paints cells with a clear line, and the shot re-checks it, so a stale
-                    // or hand-rolled overlay can never fire through a wall (GDD 6.7).
-                    if (!LineOfSight.HasClearShot(grid, PlayerCell(), new Vector2Int(clickCell.x, clickCell.y)))
+                    // Nothing targetable under the cursor: leave aiming so the player is never stuck, but do
+                    // not burn a turn. A refused *shot* (no line, no arrows) keeps the player aiming, because
+                    // LeaveAimMode is only right when there was nothing to shoot at.
+                    if (!IsValidShootTarget(clickCell))
                     {
-                        UIManager.Instance.DrawFlowupText("No line of sight", transform.position);
+                        LeaveAimMode();
+                        runningCooldown = moveCooldown;
                     }
-                    // Only a shot that actually left the bow costs a turn; an empty quiver is a no-op.
-                    else if (shoot(target, cellCenter))
-                    {
-                        runningCooldown = 0.5f;
-                        // Stay in aiming mode so the player can keep firing; re-paint the
-                        // preview, which also clears the highlight left on the old cursor cell.
-                        lastAimCell = clickCell;
-                        RefreshAimOverlay();
-                        ConsumeTurn(TurnAction.BowShot);
-                    }
-                }
-                else
-                {
-                    // Nothing targetable under the cursor: leave aiming so the player is
-                    // never stuck, but do not burn a turn.
-                    LeaveAimMode();
-                    runningCooldown = moveCooldown;
                 }
                 return;
             }
@@ -315,6 +295,64 @@ public class Controls : MonoBehaviour
         {
             ConsumeTurn(TurnAction.Move);
         }
+        else if (TurnManager.Instance != null)
+        {
+            // Free travel spends no round, so the world would otherwise stand still while the player explores
+            // and no unaware enemy would ever be seen roaming (GDD 6.6). The pulse is paced by time.
+            TurnManager.Instance.RoamPulse();
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Fire at a cell in the aim overlay's own space: validate the target, re-check the line of sight, spend an
+    /// arrow and resolve the shot.
+    ///
+    /// Public for the same reason <see cref="TryMove"/> is - this is the whole shooting path, so the PlayDriver
+    /// and the tests drive the real code rather than a copy.
+    /// </summary>
+    public bool TryFireAt(Vector3Int clickCell)
+    {
+        if (rangeOverlay == null || rangeOverlay.tilemap == null)
+        {
+            return false;
+        }
+
+        // Resolve the target BEFORE the overlay changes: InRange reads the overlay tiles, so it is only
+        // meaningful while the preview is painted.
+        Enemy target = IsValidShootTarget(clickCell) ? FindEnemyInCell(clickCell) : null;
+        if (target == null)
+        {
+            return false;
+        }
+
+        Vector3 cellCenter = rangeOverlay.tilemap.GetCellCenterWorld(clickCell);
+
+        // The overlay's cells are player-relative, so they must be converted before they are compared with the
+        // terrain grid - passing an overlay cell straight in tested a cell nowhere near the target, which is
+        // what made every shot report "no line of sight".
+        Vector2Int levelTarget = Grid.CellFromWorld(cellCenter);
+        if (!LineOfSight.HasClearShot(grid, PlayerCell(), levelTarget))
+        {
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.DrawFlowupText("No line of sight", transform.position);
+            }
+            return false;
+        }
+
+        // Only a shot that actually left the bow costs a turn; an empty quiver is a no-op.
+        if (!shoot(target, cellCenter))
+        {
+            return false;
+        }
+
+        runningCooldown = 0.5f;
+        // Stay in aiming mode so the player can keep firing; re-paint the preview, which also clears the
+        // highlight left on the old cursor cell.
+        lastAimCell = clickCell;
+        RefreshAimOverlay();
+        ConsumeTurn(TurnAction.BowShot);
         return true;
     }
 

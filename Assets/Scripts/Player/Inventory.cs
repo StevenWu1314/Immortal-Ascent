@@ -41,7 +41,43 @@ public class Inventory : MonoBehaviour
                            ". The inventory will not be able to hold anything.");
         }
         addStarterItems();
+        MigrateAmmoToQuiver();
         updateInventory();
+    }
+
+    /// <summary>
+    /// Fold the ammo the player starts with into the quiver count (T06). Arrows are a number, not stacks, so
+    /// leaving the starter arrows as items made the bow report an empty quiver while the arrow icon sat in the
+    /// bag doing nothing.
+    /// </summary>
+    private void MigrateAmmoToQuiver()
+    {
+        if (PlayerStats.Instance == null)
+        {
+            return;
+        }
+
+        // Snapshot first: removeItem mutates the list being walked.
+        var ammo = new List<ItemDefinition>();
+        foreach (ItemStack stack in items)
+        {
+            if (stack.definition != null && stack.definition.Kind == ItemKind.Ammo && stack.amount > 0)
+            {
+                ammo.Add(stack.definition);
+            }
+        }
+
+        foreach (ItemDefinition definition in ammo)
+        {
+            int held = countOf(definition);
+            if (held <= 0)
+            {
+                continue;
+            }
+            PlayerStats.Instance.AddArrows(held);
+            removeItem(definition, held);
+            Debug.Log($"[QUIVER] moved {held} x {definition.DisplayName} into the quiver count.");
+        }
     }
 
     /// <summary>

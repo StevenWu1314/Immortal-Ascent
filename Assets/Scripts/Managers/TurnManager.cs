@@ -88,6 +88,35 @@ public class TurnManager : MonoBehaviour
 
     /// <summary>True while an enemy phase is in flight. The input lock is takingTurn; this is the guard.</summary>
     public bool IsEnemyPhaseRunning => phaseRunning;
+
+    [Tooltip("Seconds between roaming pulses while the player explores out of combat (GDD 6.6).")]
+    [SerializeField] private float roamInterval = 0.5f;
+
+    private float lastRoamPulse;
+
+    /// <summary>
+    /// Let unaware enemies wander while the player travels for free. Free movement spends no round, so without
+    /// this the whole floor stands still while the player explores and roaming is never actually seen.
+    ///
+    /// Paced by time on purpose: a held movement key would otherwise roam on every step and the enemies would
+    /// sprint. Aware enemies are untouched - they act in the turn phase.
+    /// </summary>
+    public void RoamPulse()
+    {
+        if (Time.time - lastRoamPulse < roamInterval)
+        {
+            return;
+        }
+        lastRoamPulse = Time.time;
+
+        foreach (EnemyBehavior enemy in FindObjectsByType<EnemyBehavior>(FindObjectsSortMode.None))
+        {
+            if (enemy != null && enemy.currentstate == AwarenessState.Idle)
+            {
+                enemy.takeTurn();
+            }
+        }
+    }
     public void OnDestroy()
     {
         Controls.onMoveEvent -= callTaketurn;
