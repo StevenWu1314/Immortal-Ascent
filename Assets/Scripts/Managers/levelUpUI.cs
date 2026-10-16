@@ -1,16 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Drawing;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class levelUpUI : MonoBehaviour
 {
-    [SerializeField] private PlayerStats playerStats;
-    [SerializeField] private Button[] addButtons;
+    private PlayerStats playerStats;
+    private Button[] addButtons = new Button[3];
     [SerializeField] private TMP_Text str;
     [SerializeField] private TMP_Text dex;
     [SerializeField] private TMP_Text health;
@@ -37,29 +32,20 @@ public class levelUpUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        str.text = playerStats.getStrength().ToString();
-        dex.text = playerStats.getDexterity().ToString();
-        health.text = playerStats.getMaxHealth().ToString();
+        str.text = playerStats.Strength.ToString();
+        dex.text = playerStats.Dexterity.ToString();
+        health.text = playerStats.EffectiveMaxHealth.ToString();
         pointsLeft.text = points.ToString();
 
-        if(points <= 0)
+        for (int i = 0; i < addButtons.Length; i++)
         {
-            for(int i = 0; i < addButtons.Length; i++)
-            {
-                addButtons[i].interactable = false;
-            }
-        }
-        if(points > 0)
-        {
-            for(int i = 0; i < addButtons.Length; i++)
-            {
-                addButtons[i].interactable = true;
-            }
+            addButtons[i].interactable = points > 0;
         }
     }
 
     public void recordStr()
     {
+        if (points <= 0) return;
         pointsAssigned.x++;
         playerStats.increaseStrength();
         points--;
@@ -67,12 +53,14 @@ public class levelUpUI : MonoBehaviour
 
     public void recordDex()
     {
+        if (points <= 0) return;
         pointsAssigned.y++;
         playerStats.increaseDexterity();
         points--;
     }
     public void recordHealth()
     {
+        if (points <= 0) return;
         pointsAssigned.z += 10;
         playerStats.increaseMaxHealth();
         points--;
@@ -88,9 +76,12 @@ public class levelUpUI : MonoBehaviour
         {
             playerStats.decreaseDexterity();
         }
-        for(int i = 0; i < pointsAssigned.z; i++)
+        // pointsAssigned.z is a health AMOUNT (10 per point), not an iteration count.
+        // Looping it as a count ran 10x too many times and also depended on the magic 10
+        // appearing in two places.
+        if (pointsAssigned.z > 0)
         {
-            playerStats.decreaseMaxHealth(1);
+            playerStats.decreaseMaxHealth(pointsAssigned.z);
         }
         pointsAssigned = new Vector3Int(0, 0, 0);
         points = 5;

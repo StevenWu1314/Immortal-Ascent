@@ -1,9 +1,4 @@
 using UnityEngine;
-using System;
-using System.Collections.Generic;
-using System.Collections;
-using System.Linq.Expressions;
-using UnityEngine.Rendering;
 
 public abstract class Enemy : MonoBehaviour
 {
@@ -21,8 +16,9 @@ public abstract class Enemy : MonoBehaviour
     public void takeDamage(int damage)
     {
         health -= damage;
-        uiManager.DrawFlowupDamageText(damage, this.transform.position);
-        StartCoroutine(DamageIndicator());
+        uiManager.DrawFlowupText("-" + damage, this.transform.position);
+        StartCoroutine(utilityFunction.FlashSprite(spriteRenderer,
+            new[] { new Color(1f, 0f, 0f, 1f), Color.white }, 0.3f));
         if(health <= 0)
         {
             PlayerStats.Instance.gainExperience(expValue);
@@ -30,48 +26,60 @@ public abstract class Enemy : MonoBehaviour
         }
     }
 
-    private IEnumerator DamageIndicator() {
-        float indicatortimer = 0.3f;
-
-        Color[] damageColors = {
-            new Color(1f, 0f, 0f, 1f),
-            new Color(1f, 1f, 1f, 1f),
-        };
-
-        foreach (Color color in damageColors) {
-            spriteRenderer.color = color;
-            yield return new WaitForSeconds(indicatortimer);
-        }
-
-        spriteRenderer.color = Color.white;
-    }
 
     public void ForceDie()
     {
-        Destroy(gameObject);
+        // Same teardown as Die(), minus the loot roll: previously this only called
+        // Destroy, so the enemy stayed registered in EntityManager (blocking that cell
+        // forever) and stayed in the turn queue.
+        Kill(false);
     }
 
     public virtual void Attack(PlayerStats target)
     {
         target.takeDamage(damage);
     }
-    IEnumerator FlowupDamageText(TextMesh damageText)
-    {
-        for(int i = 0; i < 100; i++)
-        {
-            damageText.transform.position += new Vector3(0, 0.1f, 0);
-            yield return new WaitForSeconds(0.01f);
-        }
-        Destroy(damageText);
-    }
-
     private void Die()
     {
-        EntityManager.Instance.UnregisterEntity(this.gameObject, Vector2Int.FloorToInt(transform.position));
-        LootGen.Instance.rollTable();
-        Debug.Log("enemy eliminated");
+        Kill(true);
+    }
+
+    /// <summary>
+    /// Single teardown path shared by Die() and ForceDie(): leave the turn queue, release
+    /// the grid cell, optionally roll loot, then destroy. Keeping both routes on one method
+    /// stops them drifting apart again.
+    /// </summary>
+    private void Kill(bool awardLoot)
+    {
+        // Health and turn-taking live on two sibling components of the same GameObject:
+        // Enemy owns damage/death, EnemyBehavior owns the TurnManager queue. Ask the
+        // behaviour to leave the queue now, so a dying enemy cannot still be given a turn
+        // during the frame before Destroy() actually runs. EnemyBehavior.OnDestroy() is the
+        // catch-all for every other destruction path.
+        if (TurnManager.Instance != null)
+        {
+            EnemyBehavior behavior = GetComponent<EnemyBehavior>();
+            if (behavior != null)
+            {
+                TurnManager.Instance.UnregisterEnemy(behavior);
+            }
+        }
+        // Instance search rather than the cell-keyed overload: this runs before Destroy,
+        // but the cell is not worth trusting when the registry is the thing being fixed.
+        if (EntityManager.Instance != null)
+        {
+            EntityManager.Instance.UnregisterEntity(gameObject);
+        }
+        if (awardLoot)
+        {
+            // Experience is granted by takeDamage() before Die() is called; only the loot
+            // roll belongs here, so the two death routes cannot double-award.
+            if (LootGen.Instance != null)
+            {
+                LootGen.Instance.rollTable();
+            }
+        }
         Destroy(gameObject);
-        
     }
 
 }

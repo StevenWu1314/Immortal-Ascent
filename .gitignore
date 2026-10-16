@@ -70,3 +70,14 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Built WebGL output: build outside the repo, or to /WebGLversion (ignored here)
+/WebGLversion/
+/WebGLversion.zip
+
+# Mono/Unity crash dumps
+mono_crash.*.json
+
+# Python bytecode (Docs/gdd_build is a Python tool)
+__pycache__/
+*.pyc

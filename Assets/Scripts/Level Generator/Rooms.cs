@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.Properties;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class Rooms
 {
@@ -14,10 +11,19 @@ public class Rooms
     public bool downConnected;
 
     public Vector2 position;
+
+    public int distanceApart;
     public Rooms (BoundsInt body, Vector2 position)
     {
         this.body = body;
         this.position = position;
+        distanceApart = 10;
+    }
+    public Rooms (BoundsInt body, Vector2 position, int distanceApart)
+    {
+        this.body = body;
+        this.position = position;
+        this.distanceApart = distanceApart;
     }
 
     public void setType(string type)
@@ -67,27 +73,27 @@ public class Rooms
         switch (direction)
         {
             case 1:
-                nextRoom = new Rooms(new BoundsInt(this.body.xMax+20, this.body.yMin+ydif, -10, xsize, ysize, 20), this.position+new Vector2(1, 0));
+                nextRoom = new Rooms(new BoundsInt(this.body.xMax+distanceApart, this.body.yMin+ydif, -10, xsize, ysize, 20), this.position+new Vector2(1, 0));
                 nextRoom.setConnected(2);
                 rightConnected = true;
                 break;
             case 2:
-                nextRoom = new Rooms(new BoundsInt(this.body.xMin-20-xsize, this.body.yMin+ydif, -10, xsize, ysize, 20), this.position+new Vector2(-1, 0));
+                nextRoom = new Rooms(new BoundsInt(this.body.xMin-distanceApart-xsize, this.body.yMin+ydif, -10, xsize, ysize, 20), this.position+new Vector2(-1, 0));
                 nextRoom.setConnected(1);
                 leftConnected = true;
                 break;
             case 3:
-                nextRoom = new Rooms(new BoundsInt(this.body.xMin+xdif, this.body.yMax+20, -10, xsize, ysize, 20), this.position+new Vector2(0, 1));
+                nextRoom = new Rooms(new BoundsInt(this.body.xMin+xdif, this.body.yMax+distanceApart, -10, xsize, ysize, 20), this.position+new Vector2(0, 1));
                 nextRoom.setConnected(4);
                 upConnected = true;
                 break;
             case 4:
-                nextRoom = new Rooms(new BoundsInt(this.body.xMin+xdif, this.body.yMin-20-ysize, -10, xsize, ysize, 20), this.position+new Vector2(0, -1));
+                nextRoom = new Rooms(new BoundsInt(this.body.xMin+xdif, this.body.yMin-distanceApart-ysize, -10, xsize, ysize, 20), this.position+new Vector2(0, -1));
                 nextRoom.setConnected(3);
                 downConnected = true;
                 break;
             default:
-                nextRoom = new Rooms(new BoundsInt(this.body.xMin, this.body.yMin-20, -10, 20, 20, 20), this.position+new Vector2(1, 0));
+                nextRoom = new Rooms(new BoundsInt(this.body.xMin, this.body.yMin-distanceApart, -10, 20, 20, 20), this.position+new Vector2(1, 0));
                 nextRoom.setConnected(3);
                 break;
         }

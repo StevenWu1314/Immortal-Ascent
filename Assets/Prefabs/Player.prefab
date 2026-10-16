@@ -335,7 +335,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 89023903155a67841ab541e1eb2ff011, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -359,6 +359,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9afd5089f268d49409b1ee0f49be81ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  swordDrawn: 1
   moveCooldown: 0.1
   runningCooldown: 0
   MenuIsOpen: 0
@@ -383,17 +384,17 @@ MonoBehaviour:
   inventoryContainer: {fileID: 0}
   items: []
   StarterItems:
-  - item: {fileID: 8103580277624727149, guid: 4c1badd76ba604c858b8a0d17ebcd530, type: 3}
+  - definition: {fileID: 11400000, guid: 039af1c772be5490caec0d6df58c64fe, type: 2}
     amount: 1
-  - item: {fileID: 1417053570654631579, guid: 72cecad0ffa3a40b888d5fc0f71dc50f, type: 3}
+  - definition: {fileID: 11400000, guid: 57f9d3641ecd04080a26b3a645336524, type: 2}
     amount: 1
-  - item: {fileID: 3708553051624294094, guid: 9ff303c05a02547ec8b454ab05a3484f, type: 3}
+  - definition: {fileID: 11400000, guid: 75306d1c06f2e474b9b7f3348678060b, type: 2}
     amount: 3
-  - item: {fileID: 9127352406000723282, guid: 87c862b74002b40b7acd2f4a23d2d3dd, type: 3}
+  - definition: {fileID: 11400000, guid: 958c5a248604b4dbbab57a63aed5c3da, type: 2}
     amount: 1
-  - item: {fileID: 424189716286026104, guid: 50f9807f7c1a94729b969d91e63d2670, type: 3}
+  - definition: {fileID: 11400000, guid: f6f64e0a209854be1afae53f341dfe8e, type: 2}
     amount: 1
-  - item: {fileID: 1190025980987071172, guid: 2bfa61813063c4bb185cc22c4eb3c7a3, type: 3}
+  - definition: {fileID: 11400000, guid: 5c7376e6d3fd04c76876174ac6d2a884, type: 2}
     amount: 10
   itemDisplay: {fileID: 0}
 --- !u!114 &3324978833351514589
@@ -412,13 +413,11 @@ MonoBehaviour:
   MaxHealth: 100
   strength: 0
   dexterity: 0
-  range: 5
   currentExperience: 0
   currentLevel: 1
   levelCap: 100
   experienceToNextLevel: 10
   equipments: {fileID: 3665873110269209749}
-  achievementManager: {fileID: 11400000, guid: ea808bb1738014ddf874da0cd7f6b6f0, type: 2}
   expMultiplier: 1
   HealthBar: {fileID: 0}
   ExpBar: {fileID: 0}
@@ -435,9 +434,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inventoryContainer: {fileID: 0}
-  meleeWeapon: {fileID: 8103580277624727149, guid: 4c1badd76ba604c858b8a0d17ebcd530, type: 3}
-  rangeWeapon: {fileID: 0}
-  Armor: {fileID: 0}
+  meleeWeapon:
+    definition: {fileID: 11400000, guid: 039af1c772be5490caec0d6df58c64fe, type: 2}
+    inscriptions: []
+  rangeWeapon:
+    definition: {fileID: 0}
+    inscriptions: []
+  armor:
+    definition: {fileID: 0}
+    inscriptions: []
   ItemContainer: {fileID: 0}
   itemDisplay: {fileID: 0}
 --- !u!58 &6555760731972634069
