@@ -124,5 +124,18 @@ Status icons beyond Root (M2). Tooltips, damage log, bestiary. Localization of t
 EditMode 103/103 (6 new minimap tests); PlayMode 22/22 - the three new ones assert that stepping reveals a
 cell, that quick use consumes one pill and costs exactly one turn, and that an empty quick-use slot is free.
 
-Not verified: anything visual. The minimap's tiles, its scale and its placement, and the HUD's legibility
-need your eyes; `HudWiring` only builds the structure and lists the references it could not fill.
+Not verified: anything visual. The layout, the colours and the legibility need your eyes.
+
+## Post-playtest changes
+
+Two things came out of the first playtest:
+
+- **The HUD did not exist on screen.** `HudReadout` was added to the Canvas as a component (so it never
+  appears in the hierarchy) with all six fields empty, because the wiring only assigned objects that already
+  existed and none did. `HudWiring` now **creates** what is missing: a `HudReadout` column with the five text
+  rows and the root icon, and assigns every field. Re-running it is safe and reuses what is there.
+- **The minimap could never have worked as a tilemap.** Painting level cells into a world-space tilemap draws
+  over the level itself, because those are the level's own coordinates. `Minimap` now writes **one pixel per
+  revealed cell into a small `Texture2D`** (clamped, point-filtered, applied once per reveal) which the
+  wiring shows in a corner `RawImage`. No camera, no render texture, no extra layer, and nothing drawn in the
+  world. `MinimapRules` is unchanged, so the reveal rules and their tests still hold.

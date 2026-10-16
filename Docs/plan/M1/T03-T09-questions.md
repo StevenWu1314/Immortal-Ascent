@@ -49,9 +49,11 @@ Run these from the Unity menu, in this order:
    with the GDD's starting stats, assigns each to its prefab through `SerializedObject`, links the T06 drop
    tables, and sets the three prefabs as the Plains spawn pool. It never overwrites an existing asset, so
    re-running is safe - tune the numbers in the assets afterwards.
-5. **`Tools/Content/Wire HUD References`** — builds the minimap object (with its own Grid and Tilemap) and
-   adds `HudReadout` to the canvas, then reports the references left to assign: the minimap's two tiles and
-   the five text objects (`ammoText`, `weaponText`, `turnText`, `realmText`, `rootText`).
+5. **`Tools/Content/Wire HUD References`** — now *builds* the HUD instead of only assigning what exists:
+   a `HudReadout` column with the five text rows and the root icon, plus a corner `RawImage` for the minimap
+   texture. Positions are placeholders at the top-left; move them where they read best and save the scene.
+   If the `Minimap` object still carries a Grid/Tilemap child from the earlier wiring, it is unused - the
+   minimap is a texture now, not a tilemap.
 
 **Recipes (T06 note 5) — not applied.** Recipes live inside `ItemDefinition` assets, which is
 editor-authored YAML that must not be hand-edited. Set them in the Inspector, or ask me to add a menu
