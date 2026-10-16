@@ -206,6 +206,7 @@ public class Controls : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.E))
             {
                 TryOpenAdjacentChest();
+                TryDescendStairs();
             }
         }
         else
@@ -214,6 +215,37 @@ public class Controls : MonoBehaviour
         }
 
     }
+    /// <summary>
+    /// The player's cell, preferring the registry over the shaken transform - the same rule the
+    /// movement path uses, because a hit shake leaves transform.position up to 0.1 off the cell.
+    /// </summary>
+    private Vector2Int PlayerCell()
+    {
+        Vector2Int cell;
+        if (EntityManager.Instance != null && EntityManager.Instance.TryGetCell(gameObject, out cell))
+        {
+            return cell;
+        }
+        return Vector2Int.FloorToInt(transform.position);
+    }
+
+    /// <summary>
+    /// E while standing on the stairs descends to the next floor. Free, like opening a chest: the
+    /// rebuild is the cost, and the run state refuses once the run is complete.
+    /// </summary>
+    private void TryDescendStairs()
+    {
+        if (!RunState.HasRun || !RunState.HasStairs)
+        {
+            return;
+        }
+        if (PlayerCell() != RunState.StairsCell)
+        {
+            return;
+        }
+        RunState.AdvanceFloor();
+    }
+
     /// <summary>Cell currently under the mouse, in range-indicator tilemap space.</summary>
     private Vector3Int MouseCell()
     {

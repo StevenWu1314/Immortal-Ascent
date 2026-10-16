@@ -171,6 +171,15 @@ public class TilePlacer : MonoBehaviour
         return chestCells;
     }
 
+    /// <summary>
+    /// Draw the floor's stairs marker. The grid value stays walkable: the player stands on stairs,
+    /// unlike a chest, which is solid until it is opened. Stairs art belongs to T08.
+    /// </summary>
+    public void MarkStairs(Vector2Int cell)
+    {
+        corridor.SetTile(new Vector3Int(cell.x, cell.y, 0), bridgeTile);
+    }
+
     public void fillWater(Grid grid)
     {
         for(int x = 0; x < grid.GetSize(0); x++)

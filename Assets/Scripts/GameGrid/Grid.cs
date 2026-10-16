@@ -66,6 +66,22 @@ public class Grid
     }
 
     /// <summary>
+    /// Reset every cell. Regenerating a floor in the same scene needs this: the Grid outlives a
+    /// generation, and without a reset the previous floor's walls and chest codes survive underneath
+    /// the new one and cut through it.
+    /// </summary>
+    public void Clear(int value = 0)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                gridArray[x, y] = value;
+            }
+        }
+    }
+
+    /// <summary>
     /// Single definition of "an entity may stand here". Terrain codes are written by
     /// TilePlacer: 0 = floor/corridor, 1 = wall/shallow water,
     /// 2 = deep water, 5 = bridge (legacy), 99 = chest. Anything unknown is treated

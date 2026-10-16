@@ -42,8 +42,27 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         // Grid's world->cell conversion (getXY) subtract it, so the player would read terrain
         // from a cell gridSize/2 away and every move would be blocked by a wall.
         EnsureGrid();
-        generateBranchingDungeon();     
+
+        // Entering the dungeon scene starts a run, which is also what resets it after a death:
+        // the death path reloads the menu, and the next visit starts a fresh run from here.
+        RunState.BeginRun(System.Environment.TickCount);
+        RunState.FloorChanged += OnFloorChanged;
+
+        generateBranchingDungeon(RunState.IsBossFloor);     
         
+    }
+
+    private void OnDestroy()
+    {
+        // A static event: an unbalanced subscription would keep this destroyed generator alive and
+        // rebuilding floors through it after a scene change.
+        RunState.FloorChanged -= OnFloorChanged;
+    }
+
+    /// <summary>Rebuild the level for the floor the run just moved to.</summary>
+    private void OnFloorChanged()
+    {
+        generateBranchingDungeon(RunState.IsBossFloor);
     }
 
     /// <summary>
@@ -73,6 +92,12 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         // diagnostics entry point reaches this method directly.
         EnsureGrid();
 
+        // Same run, same floor, same layout: (run seed, realm, floor) decides the seed.
+        if (RunState.HasRun)
+        {
+            Random.InitState(RunState.FloorSeed);
+        }
+
         // A repeated generation (editor diagnostics today, a restart later) must not inherit
         // the previous run's registrations. A stale player entry made EntityManager.MoveEntity
         // fail its TryGetValue(oldCell) lookup, leaving the player unable to move at all.
@@ -82,7 +107,19 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         }
         spawnedPlayer = null;
 
+        // Reuse the player across floors. A fresh instance would reset health, level and inventory -
+        // the GDD carries all three between floors - and the old instance is still alive while the new
+        // one wakes, so the player's singleton components (Equipments, Inventory) would destroy the new
+        // player through their duplicate guards, leaving the floor with no player at all.
+        PlayerStats[] existingPlayers = UnityEngine.Object.FindObjectsByType<PlayerStats>(FindObjectsSortMode.None);
+        PlayerStats existingPlayer = existingPlayers.Length > 0 ? existingPlayers[0] : null;
+
         tilePlacer.clear();
+
+        // The Grid outlives a generation. Clearing the tilemaps is not enough: the previous floor's
+        // terrain (room rings = 1, chest cells = 99) stayed underneath the new floor and cut through
+        // it, which showed up as isolated cells and unreachable chests on every descend.
+        grid.Clear();
         List<Rooms> rooms = ProceduralGenerationAlgorithm.BrachingRooms(
             minRoomsPerFloor, maxRoomsPerFloor, gridSize, bossFloor);
         List<BoundsInt> roomsSpace = new List<BoundsInt>();
@@ -93,7 +130,18 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
             if(rooms[i].type == "Starting")
             {
                 startingRoomIndex = i;
-                GameObject instance = Instantiate(player, rooms[i].body.center-new Vector3(0.5f, 0.5f), quaternion.identity);
+                Vector3 spawn = rooms[i].body.center - new Vector3(0.5f, 0.5f);
+                GameObject instance;
+                if (existingPlayer != null)
+                {
+                    instance = existingPlayer.gameObject;
+                    instance.transform.position = spawn;
+                }
+                else
+                {
+                    instance = Instantiate(player, spawn, quaternion.identity);
+                }
+
                 instance.GetComponent<Controls>().grid = grid;
                 EntityManager.Instance.RegisterEntity(instance, new Vector2Int((int) rooms[i].body.center.x, (int) rooms[i].body.center.y));
                 spawnedPlayer = instance;
@@ -109,6 +157,17 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         int corridorLength = (rooms.Count > 0 ? rooms[0].distanceApart : 10);
         tilePlacer.branchingCorridors(rooms, grid, corridorLength);
         tilePlacer.fillWater(grid);
+
+        // Stairs live in the room T01 marked as Stairs. A boss floor has none: its arena ends the
+        // realm instead, so the run state keeps no exit and the interaction cannot fire.
+        RunState.ClearStairs();
+        Rooms stairsRoom = rooms.Find(room => room.type == "Stairs");
+        if (!bossFloor && stairsRoom != null)
+        {
+            Vector2Int stairsCell = new Vector2Int((int)stairsRoom.body.center.x, (int)stairsRoom.body.center.y);
+            tilePlacer.MarkStairs(stairsCell);
+            RunState.SetStairs(stairsCell);
+        }
 
         spawnEnemies(roomsSpace, startingRoomIndex);
         spawnChests(chestCells);
@@ -351,7 +410,22 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
             return;
         }
 
-        Debug.LogError($"[GEN] reachability FAILED: {result.Describe()}. " +
-                       "A corridor probably failed to connect two rooms, or a chest is walled in.");
+        // Two different problems, two different severities. An unreachable walkable cell is by
+        // definition one the player can never enter, so it cannot affect play - it is map noise, and
+        // deserves a warning. A chest in such a pocket is real content the player can never open.
+        // The player's own cell and terrain are in the message because a floor that is unreachable from
+        // the spawn means the spawn is the thing to look at, not the corridors.
+        string spawnState = $"player world={spawnedPlayer.transform.position} cell={origin} " +
+                            $"terrain={grid.GetValueAtLocation(origin.x, origin.y)}";
+
+        if (!result.ChestsReachable)
+        {
+            Debug.LogError($"[GEN] a chest is walled in: {result.Describe()}; {spawnState}. " +
+                           "A corridor failed to reach it, so its loot is unreachable.");
+            return;
+        }
+
+        Debug.LogWarning($"[GEN] floor is not fully connected: {result.Describe()}; {spawnState}. " +
+                         "Those cells cannot be entered, so play is unaffected.");
     }
 }

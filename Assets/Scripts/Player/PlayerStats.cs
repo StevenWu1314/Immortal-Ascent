@@ -74,6 +74,10 @@ public class PlayerStats : MonoBehaviour{
     {
         if (Instance != null && Instance != this)
         {
+            // Worth saying out loud: this destroys a whole player silently, and a silent self-destruct
+            // is what made the duplicate invisible in earlier debugging.
+            Debug.LogWarning($"[PLAYER] a second PlayerStats appeared while '{Instance.name}' existed; " +
+                             $"destroying '{name}' at {transform.position}.", this);
             Destroy(gameObject);
             return;
         }

@@ -37,9 +37,10 @@ Scenes: `Assets/Scenes/ui.unity` is build index **0** (the death screen loads it
 
 Verified against the code, not the docs:
 
-- **No run structure.** One endless map of 6-8 islands. T01 marks the last island `Stairs`, or a large
-  `Boss` room when `generateBranchingDungeon(bossFloor: true)` is used, but nothing consumes those kinds
-  yet: no floor progression, no boss encounter, no save.
+- **Run structure exists; its content does not.** T02 added realm/floor progression (`RunState` +
+  pure `RunSequence` + `RealmDefinition`), a per-floor seed and stairs that rebuild the floor in place.
+  A run completes when the last realm's boss floor is left, but the boss entity (T10), the victory UI
+  and saving (M3) do not exist yet.
 - **No status system** of any kind. Only flat damage, 3 temporary stat buffs and a heal exist.
 - **No material source.** Iron/Web/Tusk/Skin drop from nothing, so both recipes and the arrow
   economy are dead ends.
@@ -178,6 +179,16 @@ state on `ItemDefinition`.**
 | `str`, `dex`, `health` | `levelUpUI.OnEnable` |
 | `slot` → `Item` | `ItemBox.EnsureImage` |
 | `Player` tag | `EnemyBehavior.Start`, `UIManager.CloseMenu` |
+
+**7. Regenerating a floor requires `Grid.Clear()`.** The `Grid` outlives a generation: `tilePlacer.clear()`
+clears the tilemaps but not the terrain, so the previous floor's room rings (`1`) and chest codes (`99`)
+stay underneath the new floor and cut through it - isolated cells, chests walled in. Clear before placing.
+
+**8. The player is reused across floors, not respawned.** `RoomFirstDungeonGenerator` repositions and
+re-registers the existing `PlayerStats`. Instantiating a fresh one while the old is still alive
+(`Destroy` is deferred) makes the player-side singleton guards - `PlayerStats`, `Equipments`, `Inventory`,
+which all `Destroy(gameObject)` - delete the whole new player; and it would reset health, level and
+inventory, which the GDD carries between floors.
 
 ## 6. Coding conventions
 

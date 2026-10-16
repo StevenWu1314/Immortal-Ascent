@@ -140,7 +140,7 @@ T11 integration + full-run playtest + desktop builds   (after T10 and T09)
 | --- | --- | --- |
 | T00 | [T00-tests-asmdef-build.md](T00-tests-asmdef-build.md) | **done** - EditMode 17/17, PlayMode 2/2, all diagnostics pass |
 | T01 | [T01-map-generation.md](T01-map-generation.md) | **done** - EditMode 22/22, PlayMode 2/2, counts exact, 0 throws/overlaps |
-| T02 | [T02-run-state-floors.md](T02-run-state-floors.md) | not started |
+| T02 | [T02-run-state-floors.md](T02-run-state-floors.md) | **done, awaiting checkpoint** - EditMode 36/36, PlayMode 3/3, 3 pre-existing defects fixed |
 | T03 | [T03-turn-state-machine.md](T03-turn-state-machine.md) | not started |
 | T04 | [T04-awareness-roaming-los.md](T04-awareness-roaming-los.md) | not started |
 | T05 | [T05-status-root.md](T05-status-root.md) | not started |

@@ -19,8 +19,16 @@ public class CameraFollow : MonoBehaviour
 
     void LateUpdate()
     {
-        player = FindObjectOfType<PlayerStats>().transform;
-        if (player == null) return;
+        // FindObjectOfType is null while the level regenerates (the old player is destroyed before the
+        // new one spawns), so the null test has to come first. It used to sit *after* the dereference,
+        // which made it dead code and threw a NullReferenceException on every descend.
+        PlayerStats found = FindObjectOfType<PlayerStats>();
+        if (found == null)
+        {
+            return;
+        }
+
+        player = found.transform;
         // target position following the player
         Vector3 targetPos = player.position;
 

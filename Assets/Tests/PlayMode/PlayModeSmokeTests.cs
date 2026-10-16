@@ -93,19 +93,8 @@ public class PlayModeSmokeTests
     [UnityTest]
     public IEnumerator DungeonScene_GeneratesLevel_WithIslandsAndARegisteredPlayer()
     {
-        SceneManager.LoadScene(DungeonSceneName, LoadSceneMode.Single);
-        yield return null;
+        yield return LoadDungeonAndWaitForGeneration();
 
-        float deadline = Time.realtimeSinceStartup + GenerationTimeoutSeconds;
-        while ((Grid.Current == null || !IslandManager.IsInitialized) && Time.realtimeSinceStartup < deadline)
-        {
-            yield return null;
-        }
-
-        Assert.IsNotNull(Grid.Current,
-            $"Grid.Current is null after {GenerationTimeoutSeconds}s - generation did not run in '{DungeonSceneName}'");
-        Assert.IsTrue(IslandManager.IsInitialized,
-            "IslandManager was never rebuilt; generation did not complete");
         Assert.IsNotNull(EntityManager.Instance, "EntityManager is missing from the scene");
         Assert.IsNotNull(PlayerStats.Instance, "PlayerStats is missing; the player prefab did not spawn");
         Assert.Greater(EntityManager.Instance.AllEntities.Count, 0,
@@ -129,6 +118,65 @@ public class PlayModeSmokeTests
         int islands = CountIslands();
         Assert.That(islands, Is.InRange(6, 8),
             $"the generated floor has {islands} islands, expected the 6-8 band from the GDD");
+    }
+
+    /// <summary>
+    /// Descending has to build a whole new floor without losing the run or the player. This is the
+    /// test that catches a regeneration that leaves the old player behind, or a new player that
+    /// deletes itself because the previous one is still registered.
+    /// </summary>
+    [UnityTest]
+    public IEnumerator AdvancingTheFloor_RebuildsTheLevel_WithExactlyOnePlayer()
+    {
+        yield return LoadDungeonAndWaitForGeneration();
+
+        Assert.IsTrue(RunState.HasRun, "entering the dungeon scene should start a run");
+        Assert.AreEqual(0, RunState.FloorIndex, "a fresh run starts on floor 0");
+        Assert.IsTrue(RunState.HasStairs, "a normal floor must offer stairs to descend");
+
+        Vector2Int stairs = RunState.StairsCell;
+        Assert.IsTrue(Grid.IsWalkableTerrain(Grid.Current.GetValueAtLocation(stairs.x, stairs.y)),
+            $"the stairs at {stairs} must be a cell the player can stand on");
+
+        RunState.AdvanceFloor();
+        yield return null;
+        yield return null;
+
+        Assert.AreEqual(1, RunState.FloorIndex, "descending advances the floor");
+        Assert.IsTrue(IslandManager.IsInitialized, "the new floor should be built");
+
+        int playerBefore = PlayerStats.Instance.GetInstanceID();
+
+        RunState.AdvanceFloor();
+        yield return null;
+        yield return null;
+
+        Assert.AreEqual(1, RunState.FloorIndex, "descending advances the floor");
+        Assert.IsTrue(IslandManager.IsInitialized, "the new floor should be built");
+        Assert.IsNotNull(PlayerStats.Instance, "the new floor should have a player");
+
+        int players = Object.FindObjectsByType<PlayerStats>(FindObjectsSortMode.None).Length;
+        Assert.AreEqual(1, players, "descending must not leave a second player behind");
+        Assert.AreEqual(playerBefore, PlayerStats.Instance.GetInstanceID(),
+            "descending must keep the same player, so health, level and inventory carry over");
+    }
+
+    /// <summary>Load the real dungeon scene and wait until its generator has built a floor.</summary>
+    private IEnumerator LoadDungeonAndWaitForGeneration()
+    {
+        SceneManager.LoadScene(DungeonSceneName, LoadSceneMode.Single);
+        yield return null;
+
+        float deadline = Time.realtimeSinceStartup + GenerationTimeoutSeconds;
+        while ((Grid.Current == null || !IslandManager.IsInitialized) && Time.realtimeSinceStartup < deadline)
+        {
+            yield return null;
+        }
+
+        Assert.IsNotNull(Grid.Current,
+            $"Grid.Current is null after {GenerationTimeoutSeconds}s - generation did not run in '{DungeonSceneName}'");
+        Assert.IsTrue(IslandManager.IsInitialized,
+            "IslandManager was never rebuilt; generation did not complete");
     }
 
     /// <summary>Distinct island ids over the walkable terrain: one per room, corridors excluded.</summary>
