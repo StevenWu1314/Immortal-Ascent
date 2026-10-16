@@ -15,6 +15,13 @@ public class RangeEnemyBehavior : EnemyBehavior
     protected override void Start()
     {
         base.Start();
+
+        Enemy self = GetComponent<Enemy>();
+        if (self != null && self.Definition != null)
+        {
+            range = self.Definition.range;
+            rangeAttackCooldown = self.Definition.rangedCooldown;
+        }
     }
 
     /// <summary>

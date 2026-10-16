@@ -210,7 +210,7 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
             RunState.SetStairs(stairsCell);
         }
 
-        spawnEnemies(roomsSpace, startingRoomIndex);
+        spawnEnemies(roomsSpace, startingRoomIndex, rooms.Count - 1);
         spawnChests(chestCells);
 
         // Islands are assigned explicitly from the room layout rather than inferred from water
@@ -227,11 +227,13 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
     /// an enemy could land inside a wall -- unable to move, and with the island gate demanding
     /// it be killed before the player could leave.
     /// </summary>
-    private void spawnEnemies(List<BoundsInt> roomsSpace, int startingRoomIndex)
+    private void spawnEnemies(List<BoundsInt> roomsSpace, int startingRoomIndex, int exitRoomIndex)
     {
-        if (enemies == null || enemies.Length == 0)
+        // The realm's pool wins; the generator's own serialized array is the fallback (T09).
+        GameObject[] pool = RunState.EnemyPool ?? enemies;
+        if (pool == null || pool.Length == 0)
         {
-            Debug.LogError("[GEN] no enemy prefabs assigned to RoomFirstDungeonGenerator; nothing spawned.");
+            Debug.LogError("[GEN] no enemy prefabs: the realm defines no pool and the generator has none.");
             return;
         }
 
@@ -255,9 +257,10 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
 
         for (int n = 0; n < roomsSpace.Count; n++)
         {
-            if (n == startingRoomIndex)
+            if (n == startingRoomIndex || n == exitRoomIndex)
             {
-                // Never place an enemy on the room the player spawns in.
+                // Never on the room the player spawns in, and never on the stairs or boss arena: the exit has to
+                // be reachable without a fight (T09 spawn rules).
                 continue;
             }
 
@@ -276,12 +279,12 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
                 Vector2Int cell = candidates[pick];
                 candidates.RemoveAt(pick);   // one entity per cell
 
-                int type = Random.Range(0, enemies.Length);
-                GameObject newEnemy = Instantiate(enemies[type], new Vector3(cell.x, cell.y), quaternion.identity);
+                int type = Random.Range(0, pool.Length);
+                GameObject newEnemy = Instantiate(pool[type], new Vector3(cell.x, cell.y), quaternion.identity);
                 EnemyBehavior enemy = newEnemy.GetComponent<EnemyBehavior>();
                 if (enemy == null)
                 {
-                    Debug.LogError($"[GEN] enemy prefab '{enemies[type].name}' has no EnemyBehavior component; skipping.");
+                    Debug.LogError($"[GEN] enemy prefab '{pool[type].name}' has no EnemyBehavior component; skipping.");
                     if (Application.isPlaying)
                     {
                         Destroy(newEnemy);

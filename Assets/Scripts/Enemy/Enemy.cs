@@ -5,8 +5,34 @@ public abstract class Enemy : MonoBehaviour
     [SerializeField] protected int health;
     [SerializeField] protected int damage;
     [SerializeField] protected int expValue;
+
+    [Tooltip("Optional. When set, these stats replace the prefab's own, scaled for the current floor (T09).")]
+    [SerializeField] private EnemyDefinition definition;
+
+    /// <summary>This enemy's data asset, or null when it still runs on the prefab's serialized values.</summary>
+    public EnemyDefinition Definition => definition;
+
     private UIManager uiManager;
     SpriteRenderer spriteRenderer;
+
+    /// <summary>
+    /// Apply the floor's scaling. The definition's numbers win when there is one; otherwise the prefab's own
+    /// serialized values are the base. Either way the floor multiplier applies, so an unauthored project still
+    /// gets harder on floor 2.
+    /// </summary>
+    private void Awake()
+    {
+        int baseHealth = definition != null ? definition.maxHealth : health;
+        int baseDamage = definition != null ? definition.damage : damage;
+        if (definition != null)
+        {
+            expValue = definition.experience;
+        }
+
+        int floor = RunState.FloorIndex;
+        health = EnemyScaling.ScaleHealth(baseHealth, floor);
+        damage = EnemyScaling.ScaleDamage(baseDamage, floor);
+    }
 
     void OnEnable()
     {

@@ -62,6 +62,12 @@ Verified against the code, not the docs:
   reset by `BeginRun`), and the panel lists every craftable definition as enabled, greyed or locked. The
   ammo path grants `PlayerStats.Arrows` instead of an item stack. Craftable data still needs authoring:
   the shipped items have no recipes yet.
+- **Enemy stats are data, scaled per floor** (T09). `EnemyDefinition` assets under `Resources/Enemies`
+  carry health/damage/XP/awareness/ranged/drop-table values (plus resistance fields M1 never reads);
+  `Enemy.Awake` applies them, falling back to the prefab's serialized values, and `EnemyScaling` applies
+  `1 + 0.15*floor` health and `1 + 0.10*floor` damage either way. The realm's `enemies` array is the spawn
+  pool (the generator's own array is the fallback). Run `Tools/Content/Create Enemy Definitions` to author
+  the three Plains assets and assign them to the prefabs.
 - **The minimap and HUD are code-complete but not scene-wired** (T08). `MinimapRules` is pure and tested;
   `Minimap` paints revealed cells and markers on one tilemap; `HudReadout` fills ammo/weapon/turn/floor/root
   text; `QuickUse` holds the pill on `Q`. Run `Tools/Content/Wire HUD References`, then assign the two

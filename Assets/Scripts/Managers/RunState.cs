@@ -38,6 +38,15 @@ public static class RunState
     public static ItemDefinition Metal => CurrentRealm != null ? CurrentRealm.metal : null;
 
     /// <summary>
+    /// This realm's enemy prefabs, or null when it defines none - the generator then falls back to its own
+    /// serialized pool, so an unauthored realm keeps working.
+    /// </summary>
+    public static GameObject[] EnemyPool =>
+        CurrentRealm != null && CurrentRealm.enemies != null && CurrentRealm.enemies.Length > 0
+            ? CurrentRealm.enemies
+            : null;
+
+    /// <summary>
     /// The run's seeded random source. Loot, material drops and ore yields all roll here, so a test can pin
     /// a seed and assert exact outcomes instead of sampling a distribution.
     /// </summary>

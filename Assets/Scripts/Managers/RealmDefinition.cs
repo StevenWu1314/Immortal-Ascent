@@ -22,4 +22,7 @@ public class RealmDefinition : ScriptableObject
 
     [Tooltip("The metal ore veins in this realm yield (GDD 12.2). Plains is Iron Ore.")]
     public ItemDefinition metal;
+
+    [Tooltip("Enemy prefabs this realm spawns (GDD 13.1). Empty falls back to the generator's own pool.")]
+    public GameObject[] enemies = new GameObject[0];
 }

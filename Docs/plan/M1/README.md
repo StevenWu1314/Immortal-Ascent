@@ -147,7 +147,7 @@ T11 integration + full-run playtest + desktop builds   (after T10 and T09)
 | T06 | [T06-materials-loot.md](T06-materials-loot.md) | **done** - EditMode 85/85, PlayMode 16/16; ground drops split out (see the task file) |
 | T07 | [T07-portable-crafting.md](T07-portable-crafting.md) | **done** - EditMode 97/97, PlayMode 19/19 (recipes still need authoring; see the hand-over) |
 | T08 | [T08-minimap-hud.md](T08-minimap-hud.md) | **done** - EditMode 103/103, PlayMode 22/22 (needs `Tools/Content/Wire HUD References` + tiles/text) |
-| T09 | [T09-plains-content.md](T09-plains-content.md) | not started |
+| T09 | [T09-plains-content.md](T09-plains-content.md) | **done** - EditMode 109/109, PlayMode 24/24 (run `Tools/Content/Create Enemy Definitions`, then tune) |
 | T10 | [T10-boss-tusk-sovereign.md](T10-boss-tusk-sovereign.md) | not started |
 | T11 | [T11-integration-builds.md](T11-integration-builds.md) | not started |
 

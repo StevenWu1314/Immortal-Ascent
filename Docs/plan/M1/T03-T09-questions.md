@@ -44,6 +44,13 @@ Run these from the Unity menu, in this order:
    equivalent except that the asset is where you tune later realms.
 3. **`Tools/Content/Set Plains Realm Metal`** — sets `metal` to Iron Ore on that asset. Also optional:
    the built-in fallback loads Iron already.
+4. **`Tools/Content/Create Enemy Definitions`** — authors `Resources/Enemies/{PigYao,SpiderYao,JingYao}.asset`
+   with the GDD's starting stats, assigns each to its prefab through `SerializedObject`, links the T06 drop
+   tables, and sets the three prefabs as the Plains spawn pool. It never overwrites an existing asset, so
+   re-running is safe - tune the numbers in the assets afterwards.
+5. **`Tools/Content/Wire HUD References`** — builds the minimap object (with its own Grid and Tilemap) and
+   adds `HudReadout` to the canvas, then reports the references left to assign: the minimap's two tiles and
+   the five text objects (`ammoText`, `weaponText`, `turnText`, `realmText`, `rootText`).
 
 **Recipes (T06 note 5) — not applied.** Recipes live inside `ItemDefinition` assets, which is
 editor-authored YAML that must not be hand-edited. Set them in the Inspector, or ask me to add a menu
@@ -93,7 +100,7 @@ Please run these in a session with the editor open (the agent bridge works: `exe
 | T06 materials, loot, arrows | **done, committed** `8b8ff2e` | EditMode 85/85, PlayMode 16/16. Ground drops split out; recipes and the loot-table SO deferred (see above). |
 | T07 portable crafting | **done, committed** | EditMode 97/97, PlayMode 19/19. Discovery, the three panel states, out-of-combat gating and the ammo path are in; **the recipes themselves are still un-authored**, so the panel lists nothing until you do task 4 below. |
 | T08 minimap and HUD | **done, committed** | EditMode 103/103, PlayMode 22/22. Code-complete; run `Tools/Content/Wire HUD References` and assign the tiles/text, then check legibility (I cannot see the screen). |
-| T09 Plains content | **not started** | Mostly data and tuning. |
+| T09 Plains content | **done, committed** | EditMode 109/109, PlayMode 24/24. `EnemyDefinition` + `EnemyScaling` + the realm pool + spawn rules are in; run `Tools/Content/Create Enemy Definitions` and tune the three assets. Spider Yao does not trail webs (T05 generates them). |
 
 ### T07 additions to the hand-over
 

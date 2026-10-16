@@ -91,10 +91,25 @@ public class EnemyBehavior : MonoBehaviour
     }
     virtual protected void Start()
     {
-
         player = GameObject.FindWithTag("Player");
         currentstate = AwarenessState.Idle;
+        ApplyDefinition();
+    }
 
+    /// <summary>
+    /// Take the awareness numbers from this enemy's definition when it has one. The prefab's serialized values
+    /// are the fallback, so nothing breaks before the definitions are authored.
+    /// </summary>
+    protected void ApplyDefinition()
+    {
+        Enemy self = GetComponent<Enemy>();
+        EnemyDefinition definition = self != null ? self.Definition : null;
+        if (definition == null)
+        {
+            return;
+        }
+        detectionRadius = definition.detectionRadius;
+        chaseRange = definition.chaseRange;
     }
     /// <summary>
     /// Re-evaluate whether this enemy notices the player (GDD 6.5). The realm decides how: Plains alerts
