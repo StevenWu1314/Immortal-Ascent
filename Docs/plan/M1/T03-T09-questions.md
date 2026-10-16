@@ -8,7 +8,8 @@ collected here instead. This file is that collection. It is organised as:
 3. **Verification I could not run** — so the claims stay honest.
 4. **Status of each task**, including anything deliberately split out.
 
-Last updated after **T06** (commit `8b8ff2e`).
+Last updated after **T09** (commit `93758bc`). All seven tasks are implemented, verified and committed; the
+only outstanding items are the editor hand-over tasks in section 2 and the bridge harnesses in section 3.
 
 ---
 
