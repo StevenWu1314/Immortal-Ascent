@@ -65,8 +65,12 @@ public class Chest : MonoBehaviour
             return false;
         }
 
-        IsOpened = true;
+        // IsOpened is set further down, and only once the chest is actually empty: a chest that still holds
+        // what did not fit stays openable.
 
+        // Keep whatever did not fit so the player can come back with room (GDD 12.7): clearing the chest
+        // outright destroyed the leftovers the moment the inventory filled up.
+        List<ItemStack> remaining = new List<ItemStack>();
         int lost = 0;
         foreach (ItemStack stack in contents)
         {
@@ -74,19 +78,39 @@ public class Chest : MonoBehaviour
             {
                 continue;
             }
-            lost += inventory.addItem(stack.definition, stack.amount);
+
+            int leftover = inventory.addItem(stack.definition, stack.amount);
+            lost += leftover;
+            if (leftover > 0)
+            {
+                // Equipment carries its inscriptions on the instance, so a leftover instance is kept whole.
+                // Equipment never stacks, so a partial hand-over can only happen between instances.
+                remaining.Add(stack.instance != null
+                    ? new ItemStack(stack.instance)
+                    : new ItemStack(stack.definition, leftover));
+            }
         }
         contents.Clear();
+        contents.AddRange(remaining);
 
         if (lost > 0)
         {
-            string message = $"Inventory full ({lost} item(s) left behind)";
+            string message = $"Inventory full ({lost} item(s) left in the chest)";
             Debug.LogWarning("Chest: " + message);
             if (UIManager.Instance != null && PlayerStats.Instance != null)
             {
                 UIManager.Instance.DrawFlowupText(message, PlayerStats.Instance.transform.position);
             }
         }
+
+        // Anything still inside means the chest is not spent: it stays registered, solid and re-openable,
+        // which is what lets the player come back for the leftovers.
+        if (contents.Count > 0)
+        {
+            return true;
+        }
+
+        IsOpened = true;
 
         // An opened chest stops being an obstacle. The Grid is the authority for movement, and
         // IslandManager snapshotted this cell as blocked, so both have to be updated or the room

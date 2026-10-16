@@ -45,8 +45,10 @@ Verified against the code, not the docs:
   never renumber, while `StatusSet.IsImplemented` admits Root alone and refuses the rest out loud.
   `StatusController` lives on the player (auto-attached by `PlayerStats.Awake` if the prefab lacks one);
   `TurnManager` ticks it once per completed round.
-- **No material source.** Iron/Web/Tusk/Skin drop from nothing, so both recipes and the arrow
-  economy are dead ends.
+- **Materials exist now** (T06). Ore veins (terrain `7`, solid, mined with `E` from an adjacent cell for
+  1-3 ore, then opened with the chest two-write path) are the primary source, and enemy types drop
+  materials from `Resources/DropTables/*` via `EnemyDrops`. Arrows are a count on `PlayerStats`, not item
+  stacks. Ground drops are **not** built: overflow is reported and lost (chests keep their leftovers).
 - **Line of sight is real** (T04). `LineOfSight.HasClearShot` walks the Grid: walls, water and out of
   bounds block, while webs, bushes and chests do not. `utilityFunction.ClearLine` is dead code (marked as
   such, no callers) - it read a Tilemap nothing painted.
@@ -127,9 +129,10 @@ Read the call sites before changing any of these.
 holds terrain codes; `RoomFirstDungeonGenerator.EnsureGrid()` is the single owner and publishes
 `Grid.Current`. Everything reads `Grid.Current`. Terrain codes: `0` floor/corridor (walkable),
 `1` wall + water + **out of bounds** (blocked), `6` spider web (walkable until entered, T05),
-`99` unopened chest (blocked). `2`, `3`, `5` are legacy values nobody writes (`5` is still accepted as
-walkable). Route movement checks through `Grid.IsWalkableTerrain(int)` and cell lookups through
-`Grid.CellFromWorld(Vector3)` — never compare codes inline.
+`7` ore vein (blocked until mined out, T06), `99` unopened chest (blocked). `2`, `3`, `5` are legacy
+values nobody writes (`5` is still accepted as walkable). Route movement checks through
+`Grid.IsWalkableTerrain(int)` and cell lookups through `Grid.CellFromWorld(Vector3)` — never compare codes
+inline.
 
 **Entity occupancy is not in `Grid`.** `EntityManager` owns a one-entity-per-cell dictionary.
 Register, move and unregister every moving entity through it or collision/combat silently ignores

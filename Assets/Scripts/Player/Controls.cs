@@ -169,7 +169,12 @@ public class Controls : MonoBehaviour
             // Opening is deliberately free (it does not fire onMoveEvent), so looting is not a turn.
             if (Input.GetKeyDown(KeyCode.E))
             {
-                TryOpenAdjacentChest();
+                // Mining first: a vein is solid, so it is always worked from a neighbouring cell, and the
+                // chest message must not fire on the same press.
+                if (!TryMineAdjacentVein())
+                {
+                    TryOpenAdjacentChest();
+                }
                 TryDescendStairs();
             }
         }
@@ -373,22 +378,6 @@ public class Controls : MonoBehaviour
         return FindEnemyInCell(cell) != null;
     }
 
-    private ItemDefinition FindArrowDefinition()
-    {
-        if (Inventory.Instance == null)
-        {
-            return null;
-        }
-        foreach (ItemStack stack in Inventory.Instance.getItems())
-        {
-            if (stack.definition != null && stack.definition.Kind == ItemKind.Ammo && stack.amount > 0)
-            {
-                return stack.definition;
-            }
-        }
-        return null;
-    }
-
     /// <summary>
     /// Find the enemy occupying a cell. Prefers a physics hit, but falls back to the
     /// EntityManager registry so the shot does not silently fail if the collider query
@@ -448,8 +437,8 @@ public class Controls : MonoBehaviour
             return false;
         }
 
-        ItemDefinition arrow = FindArrowDefinition();
-        if (arrow == null)
+        // Arrows are a count on the player (T06), spent here so a shot that cannot be paid for never lands.
+        if (playerStats == null || !playerStats.TryConsumeArrow())
         {
             UIManager.Instance.DrawFlowupText("No arrows remaining", transform.position);
             return false;
@@ -478,9 +467,7 @@ public class Controls : MonoBehaviour
             }
         }
 
-        // Remove exactly one arrow by definition, so this never mutates the inventory list
-        // while it is being enumerated.
-        Inventory.Instance.removeItem(arrow, 1);
+        // The arrow was already spent above, one per shot.
         return true;
     }
 
@@ -524,6 +511,14 @@ public class Controls : MonoBehaviour
             return;
         }
 
+        // Arrows are a count now (T06), so an empty quiver is refused up front instead of after the player
+        // has lined up a shot they cannot take.
+        if (playerStats == null || playerStats.Arrows <= 0)
+        {
+            UIManager.Instance.DrawFlowupText("No arrows remaining", transform.position);
+            return;
+        }
+
         SetBowSprite(true);
         if (bowIndicator != null)
         {
@@ -556,6 +551,50 @@ public class Controls : MonoBehaviour
     private void detectMenu(UIManager uIManager)
     {
         MenuIsOpen = !MenuIsOpen;
+    }
+
+    /// <summary>
+    /// Mine an adjacent ore vein (GDD 5.5): one turn, 1-3 ore, and the vein depletes. Returns false only when
+    /// there is nothing to mine, so the caller can fall through to the chest interaction.
+    ///
+    /// Room is checked for the largest possible yield first, and a vein is not touched when the ore would not
+    /// fit - ground drops are not built yet, and silently destroying a finite resource is worse than refusing.
+    /// </summary>
+    public bool TryMineAdjacentVein()
+    {
+        if (!OreVeinRegistry.TryGetAdjacent(PlayerCell(), out Vector2Int cell))
+        {
+            return false;
+        }
+
+        ItemDefinition ore = OreVeinRegistry.OreAt(cell);
+        if (Inventory.Instance != null && ore != null && !Inventory.Instance.hasRoomFor(ore, 3))
+        {
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.DrawFlowupText("No room for ore", transform.position);
+            }
+            return true;   // handled: the press explained itself, and no turn was spent
+        }
+
+        if (!OreVeinRegistry.TryMine(cell, grid, RunState.Rng, out ore, out int yielded))
+        {
+            return false;
+        }
+
+        int leftover = Inventory.Instance != null ? Inventory.Instance.addItem(ore, yielded) : 0;
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.DrawFlowupText(leftover > 0 ? $"Inventory full ({leftover} lost)" : $"+{yielded} {ore.DisplayName}",
+                transform.position);
+        }
+        if (leftover > 0)
+        {
+            Debug.LogWarning($"[MINE] {leftover} x {ore.DisplayName} did not fit and were lost.");
+        }
+
+        ConsumeTurn(TurnAction.MineOre);
+        return true;
     }
 
     /// <summary>

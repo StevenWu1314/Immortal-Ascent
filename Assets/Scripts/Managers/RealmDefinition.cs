@@ -19,4 +19,7 @@ public class RealmDefinition : ScriptableObject
 
     [Tooltip("How this realm's enemies notice the player (GDD 13.4). Plains is room-wide.")]
     public AggroMode aggroMode = AggroMode.RoomWide;
+
+    [Tooltip("The metal ore veins in this realm yield (GDD 12.2). Plains is Iron Ore.")]
+    public ItemDefinition metal;
 }

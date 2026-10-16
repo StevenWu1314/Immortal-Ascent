@@ -100,3 +100,56 @@ built or split out, and the explicit note that the epic list is intentionally em
 
 Blueprints, the journal, permanent unlocks (M2/M3). Weapon stat requirements. Rune sources and rune
 crafting. Desert and tundra material tables.
+
+## Outcome (implemented)
+
+- **Material drops are data.** `MaterialDropTable` (ScriptableObject) holds `(material, chancePercent,
+  min, max)` entries and rolls against the run's seeded generator, so a seed pins exact outcomes.
+  `EnemyDrops` finds the table for an enemy by name under `Resources/DropTables` (a `(Clone)` suffix is
+  ignored), so no prefab reference needs wiring and a new enemy type is pure data. `Enemy.Kill(awardLoot)`
+  rolls it after the existing `LootGen` roll.
+- **The tables themselves are authored, not hand-written**: `Tools/Content/Create Material Drop Tables`
+  creates `DropTables/Pig_yao`, `Spider_yao` and `Jing_yao` from the material assets, with the percentages
+  GDD 13.7 asks for (Tusk 30% / Skin 30%; Silk 40%; Silk 15% / Iron 20%). Missing materials are reported
+  rather than silently dropped from the table.
+- **Ore veins are the primary material source** (GDD 5.5): terrain `7` (solid, like an unopened chest) plus
+  an `OreVeinRegistry` entry holding the realm's metal (`RealmDefinition.metal`; the built-in Plains fallback
+  loads Iron so veins appear before anyone runs the content menu). `TilePlacer.generateOreVeins` places 2-4
+  per floor on free interior cells, never the spawn cell, a chest, a web or another vein. Mining is `E`
+  adjacent, costs one turn, yields 1-3, and depletion performs the chest path's **two writes**.
+  `TryMineAdjacentVein` is public so the PlayDriver and tests drive the real path.
+- **Arrows are a count, not stacks** (GDD 12.5): `PlayerStats.Arrows` with `AddArrows`/`TryConsumeArrow` and
+  a `startingArrows` field for the prefab; `ArrowEconomy.ArrowsFromOre` is the 1 ore = 10 arrows conversion.
+  Aim mode is refused with feedback at zero arrows, and `shoot` spends the arrow before damage so a shot can
+  never be unpaid. `FindArrowDefinition` is gone.
+- **Chests keep what did not fit** (GDD 12.7): leftovers stay in the chest, which is therefore *not* marked
+  opened, stays registered, stays solid, and can be reopened once there is room. Equipment leftovers keep
+  their instance, so inscriptions are never lost.
+- **LootGen never hands out equipment** (GDD 12.3): `TryGive` refuses a Weapon or Armour pick with a warning,
+  whatever the serialized pools say.
+- Overflow is *reported* everywhere (`addItem` already returned the leftover): a mine refuses before taking
+  ore out of the vein when it could not all fit, a corpse drop warns and loses the excess.
+
+### Checkpoint answers
+
+- **Loot tables:** not rebuilt as `LootTable` assets. `LootGen`'s serialized pools already do the job, and
+  the substantive requirement - never equipment - is now enforced in `LootGen.TryGive` with a test-visible
+  guard. Creating a parallel `LootTable` SO would have been a second source of truth for the same pools.
+- **Epic list:** intentionally empty, and no blueprint items were invented. M1 has no blueprints (they are
+  M2/M3), so nothing was added to fill the tier.
+- **Ground drops: split out, not built.** This is the plan's sanctioned split. The consequence is explicit:
+  an enemy drop that does not fit is warned about and lost, rather than falling on the floor to be picked up.
+  Chest leftovers are the exception - they are retained. `GroundItems` (walk over to pick up, free action)
+  remains its own task.
+- **Recipes (note 5) are not applied.** They live inside `ItemDefinition` assets, which are editor-authored
+  YAML that must not be hand-edited; see the follow-up list handed to the designer.
+
+### Verified
+
+EditMode 85/85 (material drop rolls, arrow economy, ore veins, inventory overflow); PlayMode 16/16 - the two
+new ones mine a vein (one turn, ore in the inventory, depletion opens the cell) and prove a chest keeps its
+leftovers while full and hands them over once there is room.
+
+Not verified through the bridge: `ChestWalkability`, `OpenRealChest` and `PlayDriver.OpenAdjacentChest` want
+the editor open, and it would not start this session. The chest hand-over path is covered by the PlayMode
+test above, which drives `Chest.Open` directly.

@@ -78,6 +78,26 @@ public abstract class Enemy : MonoBehaviour
             {
                 LootGen.Instance.rollTable();
             }
+
+            // Per-type materials (GDD 12.2/13.7). Overflow is reported rather than silently destroyed;
+            // ground drops are not built yet, which T06's checkpoint records.
+            if (Inventory.Instance != null)
+            {
+                int leftover = EnemyDrops.Award(gameObject.name, Inventory.Instance, RunState.Rng, out string report);
+                if (!string.IsNullOrEmpty(report))
+                {
+                    Debug.Log($"[LOOT] {gameObject.name} dropped {report}");
+                }
+                if (leftover > 0)
+                {
+                    Debug.LogWarning($"[LOOT] {leftover} unit(s) did not fit and were lost.");
+                    if (UIManager.Instance != null && PlayerStats.Instance != null)
+                    {
+                        UIManager.Instance.DrawFlowupText($"Inventory full ({leftover} lost)",
+                            PlayerStats.Instance.transform.position);
+                    }
+                }
+            }
         }
         Destroy(gameObject);
     }

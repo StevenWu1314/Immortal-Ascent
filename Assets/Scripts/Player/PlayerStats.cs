@@ -56,6 +56,35 @@ public class PlayerStats : MonoBehaviour{
 
     /// <summary>This entity's statuses; Root lives here. The HUD indicator reads it (T08).</summary>
     public StatusController Statuses => statuses;
+
+    [Tooltip("Arrows the player starts a run with. Arrows are a count, not item stacks (T06).")]
+    [SerializeField] private int startingArrows;
+
+    /// <summary>
+    /// The quiver (GDD 12.5/12.7): a count rather than item stacks, so ten arrows are one number instead of
+    /// ten slots. The HUD shows it (T08) and the crafting recipe tops it up.
+    /// </summary>
+    public int Arrows { get; private set; }
+
+    public void AddArrows(int amount)
+    {
+        if (amount > 0)
+        {
+            Arrows += amount;
+        }
+    }
+
+    /// <summary>Spend one arrow for a shot. False when the quiver is empty, so nothing is fired.</summary>
+    public bool TryConsumeArrow()
+    {
+        if (Arrows <= 0)
+        {
+            return false;
+        }
+        Arrows--;
+        return true;
+    }
+
     [SerializeField] Image HealthBar;
     [SerializeField] Image ExpBar;
 
@@ -88,6 +117,7 @@ public class PlayerStats : MonoBehaviour{
         }
         Instance = this;
         spriteRenderer = GetComponent<SpriteRenderer>();
+        Arrows = Mathf.Max(0, startingArrows);
 
         statuses = GetComponent<StatusController>();
         if (statuses == null)

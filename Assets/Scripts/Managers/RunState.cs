@@ -19,6 +19,7 @@ public static class RunState
     private static RunSequence sequence;
     private static RealmDefinition[] realms;
     private static int runSeed;
+    private static System.Random rng;
     private static bool hasStairs;
     private static Vector2Int stairsCell;
 
@@ -32,6 +33,15 @@ public static class RunState
 
     /// <summary>How this realm's enemies notice the player (GDD 13.4).</summary>
     public static AggroMode EnemyAggroMode => CurrentRealm != null ? CurrentRealm.aggroMode : AggroMode.RoomWide;
+
+    /// <summary>This realm's metal for ore veins, or null when the realm defines none.</summary>
+    public static ItemDefinition Metal => CurrentRealm != null ? CurrentRealm.metal : null;
+
+    /// <summary>
+    /// The run's seeded random source. Loot, material drops and ore yields all roll here, so a test can pin
+    /// a seed and assert exact outcomes instead of sampling a distribution.
+    /// </summary>
+    public static System.Random Rng => rng ?? (rng = new System.Random(runSeed));
 
     /// <summary>1-based, for the HUD. Storage stays 0-based.</summary>
     public static int DisplayFloor => FloorIndex + 1;
@@ -75,6 +85,9 @@ public static class RunState
         plains.realmIndex = 0;
         plains.displayName = "Plains";
         plains.floorsInRealm = 2;
+        plains.aggroMode = AggroMode.RoomWide;
+        // Iron ships with the project, so ore veins appear before anyone has run the content menu item.
+        plains.metal = Resources.Load<ItemDefinition>("ItemDefinitions/Materials/Iron");
         return plains;
     }
 
@@ -83,6 +96,7 @@ public static class RunState
     {
         realms = null;
         runSeed = seed;
+        rng = new System.Random(seed);
 
         RealmDefinition[] all = Realms;
         int[] floors = new int[all.Length];

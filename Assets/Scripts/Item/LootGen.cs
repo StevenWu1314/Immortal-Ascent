@@ -84,6 +84,14 @@ public class LootGen : MonoBehaviour
             return false;
         }
 
+        // GDD 12.3: chests and corpses never hand out weapons or armour, whatever the serialized pool says.
+        if (Inventory.IsEquipmentKind(pick))
+        {
+            Debug.LogWarning($"LootGen: {pick.DisplayName} is equipment; chest and corpse drops are " +
+                             "materials and consumables only (GDD 12.3). Skipping it.");
+            return false;
+        }
+
         int amount = Mathf.Max(1, dropAmount);
         int leftover = playerInventory.addItem(pick, amount);
         if (leftover > 0)

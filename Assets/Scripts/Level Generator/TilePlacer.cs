@@ -226,6 +226,45 @@ public class TilePlacer : MonoBehaviour
         return webCells;
     }
 
+    /// <summary>
+    /// Place 2-4 ore veins (terrain <see cref="OreVeinRegistry.OreCode"/>) on free cells. A vein is solid, so
+    /// it never lands on the spawn cell, a chest, a web or another vein.
+    /// </summary>
+    public List<Vector2Int> generateOreVeins(List<BoundsInt> roomsSpace, Grid grid, Vector2Int reservedCell,
+                                            int minVeins, int maxVeins)
+    {
+        List<Vector2Int> cells = new List<Vector2Int>();
+        if (roomsSpace == null || roomsSpace.Count == 0)
+        {
+            return cells;
+        }
+
+        int wanted = Random.Range(minVeins, maxVeins + 1);
+        TileBase marker = webTile != null ? webTile : bridgeTile;
+        int attempts = Mathf.Max(wanted * 8, 8);
+
+        while (cells.Count < wanted && attempts-- > 0)
+        {
+            BoundsInt room = roomsSpace[Random.Range(0, roomsSpace.Count)];
+            int x = Random.Range(room.xMin + 3, room.xMax - 3);
+            int y = Random.Range(room.yMin + 3, room.yMax - 3);
+            Vector2Int cell = new Vector2Int(x, y);
+            if (cell == reservedCell || grid.GetValueAtLocation(x, y) != 0)
+            {
+                continue;   // the spawn cell, a chest, a web or another vein
+            }
+
+            if (marker != null)
+            {
+                corridor.SetTile(new Vector3Int(x, y, 0), marker);
+            }
+            grid.SetValueAtLocation(x, y, OreVeinRegistry.OreCode);
+            cells.Add(cell);
+        }
+
+        return cells;
+    }
+
     public void fillWater(Grid grid)
     {
         for(int x = 0; x < grid.GetSize(0); x++)

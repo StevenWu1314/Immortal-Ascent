@@ -170,6 +170,23 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         {
             WebRegistry.Register(webCell);
         }
+
+        // Ore veins (T06) are the realm's metal, 2-4 to a floor. Like webs they have no objects to sweep, so
+        // the registry is cleared with the floor.
+        OreVeinRegistry.Reset();
+        ItemDefinition metal = RunState.Metal;
+        if (metal == null)
+        {
+            Debug.LogWarning("[GEN] the realm defines no metal; no ore veins were placed.");
+        }
+        else
+        {
+            foreach (Vector2Int veinCell in tilePlacer.generateOreVeins(roomsSpace, grid, spawnCell, 2, 4))
+            {
+                // The yield is rolled at generation time so a vein is finite, and so a save can hold it later.
+                OreVeinRegistry.Register(veinCell, metal, Random.Range(3, 9));
+            }
+        }
         // Corridors must span the gap between rooms (Rooms.distanceApart) plus enough to
         // punch through the neighbour's wall ring. A length shorter than the gap leaves the
         // corridor as a dead end and the player can never reach the next island.
