@@ -16,6 +16,16 @@ public class TilePlacer : MonoBehaviour
     /// so webs stay visible; real web art belongs to T09.
     /// </summary>
     public TileBase webTile;
+
+    /// <summary>
+    /// Marker drawn on an ore vein (T06). Its own field because a vein is not a web: without this, assigning
+    /// the web tile for web art also changed how every ore vein looked. Unassigned falls back to the web tile
+    /// and then the bridge tile, so veins stay visible either way.
+    ///
+    /// This is the Plains' iron ore marker. Per-realm ore art (desert, tundra) is M2 work - the realm's metal
+    /// lives in <see cref="RealmDefinition.metal"/>.
+    /// </summary>
+    public TileBase oreTile;
     public TileBase water;
     [SerializeField, Range(0f, 1f)] float flowerDensity;
 
@@ -240,7 +250,8 @@ public class TilePlacer : MonoBehaviour
         }
 
         int wanted = Random.Range(minVeins, maxVeins + 1);
-        TileBase marker = webTile != null ? webTile : bridgeTile;
+        // The ore tile first, then the generic markers, so an unassigned ore tile still shows something.
+        TileBase marker = oreTile != null ? oreTile : (webTile != null ? webTile : bridgeTile);
         int attempts = Mathf.Max(wanted * 8, 8);
 
         while (cells.Count < wanted && attempts-- > 0)
