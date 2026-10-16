@@ -138,7 +138,7 @@ T11 integration + full-run playtest + desktop builds   (after T10 and T09)
 
 | Task | File | Status |
 | --- | --- | --- |
-| T00 | [T00-tests-asmdef-build.md](T00-tests-asmdef-build.md) | not started |
+| T00 | [T00-tests-asmdef-build.md](T00-tests-asmdef-build.md) | **done** - EditMode 17/17, PlayMode 2/2, all diagnostics pass |
 | T01 | [T01-map-generation.md](T01-map-generation.md) | not started |
 | T02 | [T02-run-state-floors.md](T02-run-state-floors.md) | not started |
 | T03 | [T03-turn-state-machine.md](T03-turn-state-machine.md) | not started |
