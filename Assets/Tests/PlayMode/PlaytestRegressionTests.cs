@@ -108,6 +108,65 @@ public class PlaytestRegressionTests
         Assert.AreNotEqual(before, CellOf(roamer), "an unaware enemy should have wandered");
     }
 
+    [UnityTest]
+    public IEnumerator AnAdjacentEnemy_AttacksWhileThePlayerIsMidShake()
+    {
+        yield return DungeonSceneFixture.LoadAndWaitForGeneration();
+
+        Controls controls = DungeonSceneFixture.Player();
+        PlayerStats stats = PlayerStats.Instance;
+        GameObject player = controls.gameObject;
+
+        // Find an enemy with a free neighbouring cell, and stand the player there.
+        EnemyBehavior enemy = null;
+        Vector2Int spot = default;
+        Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+        foreach (EnemyBehavior candidate in Object.FindObjectsByType<EnemyBehavior>(FindObjectsSortMode.None))
+        {
+            Vector2Int cell = new Vector2Int(Mathf.FloorToInt(candidate.transform.position.x),
+                Mathf.FloorToInt(candidate.transform.position.y));
+            foreach (Vector2Int direction in directions)
+            {
+                Vector2Int neighbour = cell + direction;
+                if (!Grid.IsWalkableTerrain(Grid.Current.GetValueAtLocation(neighbour.x, neighbour.y)))
+                {
+                    continue;
+                }
+                if (IslandManager.GetIsland(neighbour) != IslandManager.GetIsland(cell))
+                {
+                    continue;
+                }
+                if (EntityManager.Instance.IsOccupied(neighbour))
+                {
+                    continue;
+                }
+                enemy = candidate;
+                spot = neighbour;
+                break;
+            }
+            if (enemy != null)
+            {
+                break;
+            }
+        }
+        Assert.IsTrue(enemy != null, "no enemy had a free neighbouring cell to stand the player on");
+
+        EntityManager.Instance.UnregisterEntity(player);
+        player.transform.position = new Vector3(spot.x, spot.y, player.transform.position.z);
+        EntityManager.Instance.RegisterEntity(player, spot);
+
+        // The hit shake writes transform.position: jitter x by -0.1 and the cell below is the one a
+        // FloorToInt read of the transform would return.
+        player.transform.position += new Vector3(-0.1f, 0f, 0f);
+
+        int healthBefore = stats.Health;
+        enemy.takeTurn();
+        yield return null;
+
+        Assert.Less(stats.Health, healthBefore,
+            "an adjacent enemy must attack even while the player's transform is mid-shake");
+    }
+
     private static Vector2Int CellOf(EnemyBehavior enemy)
     {
         return new Vector2Int(Mathf.FloorToInt(enemy.transform.position.x),

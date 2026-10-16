@@ -131,11 +131,11 @@ public class EnemyBehavior : MonoBehaviour
             return false;
         }
 
+        Vector2Int playerCell = PlayerCell();
         int playerIsland = IslandManager.IsInitialized
-            ? IslandManager.GetIsland(player.transform.position)
+            ? IslandManager.GetIsland(playerCell)
             : IslandManager.Unassigned;
-        bool hasSight = LineOfSight.HasClearShot(
-            grid, CellOf(transform.position), CellOf(player.transform.position));
+        bool hasSight = LineOfSight.HasClearShot(grid, CellOf(transform.position), playerCell);
 
         return Awareness.Notices(
             RunState.EnemyAggroMode,
@@ -144,6 +144,25 @@ public class EnemyBehavior : MonoBehaviour
             Vector3.Distance(transform.position, player.transform.position),
             detectionRadius,
             hasSight);
+    }
+
+    /// <summary>
+    /// The player's cell, taken from the entity registry rather than from its transform.
+    ///
+    /// The hit shake writes transform.position and jitters x by up to 0.1, which floors to the neighbouring
+    /// cell. An aware enemy then aimed one cell off and walked past the player instead of attacking, which is
+    /// what let the player land two hits before the enemy answered. Same rule the movement path already
+    /// follows for the same reason.
+    /// </summary>
+    protected Vector2Int PlayerCell()
+    {
+        if (player != null && EntityManager.Instance != null &&
+            EntityManager.Instance.TryGetCell(player, out Vector2Int registered))
+        {
+            return registered;
+        }
+
+        return player != null ? CellOf(player.transform.position) : CellOf(transform.position);
     }
 
     protected static Vector2Int CellOf(Vector3 position)
@@ -260,10 +279,7 @@ public class EnemyBehavior : MonoBehaviour
             Mathf.FloorToInt(transform.position.x),
             Mathf.FloorToInt(transform.position.y)
         );
-        Vector2Int playerCell = new Vector2Int(
-            Mathf.FloorToInt(player.transform.position.x),
-            Mathf.FloorToInt(player.transform.position.y)
-        );
+        Vector2Int playerCell = PlayerCell();
 
         Vector2Int[] steps = NextSteps(enemyCell, playerCell);
 
