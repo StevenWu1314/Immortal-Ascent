@@ -134,7 +134,6 @@ tundra realms. The boss entity, its AI and its drops (T10).
 EditMode 36/36 (14 new run-state tests); PlayMode 3/3 including descending (same player instance, exactly
 one player, islands rebuilt); every generation in the run reports `isolated=0` with every chest reachable.
 
-One caveat: in one intermediate run a generation reported `originWalkable=False` (spawn cell blocked). It
-did not reproduce afterwards and I could not explain it - `Grid.CellFromWorld` turned out to be pure
-`FloorToInt` and ignores the grid, so the obvious "wrong grid" theory is wrong. The reachability failure
-message now carries the player's world position, cell and terrain so the next occurrence diagnoses itself.
+One caveat, explained and fixed by T03: a single run reported `originWalkable=False` (spawn cell
+blocked). The extra context added to that message is what identified it - a chest had been generated on
+the player's spawn cell. See T03's "A T02 mystery resolved".

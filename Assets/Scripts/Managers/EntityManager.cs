@@ -34,49 +34,39 @@ public class EntityManager : MonoBehaviour
         entityGrid[cell] = entity;
     }
 
-    /// <summary> Move entity from one cell to another. </summary>
     /// <summary>
-    /// Move <paramref name="entity"/> from oldCell to newCell, resolving a melee bump when newCell is
-    /// taken by a player and an enemy. Returns false when the registry did not have the entity in
-    /// oldCell at all, which means the caller and the registry disagree about where it is.
+    /// Move <paramref name="entity"/> from oldCell to newCell. Returns false when the registry did not
+    /// have the entity in oldCell at all, which means the caller and the registry disagree about where
+    /// it is - or when newCell is occupied.
+    ///
+    /// Occupancy is a collision, not combat: the caller decides what stepping into an entity means (the
+    /// player bump-attacks, an enemy declines). Combat used to be resolved in here, which made this
+    /// registry the owner of an action-economy decision.
     /// </summary>
     public bool MoveEntity(GameObject entity, Vector2Int oldCell, Vector2Int newCell)
     {
-        if (entityGrid.TryGetValue(oldCell, out var occupant) && occupant == entity)
+        if (!entityGrid.TryGetValue(oldCell, out var occupant) || occupant != entity)
         {
-            if (entityGrid.ContainsKey(newCell))
-            {
-                Debug.Log($"initiating combat between {occupant} and {entityGrid[newCell].name}");
-                if (entity.GetComponent<PlayerStats>() != null)
-                {
-                    entityGrid.TryGetValue(newCell, out var enemy);
-                    if (enemy.GetComponent<Enemy>() != null)
-                        if(entity.GetComponent<Controls>().swordDrawn)
-                            entity.GetComponent<PlayerStats>().attack("melee", enemy.GetComponent<Enemy>());
-                        else
-                        {
-                            Debug.Log("You do not have a sword drawn");
-                        }
-                }
-            }
-            else
-            {
-                entityGrid.Remove(oldCell);
-                entityGrid[newCell] = entity;
-                // Assign the cell position outright instead of adding a delta. The transform must end
-                // up exactly where the registry says it is: accumulating deltas preserved any residue
-                // (a hit shake leaves up to 0.1), and since an integer position is a cell corner,
-                // FloorToInt would then report the previous cell. The old += also doubled z every step
-                // because the z term was the position's own z.
-                entity.transform.position = new Vector3(newCell.x, newCell.y, entity.transform.position.z);
-            }
-            return true;
+            // An invariant violation, not a routine miss: it means the caller's idea of the entity's
+            // cell has drifted from the registry's.
+            Debug.LogWarning($"MoveEntity: {entity.name} is not registered in {oldCell}; move to {newCell} ignored.");
+            return false;
         }
 
-        // An invariant violation, not a routine miss: it means the caller's idea of the entity's cell
-        // has drifted from the registry's.
-        Debug.LogWarning($"MoveEntity: {entity.name} is not registered in {oldCell}; move to {newCell} ignored.");
-        return false;
+        if (entityGrid.ContainsKey(newCell))
+        {
+            return false;
+        }
+
+        entityGrid.Remove(oldCell);
+        entityGrid[newCell] = entity;
+        // Assign the cell position outright instead of adding a delta. The transform must end
+        // up exactly where the registry says it is: accumulating deltas preserved any residue
+        // (a hit shake leaves up to 0.1), and since an integer position is a cell corner,
+        // FloorToInt would then report the previous cell. The old += also doubled z every step
+        // because the z term was the position's own z.
+        entity.transform.position = new Vector3(newCell.x, newCell.y, entity.transform.position.z);
+        return true;
     }
 
     /// <summary> Unregister entity completely. </summary>

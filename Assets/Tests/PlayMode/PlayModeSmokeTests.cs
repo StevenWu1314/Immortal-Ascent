@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
 /// <summary>
@@ -25,9 +24,6 @@ using UnityEngine.TestTools;
 /// </summary>
 public class PlayModeSmokeTests
 {
-    private const string DungeonSceneName = "Branching dungeon";
-    private const float GenerationTimeoutSeconds = 20f;
-
     [UnityTest]
     public IEnumerator RuntimeGridAndIslandRules_RunInPlayMode()
     {
@@ -93,7 +89,7 @@ public class PlayModeSmokeTests
     [UnityTest]
     public IEnumerator DungeonScene_GeneratesLevel_WithIslandsAndARegisteredPlayer()
     {
-        yield return LoadDungeonAndWaitForGeneration();
+        yield return DungeonSceneFixture.LoadAndWaitForGeneration();
 
         Assert.IsNotNull(EntityManager.Instance, "EntityManager is missing from the scene");
         Assert.IsNotNull(PlayerStats.Instance, "PlayerStats is missing; the player prefab did not spawn");
@@ -128,7 +124,7 @@ public class PlayModeSmokeTests
     [UnityTest]
     public IEnumerator AdvancingTheFloor_RebuildsTheLevel_WithExactlyOnePlayer()
     {
-        yield return LoadDungeonAndWaitForGeneration();
+        yield return DungeonSceneFixture.LoadAndWaitForGeneration();
 
         Assert.IsTrue(RunState.HasRun, "entering the dungeon scene should start a run");
         Assert.AreEqual(0, RunState.FloorIndex, "a fresh run starts on floor 0");
@@ -161,22 +157,35 @@ public class PlayModeSmokeTests
             "descending must keep the same player, so health, level and inventory carry over");
     }
 
-    /// <summary>Load the real dungeon scene and wait until its generator has built a floor.</summary>
-    private IEnumerator LoadDungeonAndWaitForGeneration()
+    /// <summary>
+    /// The chest pass used to be able to drop a chest (terrain 99, solid) on the cell the player spawns
+    /// on, which left the player standing in blocked terrain and made the whole floor report as
+    /// unreachable from the spawn. It hit roughly one floor in thirty, so this walks 30 seeded floors.
+    /// </summary>
+    [UnityTest]
+    public IEnumerator GeneratedFloors_NeverPutAChestUnderThePlayer()
     {
-        SceneManager.LoadScene(DungeonSceneName, LoadSceneMode.Single);
-        yield return null;
+        yield return DungeonSceneFixture.LoadAndWaitForGeneration();
 
-        float deadline = Time.realtimeSinceStartup + GenerationTimeoutSeconds;
-        while ((Grid.Current == null || !IslandManager.IsInitialized) && Time.realtimeSinceStartup < deadline)
+        RoomFirstDungeonGenerator generator =
+            Object.FindFirstObjectByType<RoomFirstDungeonGenerator>();
+        Assert.IsTrue(generator != null, "the dungeon scene should have a generator");
+
+        for (int i = 0; i < 30; i++)
         {
+            int seed = 1000 + i;
+            RunState.BeginRun(seed);
+            generator.generateBranchingDungeon(RunState.IsBossFloor);
             yield return null;
-        }
 
-        Assert.IsNotNull(Grid.Current,
-            $"Grid.Current is null after {GenerationTimeoutSeconds}s - generation did not run in '{DungeonSceneName}'");
-        Assert.IsTrue(IslandManager.IsInitialized,
-            "IslandManager was never rebuilt; generation did not complete");
+            Vector2Int cell;
+            bool registered = EntityManager.Instance.TryGetCell(PlayerStats.Instance.gameObject, out cell);
+            Assert.IsTrue(registered, $"floor seed {seed} left the player unregistered");
+
+            int terrain = Grid.Current.GetValueAtLocation(cell.x, cell.y);
+            Assert.IsTrue(Grid.IsWalkableTerrain(terrain),
+                $"floor seed {seed} left the player standing on terrain {terrain} at {cell}");
+        }
     }
 
     /// <summary>Distinct island ids over the walkable terrain: one per room, corridors excluded.</summary>

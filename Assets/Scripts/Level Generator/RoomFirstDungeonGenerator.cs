@@ -124,6 +124,7 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
             minRoomsPerFloor, maxRoomsPerFloor, gridSize, bossFloor);
         List<BoundsInt> roomsSpace = new List<BoundsInt>();
         int startingRoomIndex = -1;
+        Vector2Int spawnCell = default;
         for (int i = 0; i < rooms.Count; i++)
         {
             roomsSpace.Add(rooms[i].body);
@@ -143,7 +144,8 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
                 }
 
                 instance.GetComponent<Controls>().grid = grid;
-                EntityManager.Instance.RegisterEntity(instance, new Vector2Int((int) rooms[i].body.center.x, (int) rooms[i].body.center.y));
+                spawnCell = new Vector2Int((int) rooms[i].body.center.x, (int) rooms[i].body.center.y);
+                EntityManager.Instance.RegisterEntity(instance, spawnCell);
                 spawnedPlayer = instance;
             }
             
@@ -151,6 +153,15 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
         
         tilePlacer.PlaceTiles(roomsSpace, grid);
         List<Vector2Int> chestCells = tilePlacer.generateLootTiles(roomsSpace, grid);
+
+        // A chest on the spawn cell is solid terrain (99) underneath the player, which made the whole
+        // floor read as unreachable from the spawn - the "isolated, chest walled in" report that showed
+        // up on roughly one floor in thirty. The loot pass does not know where the player stands, so the
+        // cell is reserved here. Its floor tile stays; only the chest terrain and the chest go.
+        if (chestCells.Remove(spawnCell))
+        {
+            grid.SetValueAtLocation(spawnCell.x, spawnCell.y, 0);
+        }
         // Corridors must span the gap between rooms (Rooms.distanceApart) plus enough to
         // punch through the neighbour's wall ring. A length shorter than the gap leaves the
         // corridor as a dead end and the player can never reach the next island.

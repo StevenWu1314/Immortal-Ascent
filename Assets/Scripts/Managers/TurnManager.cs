@@ -15,6 +15,9 @@ public class TurnManager : MonoBehaviour
     [Tooltip("Gap between enemies, so the player can follow who moved.")]
     [SerializeField] private float turnStepDelay = 0.05f;
 
+    /// <summary>The enemy phase is in flight. See <see cref="IsEnemyPhaseRunning"/>.</summary>
+    private bool phaseRunning;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -68,13 +71,23 @@ public class TurnManager : MonoBehaviour
 
     public void callTaketurn(Controls controls)
     {
-        // Never return early from here: Controls has already set takingTurn, and the
-        // finally block in TakeTurns is the only place that releases it. An early return
-        // would lock the player out of every future input.
-        // Typed call, not StartCoroutine("TakeTurns"): a string name is resolved by reflection, is
-        // slower, silently does nothing if the method is renamed, and cannot be stopped by handle.
+        // Single-flight. A second phase used to start while the first was still running (entering aim
+        // mode raised the event), and the first coroutine's finally then released the input lock
+        // underneath the second one - so the player could act twice in a round.
+        if (phaseRunning)
+        {
+            return;
+        }
+
+        // The flag is a bool rather than the Coroutine handle on purpose: StartCoroutine runs the body
+        // synchronously up to its first yield, and an empty queue never yields at all - so the phase can
+        // finish before an assignment to a handle would happen, leaving a handle for a dead coroutine.
+        phaseRunning = true;
         StartCoroutine(TakeTurns());
     }
+
+    /// <summary>True while an enemy phase is in flight. The input lock is takingTurn; this is the guard.</summary>
+    public bool IsEnemyPhaseRunning => phaseRunning;
     public void OnDestroy()
     {
         Controls.onMoveEvent -= callTaketurn;
@@ -113,6 +126,10 @@ public class TurnManager : MonoBehaviour
         }
         finally
         {
+            // Only the owning phase clears this, and only once the queue has drained, so the input
+            // lock lives exactly as long as the enemy phase does.
+            phaseRunning = false;
+
             // The player input lock must always be released, even when an enemy throws.
             if (PlayerStats.Instance != null)
             {

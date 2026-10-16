@@ -13,7 +13,6 @@ public class Controls : MonoBehaviour
     public Grid grid;
     Vector2Int direction;
     bool aiming = false;
-    public bool swordDrawn = true;
     [SerializeField] private float moveCooldown = 0.1f;
     [SerializeField] private float runningCooldown = 0;
     [SerializeField] public bool MenuIsOpen;
@@ -21,6 +20,9 @@ public class Controls : MonoBehaviour
     public TMP_Text positionDisplay;
 
     public bool takingTurn;
+
+    /// <summary>True while the bow is drawn. Selecting a weapon is free; only firing costs a turn.</summary>
+    public bool IsAiming => aiming;
 
     [SerializeField] GameObject shotArrow;
 
@@ -82,9 +84,9 @@ public class Controls : MonoBehaviour
         {
             SetBowSprite(true);
 
-            // Leaving aim mode must always be possible, independently of the turn lock,
-            // so a failed shot can never strand the player in aiming mode.
-            if (Input.GetKeyDown(KeyCode.Alpha2))
+            // Leaving aim mode must always be possible, independently of the turn lock, so a failed
+            // shot can never strand the player in aiming mode. Key 1 selects melee, key 2 the bow.
+            if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Alpha1))
             {
                 LeaveAimMode();
                 return;
@@ -100,14 +102,16 @@ public class Controls : MonoBehaviour
 
                 if (target != null)
                 {
-                    shoot(target, cellCenter);
-                    runningCooldown = 0.5f;
-                    // Stay in aiming mode so the player can keep firing; re-paint the
-                    // preview, which also clears the highlight left on the old cursor cell.
-                    lastAimCell = clickCell;
-                    RefreshAimOverlay();
-                    takingTurn = true;
-                    onMoveEvent(this);   // resolve the shot, then let enemies act
+                    // Only a shot that actually left the bow costs a turn; an empty quiver is a no-op.
+                    if (shoot(target, cellCenter))
+                    {
+                        runningCooldown = 0.5f;
+                        // Stay in aiming mode so the player can keep firing; re-paint the
+                        // preview, which also clears the highlight left on the old cursor cell.
+                        lastAimCell = clickCell;
+                        RefreshAimOverlay();
+                        ConsumeTurn(TurnAction.BowShot);
+                    }
                 }
                 else
                 {
@@ -140,65 +144,19 @@ public class Controls : MonoBehaviour
 
             if (direction != Vector2Int.zero)
             {
-                takingTurn = true;
-                onMoveEvent(this);
+                // The cooldown paces a held key. Whether the step costs a turn is TryMove's decision,
+                // and a step that was refused is free.
                 runningCooldown = moveCooldown;
-
-                // Ask the registry where the player is rather than rounding transform.position.
-                // The damage shake moves the transform, and a cell that disagrees with the
-                // registry made MoveEntity drop the move entirely.
-                Vector2Int currentCell;
-                if (EntityManager.Instance == null ||
-                    !EntityManager.Instance.TryGetCell(gameObject, out currentCell))
-                {
-                    // Not registered (or no registry): fall back to the transform.
-                    currentCell = Vector2Int.FloorToInt(transform.position);
-                }
-                Vector2Int nextCell = currentCell + direction;
-
-                // Island rule: while inside a room that still holds enemies you may not step
-                // outside that room. Corridors themselves are never gated, so once the room is
-                // clear you can walk out and choose the next one.
-                //
-                // The registry cell is passed as a world position on purpose: CanMoveTo rounds
-                // its argument, and transform.position can be mid-shake.
-                Vector3 currentWorld = new Vector3(currentCell.x, currentCell.y, 0f);
-                if (!IslandManager.CanMoveTo(currentWorld, nextCell))
-                {
-                    UIManager.Instance.DrawFlowupText(IslandManager.DescribeBlock(currentWorld), currentWorld);
-                    direction = Vector2Int.zero;
-                    return;
-                }
-
-                // Terrain is checked from the registry cell for the same reason currentCell is:
-                // Grid.Move rounds its position, and the hit shake leaves transform.position up to
-                // 0.1 off the cell, which is enough to round to a neighbour.
-                if (grid != null && grid.Move(currentWorld, direction))
-                {
-                    EntityManager.Instance.MoveEntity(this.gameObject, currentCell, nextCell);
-                    // Only report the destination once the move actually happened.
-                    positionDisplay.text = $"{nextCell}";
-                }
-                else
-                {
-                    // Terrain blocked the step. Use Tools > Diagnose Map Walkability to
-                    // inspect the grid values around the player if this is unexpected.
-                }
-                direction = Vector2Int.zero;
-
-                // Fog reveal for the cell the player just stepped into. The 3-argument grid.Move
-                // block that sat here was a merge artifact from the fog branch: it duplicated the
-                // movement above, ran after `direction` was zeroed, and had no matching overload.
-                if (FogManager.Instance != null)
-                {
-                    FogManager.Instance.DiscoveredTiles(nextCell);
-                }
-                
+                TryMove(direction);
             }
 
             if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 TryEnterAimMode();
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                LeaveAimMode();
             }
 
             // An unopened chest is solid terrain, so the player can only ever be next to one.
@@ -227,6 +185,109 @@ public class Controls : MonoBehaviour
             return cell;
         }
         return Vector2Int.FloorToInt(transform.position);
+    }
+
+    /// <summary>
+    /// Take one step, or attack an enemy standing in the destination cell. Returns true when the action
+    /// happened at all.
+    ///
+    /// A refused step is free: no turn event, no enemy phase, no status tick. That is the whole point -
+    /// wall bumps and gated exits used to consume a turn because the event was raised before anything
+    /// was validated.
+    ///
+    /// Public because this is the entire movement path: <see cref="Update"/> feeds it the keys and the
+    /// editor PlayDriver drives it, so both exercise the same validation.
+    /// </summary>
+    public bool TryMove(Vector2Int direction)
+    {
+        if (direction == Vector2Int.zero)
+        {
+            return false;
+        }
+
+        // The registry cell, not the transform: the damage shake moves the transform up to 0.1, which
+        // is enough to round to a neighbouring cell.
+        Vector2Int currentCell = PlayerCell();
+        Vector2Int nextCell = currentCell + direction;
+        // IslandManager rounds its argument, and transform.position can be mid-shake, so the registry
+        // cell is passed as a world position.
+        Vector3 currentWorld = new Vector3(currentCell.x, currentCell.y, 0f);
+
+        bool islandAllows = IslandManager.CanMoveTo(currentWorld, nextCell);
+        bool terrainWalkable = grid != null && grid.Move(currentWorld, direction);
+        if (!TurnRules.IsMovementAllowed(terrainWalkable, islandAllows, rooted: false))
+        {
+            // Only the island gate explains itself; being blocked by a wall needs no caption.
+            if (!islandAllows && UIManager.Instance != null)
+            {
+                UIManager.Instance.DrawFlowupText(IslandManager.DescribeBlock(currentWorld), currentWorld);
+            }
+            return false;
+        }
+
+        // An enemy in the destination is attacked, not walked into. This used to live inside
+        // EntityManager.MoveEntity, which made the registry the owner of an action-economy decision.
+        GameObject occupant = EntityManager.Instance != null ? EntityManager.Instance.GetEntityAt(nextCell) : null;
+        Enemy enemy = occupant != null ? occupant.GetComponent<Enemy>() : null;
+        if (enemy != null)
+        {
+            if (Equipments.Instance == null || Equipments.Instance.meleeWeapon == null)
+            {
+                if (UIManager.Instance != null)
+                {
+                    UIManager.Instance.DrawFlowupText("No melee weapon equipped", transform.position);
+                }
+                return false;   // nothing happened, so it costs nothing
+            }
+
+            playerStats.attack("melee", enemy);
+            ConsumeTurn(TurnAction.MeleeAttack);
+            return true;
+        }
+
+        if (EntityManager.Instance == null ||
+            !EntityManager.Instance.MoveEntity(gameObject, currentCell, nextCell))
+        {
+            return false;
+        }
+
+        // Only report the destination once the move actually happened.
+        positionDisplay.text = $"{nextCell}";
+
+        // Fog reveal for the cell the player just stepped into. Guarded: FogManager ships with no
+        // scene object, so an unguarded call threw on every move.
+        if (FogManager.Instance != null)
+        {
+            FogManager.Instance.DiscoveredTiles(nextCell);
+        }
+
+        // Free movement out of combat: while no living enemy shares the room, travelling costs nothing.
+        if (IsTurnBasedHere())
+        {
+            ConsumeTurn(TurnAction.Move);
+        }
+        return true;
+    }
+
+    /// <summary>True while a living enemy shares the player's room (GDD 6.1).</summary>
+    private bool IsTurnBasedHere()
+    {
+        int island = IslandManager.GetIsland(PlayerCell());
+        return TurnRules.IsTurnBased(island, IslandManager.CountLivingEnemies(island));
+    }
+
+    /// <summary>
+    /// End the player's action: lock input and let the turn pipeline run. Only a real action reaches
+    /// here, and the table is the guard, so a free action can never sneak an enemy phase in.
+    /// </summary>
+    private void ConsumeTurn(TurnAction action)
+    {
+        if (!TurnRules.ConsumesTurn(action))
+        {
+            return;
+        }
+        takingTurn = true;
+        onMoveEvent(this);
     }
 
     /// <summary>
@@ -426,8 +487,10 @@ public class Controls : MonoBehaviour
         {
             bowIndicator.SetActive(true);
         }
+        // Free: entering aim mode ends no turn, locks no input and lets no enemy act. It used to raise
+        // the turn event, which handed the enemies a free round while leaving input unlocked - so the
+        // player could act again during that phase and two enemy phases could run at once.
         aiming = true;
-        onMoveEvent(this);
         lastAimCell = MouseCell();
         rangeOverlay.ShowOverlay();
         

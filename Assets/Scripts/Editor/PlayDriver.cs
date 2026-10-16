@@ -385,67 +385,24 @@ public static class PlayDriver
         }
 
         Vector2Int to = from + direction;
-        Vector3 fromWorld = new Vector3(from.x, from.y, 0f);
 
-        if (!IslandManager.CanMoveTo(fromWorld, to))
+        // Drive the same path the keyboard drives: TryMove validates the island gate and the terrain,
+        // resolves a bump-attack and decides the turn cost. The driver used to reimplement those checks
+        // and call MoveEntity directly, which stopped resolving melee the moment combat left the registry.
+        if (!controls.TryMove(direction))
         {
-            Debug.Log($"{Tag} island gate blocks {from} -> {to}: {IslandManager.DescribeBlock(fromWorld)}");
+            Debug.Log($"{Tag} {from} -> {to} refused (island gate or terrain); nothing consumed.");
             return;
         }
-
-        Grid grid = Grid.Current;
-        if (grid == null)
-        {
-            Debug.LogError($"{Tag} Grid.Current is null.");
-            return;
-        }
-        if (!grid.Move(fromWorld, direction))
-        {
-            Debug.Log($"{Tag} terrain blocks {from} -> {to} " +
-                      $"(grid={grid.GetValueAtLocation(to.x, to.y)}).");
-            return;
-        }
-
-        // This is the step that resolves melee: MoveEntity attacks when the target cell holds an
-        // enemy, and otherwise moves the transform itself.
-        EntityManager.Instance.MoveEntity(controls.gameObject, from, to);
-
-        // A real key press locks input first, then raises the event; the turn pipeline's finally
-        // block is what clears takingTurn again.
-        controls.takingTurn = true;
-        RaiseMoveEvent(controls);
 
         int health = ReadHealth(PlayerStats.Instance);
         Vector3 pose = controls.transform.position;
-        Vector2Int derived = Grid.CellFromWorld(pose);
-        Debug.Log($"{Tag} stepped {from} -> {to} hp={health} str={PlayerStats.Instance.Strength} " +
-                  $"island={IslandManager.GetIsland(to)} enemies={CountEnemies()} " +
+        Vector2Int poseCell = Grid.CellFromWorld(pose);
+        Debug.Log($"{Tag} {(poseCell == to ? "stepped" : $"stayed at {poseCell} (attacked)")} {from} -> {to} " +
+                  $"hp={health} str={PlayerStats.Instance.Strength} " +
+                  $"island={IslandManager.GetIsland(poseCell)} enemies={CountEnemies()} " +
                   $"pos=({pose.x:R},{pose.y:R}) " +
-                  $"derived={(derived == to ? "ok" : derived.ToString())}");
-    }
-
-    /// <summary>
-    /// Controls.onMoveEvent is a field-like static event, so only Controls can raise it. Reach the
-    /// compiler-generated backing field so the real subscribers (TurnManager, every EnemyBehavior)
-    /// run exactly as they do for a key press.
-    /// </summary>
-    private static void RaiseMoveEvent(Controls controls)
-    {
-        FieldInfo field = typeof(Controls).GetField("onMoveEvent",
-            BindingFlags.Static | BindingFlags.NonPublic);
-        if (field == null)
-        {
-            Debug.LogError($"{Tag} Controls.onMoveEvent backing field not found.");
-            return;
-        }
-
-        var handler = field.GetValue(null) as System.Action<Controls>;
-        if (handler == null)
-        {
-            Debug.Log($"{Tag} no onMoveEvent subscribers.");
-            return;
-        }
-        handler.Invoke(controls);
+                  $"derived={(poseCell == to ? "ok" : poseCell.ToString())}");
     }
 
     /// <summary>Play mode, a player, and a registry cell for it. </summary>

@@ -100,3 +100,56 @@ sword/bow. Ask the designer to playtest before the commit — feel regressions h
 ## Out of scope
 
 Enemy awareness, roaming and line of sight (T04). Statuses other than the hook parameter (T05). Pathfinding.
+
+## Outcome (implemented)
+
+- `TurnRules` (pure): `IsTurnBased(islandId, livingEnemies)` - a living enemy in the player's room;
+  `ConsumesTurn(action)`; `IsMovementAllowed(terrain, island, rooted)`, with `rooted` left as the T05 hook.
+- The table as implemented:
+
+| Action | Costs a turn |
+| --- | --- |
+| Move | yes, while an enemy shares the room |
+| Melee attack / bow shot | yes, when the action actually lands |
+| Use item / place torch / mine ore | yes (the call sites arrive with T05/T06) |
+| Open chest / equip / apply rune / craft / level up | no |
+| Enter or leave aim mode | no |
+
+- `Controls.TryMove(direction)` is now the whole movement path - `Update` feeds it the keys and
+  `PlayDriver` drives it: validate, resolve, then consume. A refused step moves nothing and raises nothing.
+- Bump-attack moved out of `EntityManager.MoveEntity` into `TryMove`: an enemy in the destination is
+  attacked with the equipped melee weapon and that costs the turn; without a melee weapon it is a free
+  no-op. `MoveEntity` now only moves, and refuses an occupied destination.
+- `onMoveEvent` has exactly one raiser, `Controls.ConsumeTurn`, which consults the table first. That is
+  what makes a free action structurally unable to start an enemy phase.
+- `TurnManager` is single-flight (`IsEnemyPhaseRunning`) and the phase owns the input lock. The flag is a
+  bool rather than the coroutine handle on purpose: `StartCoroutine` runs the body up to its first yield,
+  and an empty queue never yields, so a handle could be stored for an already-finished coroutine.
+- Aim-mode entry and exit raise nothing, so they neither grant the enemies a round nor lock input. Firing
+  costs a turn only when a shot actually left the bow (an empty quiver is free).
+
+### Deviations and notes
+
+- `swordDrawn` was **deleted**, not renamed. Nothing read it once combat left `MoveEntity`, and the only
+  real selection state is `aiming`: key 1 selects melee (`LeaveAimMode`), key 2 selects the bow
+  (`TryEnterAimMode`). The Player prefab still stores `swordDrawn: 1`; Unity ignores the orphaned field.
+- Buff durations stay on `onMoveEvent` instead of moving into a TurnManager end-of-round phase. Once the
+  event fires exactly once per real turn, one tick per round is already true, and `MapgenDiagnostics`
+  drives the tick through that subscription. T05 can hang damage-over-time on the same seam.
+- `PlayDriver` no longer reimplements movement: it calls `Controls.TryMove`, so the harness exercises the
+  real validation and bump-attack instead of a copy that silently drifted.
+- Input cannot be synthesised, so the PlayMode suite drives `TryMove` and the pipeline's public API.
+
+### A T02 mystery resolved
+
+T02 reported one unreproducible `originWalkable=False` generation. It was a chest on the player's spawn
+cell: `generateLootTiles` writes chest terrain (99, solid) at a random cell in each room without knowing
+where the player stands, so roughly one floor in thirty spawned the player inside a chest - which also
+made the whole floor report as unreachable from the spawn. The generator now reserves the spawn cell, and
+`GeneratedFloors_NeverPutAChestUnderThePlayer` walks 30 seeded floors to keep it that way.
+
+### Verified
+
+EditMode 39/39 (3 new rule tests); PlayMode 8/8 (4 new turn-flow tests, plus the 30-floor generation
+sweep with no reachability error); bridge play test: `MapgenDiagnostics.TurnPipeline` and
+`ConsumableBuff` all checks passed, and `PlayDriver`'s steps logged `takingTurn=False` out of combat.

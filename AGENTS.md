@@ -128,8 +128,8 @@ through `Grid.CellFromWorld(Vector3)` — never compare codes inline.
 
 **Entity occupancy is not in `Grid`.** `EntityManager` owns a one-entity-per-cell dictionary.
 Register, move and unregister every moving entity through it or collision/combat silently ignores
-it. (Today `MoveEntity` also resolves melee when the destination is occupied; M1 T03 moves that to
-the caller while keeping bump-to-attack behaviour identical — don't rely on the old shape.)
+it. `MoveEntity` only moves, and refuses an occupied destination: the caller decides what stepping
+into an entity means, and since T03 bump-attack lives in `Controls.TryMove`.
 
 **Chests change terrain at runtime, and it takes two writes:**
 ```csharp
@@ -140,13 +140,13 @@ Only the first leaves the cell `Unassigned`, so `CanMoveTo` keeps refusing the s
 `CountLivingEnemies` misses an enemy standing there (a room can read as cleared while one is
 alive). Any new destructible cell (webs, ore veins) must copy this path.
 
-**2. Turn order flows through a static event.** Player action resolves, then
-`Controls.onMoveEvent` fires; `TurnManager` receives it, alerts enemies, runs the `TakeTurns`
-coroutine with small delays, and clears `Controls.takingTurn` in `finally`. `takingTurn` is the
-input lock. `TurnManager` subscribes in `Start`, unsubscribes in `OnDestroy` — keep static event
-subscriptions symmetric or reloads leak handlers. Note today's known defects, both fixed by T03:
-the event fires **before** validation (so a wall bump costs a turn) and aim-mode entry can start a
-second concurrent coroutine.
+**2. Turn order flows through a static event, and only a real action raises it.** The player action is
+validated and resolved first, then `Controls.ConsumeTurn` - the single raiser of `onMoveEvent` - checks
+`TurnRules.ConsumesTurn` and fires; `TurnManager` receives it, alerts enemies, runs the single-flight
+`TakeTurns` coroutine, and clears `Controls.takingTurn` in `finally`. `takingTurn` is the input lock;
+`TurnManager.IsEnemyPhaseRunning` is the phase guard. A refused action (wall bump, gated exit, empty
+quiver, aim-mode entry) is free: nothing moves, nothing fires. `TurnManager` subscribes in `Start` and
+unsubscribes in `OnDestroy` — keep static event subscriptions symmetric or reloads leak handlers.
 
 **3. `IslandManager` is a static snapshot, not a singleton.** `Rebuild(roomsSpace)` snapshots
 walkability once per generation; anything walkable later needs `MarkWalkable`. `CanMoveTo` gates
@@ -270,6 +270,11 @@ Traps, all learned the hard way:
   the record of what just happened. The bridge console and `Temp/` files are the observable channels.
 - These methods call `IslandManager.Rebuild`, which replaces the editor's island map until the next
   generation.
+- **The designer may leave the editor open when they hand over.** EditMode suites still run through the
+  bridge (`TestRunnerMenu.RunEditMode`, then read `Temp/testrun-EditMode.json`), and play testing works
+  through `EnterPlaymode` + `PlayDriver`. The **PlayMode** suite cannot: batchmode aborts with 134 while
+  another instance holds the project. Confirm `activeSceneDirty:false` from `/editor_state`, then quit
+  the editor gracefully (`osascript -e 'tell application "Unity" to quit'`) instead of killing it.
 
 **4. Run play tests through `EnterPlaymode` + `PlayDriver`. This path works, unlike bridge-driven
 `TestRunnerApi` PlayMode runs (see the traps above).** The game reads legacy `Input` inside
