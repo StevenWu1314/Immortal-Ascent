@@ -57,6 +57,11 @@ Verified against the code, not the docs:
   enemies read. Unaware enemies roam one step per round inside their own room.
 - **Test assemblies exist** (T00): `Assets/Tests/EditMode` (pure rules, runnable through the bridge) and
   `Assets/Tests/PlayMode` (batchmode or the Test Runner window only - never the bridge).
+- **Crafting is portable and out of combat only** (T07). `CraftingRules` reuses T03's turn predicate for
+  "in combat", `RecipeDiscovery` reveals a recipe the first time a material it uses is handled (per run,
+  reset by `BeginRun`), and the panel lists every craftable definition as enabled, greyed or locked. The
+  ammo path grants `PlayerStats.Arrows` instead of an item stack. Craftable data still needs authoring:
+  the shipped items have no recipes yet.
 - **Fog is code-only and unwired.** `FogManager` has serialized Tilemap/TileBase fields, but no scene
   object references it and nothing calls its `Initialize`/`ClearFog`. Both of its calls in `Controls` are
   null-guarded; the feature does nothing until someone wires it.

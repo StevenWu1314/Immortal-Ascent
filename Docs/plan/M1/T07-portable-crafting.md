@@ -76,3 +76,47 @@ Report the discovery rule as implemented, the three UI states, and confirm that 
 ## Out of scope
 
 Permanent blueprint unlocks, the journal, rune crafting, crafting stations, currency.
+
+## Outcome (implemented)
+
+- `CraftingRules` (pure): `IsCraftingAllowed(island, livingEnemies)` is literally
+  `!TurnRules.IsTurnBased(...)` - there is no second definition of "in combat". Plus `Reveals`,
+  `Missing`/`CanAfford` (demand is summed per material, so two lines asking for 5 Iron need 10 in stock),
+  `StateOf` (the three states) and `TryCraft` (validate the whole recipe and the output space, then consume).
+- `RecipeDiscovery` (per-run): a recipe is revealed the first time the player handles *any* material it
+  uses, and stays revealed. `Inventory.addItem` is the single observation point, so mining, chests, corpse
+  drops and starter items all feed it, and each unlock is announced once. `RunState.BeginRun` resets it.
+- `CraftingManager` lists every craftable definition with a state: **Enabled** (discovered, affordable and
+  there is room), **Greyed** (discovered but missing materials - the entry spells out what is missing - or
+  no room), **Locked** (undiscovered, blacked out). Non-enabled entries are non-interactable but still
+  explain themselves when clicked.
+- Crafting is refused in combat with feedback, and the panel closes when a fight starts: the manager watches
+  `Controls.onMoveEvent` and closes it as soon as the player's island holds a living enemy.
+- The ammo path: crafting an `ItemKind.Ammo` definition consumes the recipe and grants
+  `ArrowEconomy.ArrowsPerOre` arrows via `PlayerStats.AddArrows` instead of adding a stack, so the arrow
+  recipe stays "1 ore" and the quiver stays a number (T06).
+
+### Checkpoint answers
+
+- **Discovery rule:** revealed on first handling of any material the recipe uses, kept for the run.
+- **Three states:** enabled / greyed (with the missing-materials or "Inventory full" reason) / locked.
+- **Nothing is persisted:** discovery is per run and reset at `BeginRun`. There are no blueprint items and
+  no journal, deliberately - that is M2/M3.
+
+### Notes
+
+- `ItemDefinition` gained three small members for this: `Recipe` (read accessor), `ConsumeMaterials()`
+  (validate and consume without granting, used by the ammo path) and `SetRecipe` for content tooling and
+  tests. Gameplay never rewrites a definition.
+- The shipped `Arrow` definition has **no recipe yet** - authoring the recipes is the hand-over item - so the
+  PlayMode test sets one at runtime to exercise the path. Until those exist the panel lists nothing, because
+  nothing is craftable.
+- The crafting panel does exist in the dungeon scene (`CraftingManager` plus an assigned `CraftingPanel`);
+  its open button calls `LoadAvailableRecipies` from a scene-assigned `onClick`.
+
+### Verified
+
+EditMode 97/97 (12 new crafting tests: summed demand, the three states, discovery predicates, failed-craft
+reporting); PlayMode 19/19 - the three new ones assert crafting is refused while an enemy shares the island
+and allowed again once it is gone, that a fight closes the panel, and that the arrow recipe consumes exactly
+one ore and adds exactly ten arrows.

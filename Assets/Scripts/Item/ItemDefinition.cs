@@ -239,6 +239,38 @@ public class ItemDefinition : ScriptableObject
     /// <summary>True when this item has a recipe at all.</summary>
     public bool IsCraftable => recipe != null && recipe.Count > 0;
 
+    /// <summary>The recipe as data, for the crafting rules (T07). Empty means "not craftable".</summary>
+    public IReadOnlyList<Ingredient> Recipe => recipe;
+
+    /// <summary>
+    /// Replace the recipe. Editor content tooling and tests use this; gameplay never rewrites a definition,
+    /// because definitions are shared immutable assets.
+    /// </summary>
+    public void SetRecipe(IEnumerable<Ingredient> entries)
+    {
+        recipe = entries != null ? new List<Ingredient>(entries) : new List<Ingredient>();
+    }
+
+    /// <summary>
+    /// Validate the whole recipe and consume the materials without granting the item. Ammo uses this: arrows
+    /// are a count rather than a stack (T06), so CraftingRules grants arrows instead of an item.
+    /// </summary>
+    public bool ConsumeMaterials()
+    {
+        Inventory inventory = Inventory.Instance;
+        if (inventory == null ||
+            !TryResolveMaterials(out List<(ItemDefinition material, int amount)> toRemove, true))
+        {
+            return false;
+        }
+
+        foreach (var (material, amount) in toRemove)
+        {
+            inventory.removeItem(material, amount);
+        }
+        return true;
+    }
+
     /// <summary>Can this item be crafted right now, from the player's inventory?</summary>
     public bool CanCraft()
     {

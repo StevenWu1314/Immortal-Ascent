@@ -108,6 +108,19 @@ public class Inventory : MonoBehaviour
         {
             return 0;
         }
+
+        // Discovery (T07): handling a material for the first time reveals the recipes that use it. Every
+        // acquisition path funnels through here - mining, chests, corpse drops and starter items.
+        foreach (ItemDefinition unlocked in RecipeDiscovery.Observe(definition))
+        {
+            Debug.Log($"[CRAFT] new recipe unlocked: {unlocked.DisplayName}");
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.DrawFlowupText($"New recipe: {unlocked.DisplayName}",
+                    PlayerStats.Instance != null ? PlayerStats.Instance.transform.position : transform.position);
+            }
+        }
+
         if (slots == null || slots.Length == 0)
         {
             Debug.LogWarning("Inventory has no slots; cannot add " + definition.DisplayName);

@@ -107,6 +107,8 @@ public static class RunState
 
         sequence = new RunSequence(floors);
         ClearStairs();
+        // Discovery is per run (T07): permanent blueprint unlocks are M2/M3.
+        RecipeDiscovery.Reset();
     }
 
     /// <summary>Record where this floor's stairs are, so the interaction and the minimap agree.</summary>

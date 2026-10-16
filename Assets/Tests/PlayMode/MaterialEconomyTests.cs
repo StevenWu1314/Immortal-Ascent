@@ -70,8 +70,11 @@ public class MaterialEconomyTests
         Assert.AreEqual(0, grid.GetValueAtLocation(vein.x, vein.y), "a depleted vein opens its cell");
         Assert.IsTrue(Grid.IsWalkableTerrain(grid.GetValueAtLocation(vein.x, vein.y)));
 
+        // The cell itself is done. (An adjacent *generated* vein could still be mineable, so this asks the
+        // registry about this vein rather than about whatever happens to be next to the player.)
         yield return DungeonSceneFixture.WaitForEnemyPhase();
-        Assert.IsFalse(controls.TryMineAdjacentVein(), "there is nothing left to mine");
+        Assert.IsFalse(OreVeinRegistry.TryMine(vein, grid, RunState.Rng, out _, out int nothing));
+        Assert.AreEqual(0, nothing);
     }
 
     [UnityTest]

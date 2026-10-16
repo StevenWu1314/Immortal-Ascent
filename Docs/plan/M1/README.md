@@ -145,7 +145,7 @@ T11 integration + full-run playtest + desktop builds   (after T10 and T09)
 | T04 | [T04-awareness-roaming-los.md](T04-awareness-roaming-los.md) | **done** - EditMode 56/56, PlayMode 12/12 (bridge harnesses pending a session with the editor) |
 | T05 | [T05-status-root.md](T05-status-root.md) | **done** - EditMode 69/69, PlayMode 14/14 (Root only; the other four kinds are refused) |
 | T06 | [T06-materials-loot.md](T06-materials-loot.md) | **done** - EditMode 85/85, PlayMode 16/16; ground drops split out (see the task file) |
-| T07 | [T07-portable-crafting.md](T07-portable-crafting.md) | not started |
+| T07 | [T07-portable-crafting.md](T07-portable-crafting.md) | **done** - EditMode 97/97, PlayMode 19/19 (recipes still need authoring; see the hand-over) |
 | T08 | [T08-minimap-hud.md](T08-minimap-hud.md) | not started |
 | T09 | [T09-plains-content.md](T09-plains-content.md) | not started |
 | T10 | [T10-boss-tusk-sovereign.md](T10-boss-tusk-sovereign.md) | not started |

@@ -91,9 +91,20 @@ Please run these in a session with the editor open (the agent bridge works: `exe
 | T04 awareness, roaming, LOS | **done, committed** `e156f48` | EditMode 56/56, PlayMode 12/12. Fixed a real cell-space bug in the aim overlay. |
 | T05 statuses (Root) and webs | **done, committed** `de6f978` | EditMode 69/69, PlayMode 14/14. Only Root is applyable; the other four kinds are refused. |
 | T06 materials, loot, arrows | **done, committed** `8b8ff2e` | EditMode 85/85, PlayMode 16/16. Ground drops split out; recipes and the loot-table SO deferred (see above). |
-| T07 portable crafting | **not started** | See the scoping note below. |
+| T07 portable crafting | **done, committed** | EditMode 97/97, PlayMode 19/19. Discovery, the three panel states, out-of-combat gating and the ammo path are in; **the recipes themselves are still un-authored**, so the panel lists nothing until you do task 4 below. |
 | T08 minimap and HUD | **not started** | Needs scene wiring; the plan is code-plus-menu-item. |
 | T09 Plains content | **not started** | Mostly data and tuning. |
+
+### T07 additions to the hand-over
+
+- **The recipes are now the blocker.** T07 lists and gates recipes correctly, but every shipped item still
+  has an empty `recipe`, so the crafting panel shows nothing and discovery has nothing to reveal. The table
+  in task 3 above is the data. `ItemDefinition` now has `Recipe`, `ConsumeMaterials()` and `SetRecipe`, so
+  a small menu item could write them through code if you prefer that to Inspector work — say so and I will
+  add `Tools/Content/Set M1 Recipes`.
+- **Arrows flow into the quiver automatically**: crafting an `ItemKind.Ammo` definition consumes the recipe
+  and calls `PlayerStats.AddArrows(10)`. The `Arrow` definition already exists as Ammo
+  (`Resources/ItemDefinitions/Consumables/Arrow.asset`), so only its 1 Iron Ore recipe is missing.
 
 ### Scoping note for T07-T09 (written before starting them)
 
