@@ -159,11 +159,11 @@ public class PlaytestRegressionTests
         // FloorToInt read of the transform would return.
         player.transform.position += new Vector3(-0.1f, 0f, 0f);
 
-        int healthBefore = stats.Health;
+        int healthBefore = stats.CurrentHealth;
         enemy.takeTurn();
         yield return null;
 
-        Assert.Less(stats.Health, healthBefore,
+        Assert.Less(stats.CurrentHealth, healthBefore,
             "an adjacent enemy must attack even while the player's transform is mid-shake");
     }
 

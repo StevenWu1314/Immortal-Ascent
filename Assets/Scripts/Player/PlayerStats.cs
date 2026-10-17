@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Dynamic;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -10,6 +12,13 @@ public class PlayerStats : MonoBehaviour{
     // levelUpUI rollback write here, and nothing else.
     // ---------------------------------------------------------------------------------
     [SerializeField] int Health;
+
+    /// <summary>
+    /// Read-only view of the serialized health for tests and diagnostics. The field itself stays a plain
+    /// [SerializeField] int: Unity cannot serialize an auto-property, so exposing Health as a property
+    /// would have reset the player's starting health to zero.
+    /// </summary>
+    public int CurrentHealth => Health;
     [SerializeField] int MaxHealth;
     [SerializeField] int strength;
     [SerializeField] int dexterity;

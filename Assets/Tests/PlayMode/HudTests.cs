@@ -34,11 +34,17 @@ public class HudTests
     {
         yield return DungeonSceneFixture.LoadAndWaitForGeneration();
 
-        // The scene has no minimap wired yet (that is the HudWiring menu item), so give the test one. With no
-        // tilemap assigned it still tracks the rules, which is what this asserts.
-        var host = new GameObject("MinimapTest");
-        Minimap minimap = host.AddComponent<Minimap>();
-        Assert.IsTrue(Minimap.Instance != null, "the minimap registers itself as the scene's instance");
+        // Use the scene's minimap when the HUD wiring has added one, otherwise give the test its own. A second
+        // Minimap component refuses itself, so Instance is the only correct handle - holding the component the
+        // test just added would read a Rules object nothing ever feeds.
+        GameObject host = null;
+        if (Minimap.Instance == null)
+        {
+            host = new GameObject("MinimapTest");
+            host.AddComponent<Minimap>();
+        }
+        Minimap minimap = Minimap.Instance;
+        Assert.IsTrue(minimap != null, "the scene should have a minimap after the wiring or the fallback above");
 
         Controls controls = DungeonSceneFixture.Player();
         Vector2Int start = DungeonSceneFixture.RegistryCell(controls);
@@ -56,8 +62,11 @@ public class HudTests
         Assert.Greater(minimap.Rules.VisitedCount, before, "stepping onto a new cell reveals it");
         Assert.IsTrue(minimap.Rules.IsVisited(start + direction));
 
-        Object.Destroy(host);
-        yield return null;
+        if (host != null)
+        {
+            Object.Destroy(host);
+            yield return null;
+        }
     }
 
     [UnityTest]

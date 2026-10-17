@@ -54,13 +54,23 @@ internal static class DungeonSceneFixture
     /// <summary>Wait for the enemy phase to drain, then assert it really finished.</summary>
     public static IEnumerator WaitForEnemyPhase()
     {
-        TurnManager manager = TurnManager.Instance;
+        // Re-read the instance each frame: a test that ends by reloading the scene (or by dying) leaves the
+        // captured TurnManager destroyed, and its flag would read whatever it held at teardown - which made this
+        // helper fail with "the enemy phase never finished" once in a full run and pass in isolation.
         float deadline = Time.realtimeSinceStartup + 15f;
-        while (manager.IsEnemyPhaseRunning && Time.realtimeSinceStartup < deadline)
+        while (Time.realtimeSinceStartup < deadline)
         {
+            TurnManager manager = TurnManager.Instance;
+            if (manager == null || !manager.IsEnemyPhaseRunning)
+            {
+                yield break;   // finished, or the scene that owned the phase is gone
+            }
             yield return null;
         }
-        Assert.IsFalse(manager.IsEnemyPhaseRunning, "the enemy phase never finished");
+
+        // A phase that is still running after 15s on a live manager is a real hang, not a flake.
+        Assert.IsFalse(TurnManager.Instance != null && TurnManager.Instance.IsEnemyPhaseRunning,
+            "the enemy phase never finished");
     }
 
     /// <summary>
