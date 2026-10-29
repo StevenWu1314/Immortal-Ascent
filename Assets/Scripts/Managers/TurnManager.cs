@@ -137,6 +137,14 @@ public class TurnManager : MonoBehaviour
 
         try
         {
+            // Let every other onMoveEvent subscriber queue itself before the queue is read. TurnManager
+            // subscribes in Start and the enemies subscribe in OnEnable when the generator spawns them, so the
+            // order is not guaranteed: when the manager was invoked first the queue was still empty, the loop
+            // below never ran, and the finally released the input lock inside the same call. The enemies then
+            // queued themselves for the *next* round - which is why the player could act twice per enemy round,
+            // with both melee and ranged attacks.
+            yield return null;
+
             if (enemies.Count != 0)
                 yield return new WaitForSeconds(turnStartDelay);
             while (enemies.Count != 0)

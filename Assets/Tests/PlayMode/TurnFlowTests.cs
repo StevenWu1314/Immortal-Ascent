@@ -129,6 +129,56 @@ public class TurnFlowTests
     }
 
     [UnityTest]
+    public IEnumerator AnAdjacentEnemy_AttacksBack_InTheSameRound()
+    {
+        yield return DungeonSceneFixture.LoadAndWaitForGeneration();
+
+        Controls controls = DungeonSceneFixture.Player();
+        PlayerStats stats = PlayerStats.Instance;
+        DungeonSceneFixture.EquipFirstWeapon(ranged: false);
+
+        // Stand the PLAYER next to an enemy - moving the enemy would send it home on its turn.
+        EnemyBehavior enemy = Object.FindObjectsByType<EnemyBehavior>(FindObjectsSortMode.None)[0];
+        Enemy enemyHealth = enemy.GetComponent<Enemy>();
+        Vector2Int enemyCell = new Vector2Int(Mathf.FloorToInt(enemy.transform.position.x),
+            Mathf.FloorToInt(enemy.transform.position.y));
+        Vector2Int spot = default;
+        Vector2Int direction = Vector2Int.zero;
+        foreach (Vector2Int candidate in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+        {
+            Vector2Int cell = enemyCell + candidate;
+            if (!Grid.IsWalkableTerrain(Grid.Current.GetValueAtLocation(cell.x, cell.y)) ||
+                IslandManager.GetIsland(cell) != IslandManager.GetIsland(enemyCell) ||
+                EntityManager.Instance.IsOccupied(cell))
+            {
+                continue;
+            }
+            spot = cell;
+            direction = Vector2Int.zero - candidate;   // from the player back into the enemy
+            break;
+        }
+        Assert.AreNotEqual(Vector2Int.zero, direction, "no free cell next to the enemy for the player");
+
+        EntityManager.Instance.UnregisterEntity(controls.gameObject);
+        controls.transform.position = new Vector3(spot.x, spot.y, controls.transform.position.z);
+        EntityManager.Instance.RegisterEntity(controls.gameObject, spot);
+
+        int enemyHealthBefore = DungeonSceneFixture.ReadEnemyHealth(enemyHealth);
+        int playerHealthBefore = stats.CurrentHealth;
+
+        Assert.IsTrue(controls.TryMove(direction), "bumping the enemy is an action");
+        Assert.Less(DungeonSceneFixture.ReadEnemyHealth(enemyHealth), enemyHealthBefore, "the bump damages the enemy");
+        Assert.IsTrue(controls.takingTurn, "the input lock is held while the enemy phase runs");
+
+        yield return DungeonSceneFixture.WaitForEnemyPhase();
+        yield return null;
+
+        Assert.Less(stats.CurrentHealth, playerHealthBefore,
+            "the adjacent enemy has to hit back in the same round - not a round later");
+        Assert.IsFalse(controls.takingTurn, "and the lock is released afterwards");
+    }
+
+    [UnityTest]
     public IEnumerator EnemyPhase_IsSingleFlight_AndReleasesTheLockWhenItEnds()
     {
         yield return DungeonSceneFixture.LoadAndWaitForGeneration();
