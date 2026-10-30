@@ -163,7 +163,7 @@ public static class CraftingRules
                 failure = "not enough materials";
                 return false;
             }
-            arrowsGranted = ArrowEconomy.ArrowsPerOre;
+            arrowsGranted = recipe.RecipeOutput;
             if (PlayerStats.Instance != null)
             {
                 PlayerStats.Instance.AddArrows(arrowsGranted);

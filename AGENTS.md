@@ -125,6 +125,23 @@ or a non-serialized member is fine — the cosmetic typos
 (`ProceduralGeneraltionAlgorithm.cs`, `BrachingRooms`, `levelUpUI.cs`, `UI Manager.cs`) are
 deliberately left alone.
 
+### UI lives in the scene, not in code
+
+Never create, attach or position HUD/panel widgets at runtime. UI that the designer cannot select in the
+Hierarchy, restyle in the Inspector or see without entering Play mode is not a deliverable - runtime
+`new GameObject`/`AddComponent` for UI hides the structure and cannot be edited afterwards.
+
+When a task needs new UI:
+
+1. write the components to **read serialized references only**, and log a clear warning naming the missing
+   field and the menu item that fills it;
+2. add an Editor `[MenuItem]` that builds the objects **in the open scene** with their layout baked in, and
+   assigns every reference through `SerializedObject`;
+3. hand the designer that one menu item. After it runs, the scene owns the layout, and the components must
+   keep working when the designer moves, restyles or deletes those objects.
+
+The same applies to a prefab: prefer a scene object or prefab the designer can open over anything code-built.
+
 ### Scope
 Make the smallest change that satisfies the task. Do not refactor toward a preferred style, add
 packages, or reorganise folders unless the task says so. `Packages/manifest.json` changes force a
@@ -362,3 +379,60 @@ anything destructive (opening a scene, generating into the current one) and ask 
   `Docs/plan/` are currently **untracked** (created after the last commit). Commit them with the
   plan when the designer approves, and regenerate the GDD with
   `python3 Docs/gdd_build/build.py` (writes both files) instead of editing either by hand.
+
+## 9. Working checklist
+
+Work through this before every edit and every report. It is the shortest list of things worth doing twice.
+
+### Before editing a file
+
+- Read the exact region you are changing, in this session, not from memory of an earlier turn.
+- Copy identifiers out of the file. Never type a name from the sentence you are composing.
+- Grep the declaration of any API you call and check the argument types before using it:
+  `grep -n "public .*MethodName\|class TypeName" Assets/Scripts/<path>`.
+- Write the plain `if`/`else` whenever `out` parameters or definite assignment are involved.
+- If the thought "this might not compile" occurs, fix it before saving. Do not ship a known risk.
+
+### Before claiming a compile
+
+- Prove the assembly is newer than the sources:
+  `find Assets -name '*.cs' -newer Library/ScriptAssemblies/<Assembly>.dll` must print nothing.
+- Only then read the console for `error CS`.
+- Remember that an unimported project also has no errors; silence alone proves nothing.
+
+### Before claiming a test result
+
+- Take the result file's timestamp before and after the run; they must differ.
+- Quote counts with their total (`110/110`, `28/29`), never "green".
+- With no result file, the run did not happen: report "no result", not a pass.
+
+### When a tool or mechanism fails
+
+- Two failures of the same mechanism is the limit: stop, quote the exact error, and name the one action that
+  unblocks it.
+- `busy:true`, observation timeouts and aborted requests are editor-state faults, not game bugs; say which.
+- Do not retry a tool after a permission denial; report the setting that has to change.
+
+### When the tree is shared
+
+- `git status --porcelain` before restoring, moving or deleting anything, tracked or untracked. A folder the
+  designer moved shows up as `?? new/` alongside ` D old/`.
+- Do not `git checkout --` a path the designer may have relocated; restore into a copy or ask first.
+- Announce a deletion or move in the same message as the action, before performing it.
+
+### When adding code
+
+- Numbers a designer might tune belong on an asset or a serialized field. A static class that only holds a
+  number is a bug.
+- UI lives in the scene: components read serialized references, one `[MenuItem]` builds the objects, the
+  designer owns the layout afterwards.
+- When a contract covers coordinate spaces or units, audit every call site of that data in the same pass.
+- Prefer deleting a helper over introducing a second source of truth for the same rule.
+
+### When reporting
+
+- Never estimate your own context budget. There is no measurement for it, the harness compacts
+  automatically, and a guess stops work that could have continued. Report progress, not capacity.
+- One line per change: what changed, what verified it, what did not.
+- Put the unverified part in the same sentence as the change: "changed X; not compiled, because Y".
+- If verification was blocked, report the block instead of a completion.

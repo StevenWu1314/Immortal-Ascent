@@ -1,86 +1,101 @@
-using UnityEditor;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Builds the T08 HUD in the open scene: a readout column (realm/floor, whose turn, weapon, ammo, root status)
-/// and the corner minimap, with every reference assigned.
+/// Builds the HUD in the open scene (AGENTS.md: UI lives in the scene, never built at runtime).
 ///
-/// It creates what is missing and reuses what is already there, so it is safe to run again after moving things
-/// around. Positions are plain placeholders - nudge them once you can see them.
+/// It creates a "HUD" root under the canvas with the readout rows, the two weapon slots and the corner
+/// minimap, then assigns every reference. Run it once; afterwards the scene owns the layout and you can move,
+/// restyle or delete any of it.
 /// </summary>
 public static class HudWiring
 {
-    private const string ReadoutName = "HudReadout";
-    private const string MinimapName = "Minimap";
-    private const float RowHeight = 30f;
-    private const float LeftPadding = 16f;
+    private const float Margin = 16f;
+    private const float Row = 26f;
+    private const float Slot = 56f;
+    private const float SlotGap = 10f;
+    private const float SlotBase = Margin;
+    private const float RowBase = Margin + Slot + SlotGap + 8f;
 
     [MenuItem("Tools/Content/Wire HUD References")]
     public static void Wire()
     {
-        Canvas canvas = FindHudCanvas();
+        Canvas canvas = FindCanvas();
         if (canvas == null)
         {
-            Debug.LogWarning("[HUD] no Canvas in the open scene. Open the scene that has the HUD and run this again.");
+            Debug.LogWarning("[HUD] no Canvas in the open scene; open the scene with the HUD and run this again.");
             return;
         }
 
-        HudReadout readout = Object.FindFirstObjectByType<HudReadout>(FindObjectsInactive.Include);
+        GameObject hud = Child(canvas.transform, "HUD");
+        Stretch(hud.GetComponent<RectTransform>());
+
+        HudReadout readout = Object.FindFirstObjectByType<HudReadout>();
         if (readout == null)
         {
             readout = canvas.gameObject.AddComponent<HudReadout>();
         }
 
-        RectTransform column = EnsureChild(canvas.transform, ReadoutName);
-        AnchorTopLeft(column);
-        column.sizeDelta = new Vector2(420f, 5f * RowHeight);
+        TextMeshProUGUI realm = Text(hud.transform, "HudRealm", "Plains - Floor 1", 0);
+        TextMeshProUGUI turn = Text(hud.transform, "HudTurn", "Your turn", 3);
+        TextMeshProUGUI rootText = Text(hud.transform, "HudRootText", string.Empty, 1, 240f);
+        GameObject rootIcon = Icon(hud.transform);
 
-        SerializedObject serialized = new SerializedObject(readout);
-        Assign(serialized, "realmText", EnsureText(column, "realmText", "Plains - Floor 1", 0));
-        Assign(serialized, "turnText", EnsureText(column, "turnText", "Your turn", 1));
-        Assign(serialized, "weaponText", EnsureText(column, "weaponText", "Melee: none", 2));
-        Assign(serialized, "ammoText", EnsureText(column, "ammoText", "Arrows 0", 3));
+        RectTransform slotRoot = Child(hud.transform, "WeaponSlots").GetComponent<RectTransform>();
+        Stretch(slotRoot);
+        Image meleeSlot = SlotImage(slotRoot, "MeleeSlot", 0f);
+        Image meleeIcon = Icon(meleeSlot.transform, "Icon");
+        Image bowSlot = SlotImage(slotRoot, "BowSlot", Slot + SlotGap);
+        Image bowIcon = Icon(bowSlot.transform, "Icon");
+        TextMeshProUGUI badge = Badge(bowSlot.transform);
 
-        RectTransform rootRow = EnsureChild(column, "rootRow");
-        AnchorTopLeft(rootRow);
-        rootRow.anchoredPosition = new Vector2(0f, -(4f * RowHeight));
-        rootRow.sizeDelta = new Vector2(420f, 22f);
-        Assign(serialized, "rootIcon", EnsureIcon(rootRow));
-        Assign(serialized, "rootText", EnsureText(rootRow, "rootText", string.Empty, 0, 240f));
-        serialized.ApplyModifiedProperties();
+        WeaponSlots slots = canvas.gameObject.GetComponent<WeaponSlots>();
+        if (slots == null)
+        {
+            slots = canvas.gameObject.AddComponent<WeaponSlots>();
+        }
 
-        RawImage map = EnsureMinimapImage(canvas.transform);
-        Minimap minimap = Object.FindFirstObjectByType<Minimap>(FindObjectsInactive.Include);
+        SerializedObject so = new SerializedObject(readout);
+        Set(so, "realmText", realm);
+        Set(so, "turnText", turn);
+        Set(so, "rootText", rootText);
+        Set(so, "rootIcon", rootIcon);
+        Set(so, "hudRoot", hud);
+        so.ApplyModifiedProperties();
+
+        SerializedObject slotSo = new SerializedObject(slots);
+        Set(slotSo, "meleeSlot", meleeSlot);
+        Set(slotSo, "meleeIcon", meleeIcon);
+        Set(slotSo, "rangedSlot", bowSlot);
+        Set(slotSo, "rangedIcon", bowIcon);
+        Set(slotSo, "ammoBadge", badge);
+        slotSo.ApplyModifiedProperties();
+
+        RawImage map = EnsureMinimapImage(hud.transform);
+        Minimap minimap = Object.FindFirstObjectByType<Minimap>();
         if (minimap == null)
         {
-            minimap = new GameObject(MinimapName).AddComponent<Minimap>();
+            minimap = new GameObject("Minimap").AddComponent<Minimap>();
         }
-
-        SerializedObject minimapSerialized = new SerializedObject(minimap);
-        SerializedProperty display = minimapSerialized.FindProperty("display");
-        if (display != null)
-        {
-            display.objectReferenceValue = map;
-        }
-        minimapSerialized.ApplyModifiedProperties();
+        SerializedObject mapSo = new SerializedObject(minimap);
+        Set(mapSo, "display", map);
+        mapSo.ApplyModifiedProperties();
 
         EditorUtility.SetDirty(readout);
+        EditorUtility.SetDirty(slots);
         EditorUtility.SetDirty(minimap);
-        Debug.Log("[HUD] wired " + ReadoutName + " and " + MinimapName + " under '" + canvas.name + "'. " +
-                  "The rows are piled at the top-left as placeholders; move them where they read best and save " +
-                  "the scene. The minimap texture only fills while the game is running. If " + MinimapName +
-                  " still carries a Grid/Tilemap child from the earlier wiring, it is unused now.");
+        Debug.Log("[HUD] built under '" + canvas.name + "': a 'HUD' root with realm/turn/root rows, two weapon " +
+                  "slots (MeleeSlot, BowSlot) and a corner minimap. Move, restyle or delete any of it - and if a " +
+                  "duplicate 'Your turn' banner already exists, delete one. Save the scene.");
     }
 
-    private static Canvas FindHudCanvas()
+    private static Canvas FindCanvas()
     {
-        // A screen-space canvas with a scaler is the HUD; the others are panels.
         foreach (Canvas candidate in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
-            if (candidate.isActiveAndEnabled && candidate.renderMode == RenderMode.ScreenSpaceOverlay &&
-                candidate.GetComponent<CanvasScaler>() != null)
+            if (candidate.isActiveAndEnabled && candidate.renderMode == RenderMode.ScreenSpaceOverlay)
             {
                 return candidate;
             }
@@ -88,103 +103,135 @@ public static class HudWiring
         return Object.FindFirstObjectByType<Canvas>(FindObjectsInactive.Include);
     }
 
-    private static void Assign(SerializedObject serialized, string field, Object value)
-    {
-        SerializedProperty property = serialized.FindProperty(field);
-        if (property != null)
-        {
-            property.objectReferenceValue = value;
-        }
-        else
-        {
-            Debug.LogWarning("[HUD] HudReadout has no '" + field + "' field to assign.");
-        }
-    }
-
-    private static RectTransform EnsureChild(Transform parent, string name)
+    private static GameObject Child(Transform parent, string name)
     {
         Transform existing = parent.Find(name);
         if (existing != null)
         {
-            return existing as RectTransform != null ? (RectTransform)existing : existing.gameObject.AddComponent<RectTransform>();
+            return existing.gameObject;
         }
-
         var created = new GameObject(name, typeof(RectTransform));
         created.transform.SetParent(parent, false);
-        return created.GetComponent<RectTransform>();
+        return created;
     }
 
-    private static void AnchorTopLeft(RectTransform rect)
+    private static void Stretch(RectTransform rect)
     {
-        rect.anchorMin = new Vector2(0f, 1f);
-        rect.anchorMax = new Vector2(0f, 1f);
-        rect.pivot = new Vector2(0f, 1f);
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
     }
 
-    private static TextMeshProUGUI EnsureText(Transform parent, string name, string initial, int row, float width = 420f)
+    private static void Place(RectTransform rect, float x, float y, float width, float height)
     {
-        Transform existing = parent.Find(name);
-        TextMeshProUGUI text;
-        if (existing != null && existing.TryGetComponent(out text))
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.zero;
+        rect.pivot = Vector2.zero;
+        rect.anchoredPosition = new Vector2(x, y);
+        rect.sizeDelta = new Vector2(width, height);
+    }
+
+    private static TextMeshProUGUI Text(Transform parent, string name, string initial, int row, float width = 720f)
+    {
+        GameObject go = Child(parent, name);
+        TextMeshProUGUI text = go.GetComponent<TextMeshProUGUI>();
+        if (text == null)
         {
-            return text;
+            text = go.AddComponent<TextMeshProUGUI>();
         }
-
-        var created = new GameObject(name, typeof(RectTransform));
-        created.transform.SetParent(parent, false);
-        text = created.AddComponent<TextMeshProUGUI>();
         text.text = initial;
         text.fontSize = 22f;
         text.alignment = TextAlignmentOptions.MidlineLeft;
+        text.raycastTarget = false;
+        text.enableWordWrapping = false;
+        if (text.font == null && TMP_Settings.defaultFontAsset != null)
+        {
+            text.font = TMP_Settings.defaultFontAsset;
+        }
+        Place(text.rectTransform, Margin, RowBase + row * Row, width, Row - 4f);
+        return text;
+    }
+
+    private static GameObject Icon(Transform parent)
+    {
+        GameObject go = Child(parent, "HudRootIcon");
+        Image image = go.GetComponent<Image>();
+        if (image == null)
+        {
+            image = go.AddComponent<Image>();
+        }
+        image.color = new Color(0.55f, 0.85f, 0.45f, 1f);
+        image.raycastTarget = false;
+        Place(image.rectTransform, Margin, RowBase + 2f * Row, 18f, 18f);
+        return go;
+    }
+
+    private static Image Icon(Transform parent, string name)
+    {
+        GameObject go = Child(parent, name);
+        Image image = go.GetComponent<Image>();
+        if (image == null)
+        {
+            image = go.AddComponent<Image>();
+        }
+        image.raycastTarget = false;
+        image.preserveAspect = true;
+        RectTransform rect = image.rectTransform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = new Vector2(4f, 4f);
+        rect.offsetMax = new Vector2(-4f, -4f);
+        return image;
+    }
+
+    private static Image SlotImage(Transform parent, string name, float offsetX)
+    {
+        GameObject go = Child(parent, name);
+        Image image = go.GetComponent<Image>();
+        if (image == null)
+        {
+            image = go.AddComponent<Image>();
+        }
+        image.raycastTarget = false;
+        image.color = new Color(0.12f, 0.13f, 0.15f, 0.65f);
+        Place(image.rectTransform, Margin + offsetX, SlotBase, Slot, Slot);
+        return image;
+    }
+
+    private static TextMeshProUGUI Badge(Transform slot)
+    {
+        GameObject go = Child(slot, "AmmoBadge");
+        TextMeshProUGUI text = go.GetComponent<TextMeshProUGUI>();
+        if (text == null)
+        {
+            text = go.AddComponent<TextMeshProUGUI>();
+        }
+        text.fontSize = 18f;
+        text.alignment = TextAlignmentOptions.TopRight;
         text.raycastTarget = false;
         if (text.font == null && TMP_Settings.defaultFontAsset != null)
         {
             text.font = TMP_Settings.defaultFontAsset;
         }
-
         RectTransform rect = text.rectTransform;
-        AnchorTopLeft(rect);
-        rect.anchoredPosition = new Vector2(LeftPadding, -(row * RowHeight));
-        rect.sizeDelta = new Vector2(width, RowHeight - 4f);
+        rect.anchorMin = new Vector2(1f, 1f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.pivot = new Vector2(1f, 0f);
+        rect.anchoredPosition = new Vector2(6f, 2f);
+        rect.sizeDelta = new Vector2(44f, 22f);
         return text;
     }
 
-    private static Image EnsureIcon(Transform parent)
+    private static RawImage EnsureMinimapImage(Transform parent)
     {
-        Transform existing = parent.Find("rootIcon");
-        Image found;
-        if (existing != null && existing.TryGetComponent(out found))
+        GameObject go = Child(parent, "MinimapImage");
+        RawImage image = go.GetComponent<RawImage>();
+        if (image == null)
         {
-            return found;
+            image = go.AddComponent<RawImage>();
         }
-
-        var created = new GameObject("rootIcon", typeof(RectTransform));
-        created.transform.SetParent(parent, false);
-        Image icon = created.AddComponent<Image>();
-        icon.color = new Color(0.55f, 0.85f, 0.45f, 1f);   // placeholder colour; assign art later
-        icon.raycastTarget = false;
-
-        RectTransform rect = icon.rectTransform;
-        AnchorTopLeft(rect);
-        rect.sizeDelta = new Vector2(20f, 20f);
-        rect.anchoredPosition = new Vector2(LeftPadding, -1f);
-        return icon;
-    }
-
-    private static RawImage EnsureMinimapImage(Transform canvas)
-    {
-        Transform existing = canvas.Find(MinimapName + "Image");
-        RawImage found;
-        if (existing != null && existing.TryGetComponent(out found))
-        {
-            return found;
-        }
-
-        var created = new GameObject(MinimapName + "Image", typeof(RectTransform));
-        created.transform.SetParent(canvas, false);
-        RawImage image = created.AddComponent<RawImage>();
         image.raycastTarget = false;
-
         RectTransform rect = image.rectTransform;
         rect.anchorMin = new Vector2(1f, 1f);
         rect.anchorMax = new Vector2(1f, 1f);
@@ -192,5 +239,16 @@ public static class HudWiring
         rect.anchoredPosition = new Vector2(-16f, -16f);
         rect.sizeDelta = new Vector2(180f, 180f);
         return image;
+    }
+
+    private static void Set(SerializedObject serialized, string field, Object value)
+    {
+        SerializedProperty property = serialized.FindProperty(field);
+        if (property == null)
+        {
+            Debug.LogWarning("[HUD] no '" + field + "' field to assign.");
+            return;
+        }
+        property.objectReferenceValue = value;
     }
 }

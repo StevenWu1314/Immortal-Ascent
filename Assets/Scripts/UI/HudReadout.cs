@@ -10,8 +10,6 @@ using UnityEngine.UI;
 public class HudReadout : MonoBehaviour
 {
     [Header("Text")]
-    [SerializeField] private TMP_Text ammoText;
-    [SerializeField] private TMP_Text weaponText;
     [SerializeField] private TMP_Text turnText;
     [SerializeField] private TMP_Text realmText;
 
@@ -20,8 +18,6 @@ public class HudReadout : MonoBehaviour
     [SerializeField] private TMP_Text rootText;
 
     [Header("Colours")]
-    [SerializeField] private Color ammoNormal = Color.white;
-    [SerializeField] private Color ammoEmpty = Color.red;
 
     private int shownArrows = -1;
     private string shownWeapon;
@@ -29,57 +25,49 @@ public class HudReadout : MonoBehaviour
     private string shownRealm;
     private bool shownRooted;
 
+    [Tooltip("The HUD root to hide while a panel is open. Assigned by Tools/Content/Wire HUD References.")]
+    [SerializeField] private GameObject hudRoot;
+
+    /// <summary>
+    /// Lay the rows out down the bottom-left corner, and cache their shared parent so the whole readout can be
+    /// hidden in one go. Done in code because the scene references cannot be rearranged from script: the rows
+    /// were spread along one bottom strip with fixed widths, so "Melee: Rusty Sword / Bow: Wooden Bow" wrapped
+    /// onto two lines and pushed into the ammo count and the existing position readout.
+    /// </summary>
+    private void Awake()
+    {
+
+        if (hudRoot == null)
+        {
+            Transform parent = realmText != null ? realmText.transform.parent : (turnText != null ? turnText.transform.parent : null);
+            hudRoot = parent != null ? parent.gameObject : null;
+        }
+    }
+
+
     private void Update()
     {
         PlayerStats player = PlayerStats.Instance;
         Controls controls = player != null ? player.GetComponent<Controls>() : null;
 
-        RefreshAmmo(player);
-        RefreshWeapon();
+        // The readout belongs to the world, so it goes away while the inventory, crafting, level-up or
+        // inscription panel is open. MenuIsOpen is the same gate the input code uses.
+        bool hide = controls != null && controls.MenuIsOpen;
+        if (hudRoot != null && hudRoot.activeSelf == hide)
+        {
+            hudRoot.SetActive(!hide);
+        }
+        if (hide)
+        {
+            return;
+        }
+
         RefreshTurn(controls);
         RefreshRealm();
         RefreshRoot(player);
     }
 
-    private void RefreshAmmo(PlayerStats player)
-    {
-        if (ammoText == null || player == null)
-        {
-            return;
-        }
 
-        int arrows = player.Arrows;
-        if (arrows == shownArrows)
-        {
-            return;
-        }
-        shownArrows = arrows;
-        ammoText.text = $"Arrows {arrows}";
-        ammoText.color = arrows <= 0 ? ammoEmpty : ammoNormal;
-    }
-
-    private void RefreshWeapon()
-    {
-        if (weaponText == null)
-        {
-            return;
-        }
-
-        Equipments equipment = Equipments.Instance;
-        string weapon = equipment == null || equipment.meleeWeapon == null ? "Melee: none"
-            : $"Melee: {equipment.meleeWeapon.DisplayName}";
-        if (equipment != null && equipment.rangeWeapon != null)
-        {
-            weapon += $" / Bow: {equipment.rangeWeapon.DisplayName}";
-        }
-
-        if (weapon == shownWeapon)
-        {
-            return;
-        }
-        shownWeapon = weapon;
-        weaponText.text = weapon;
-    }
 
     private void RefreshTurn(Controls controls)
     {
@@ -99,6 +87,21 @@ public class HudReadout : MonoBehaviour
         }
         shownTurn = turn;
         turnText.text = turn;
+    }
+
+    /// <summary>
+    /// A weapon's display name, with the "(empty equipment)" placeholder that the empty gear definitions carry
+    /// rendered as "none" instead of leaking into the HUD. Equipments holds EquipmentInstance, not
+    /// ItemDefinition - the instance carries the per-item inscriptions.
+    /// </summary>
+    private static string NameOf(EquipmentInstance equipment)
+    {
+        if (equipment == null)
+        {
+            return "none";
+        }
+        string name = equipment.DisplayName;
+        return string.IsNullOrEmpty(name) || name.StartsWith("(") ? "none" : name;
     }
 
     private void RefreshRealm()

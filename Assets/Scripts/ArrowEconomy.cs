@@ -6,14 +6,6 @@ using System.Collections.Generic;
 /// </summary>
 public static class ArrowEconomy
 {
-    public const int ArrowsPerOre = 10;
-
-    /// <summary>Arrows a batch of ore is worth. Zero ore is worth nothing, never a negative count.</summary>
-    public static int ArrowsFromOre(int ore)
-    {
-        return ore > 0 ? ore * ArrowsPerOre : 0;
-    }
-
     /// <summary>
     /// How many arrows a set of inventory stacks is worth. Arrows live in the quiver count rather than in the
     /// bag (T06), so any ammo a starter list or an old save still hands over is folded into that count.

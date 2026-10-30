@@ -62,6 +62,7 @@ public class CraftingFlowTests
         {
             new ItemDefinition.Ingredient { material = iron, amount = 1 }
         });
+        arrows.SetRecipeOutput(10);
 
         Inventory inventory = Inventory.Instance;
         Assert.IsTrue(inventory != null, "the scene should have an Inventory");
@@ -77,8 +78,8 @@ public class CraftingFlowTests
         bool crafted = CraftingRules.TryCraft(arrows, inventory, out int granted, out string failure);
 
         Assert.IsTrue(crafted, failure);
-        Assert.AreEqual(ArrowEconomy.ArrowsPerOre, granted);
-        Assert.AreEqual(arrowsBefore + ArrowEconomy.ArrowsPerOre, PlayerStats.Instance.Arrows,
+        Assert.AreEqual(arrows.RecipeOutput, granted, "the amount comes from the definition");
+        Assert.AreEqual(arrowsBefore + arrows.RecipeOutput, PlayerStats.Instance.Arrows,
             "arrows land in the quiver count");
         Assert.AreEqual(oreBefore - 1, inventory.countOf(iron), "exactly one ore was consumed");
     }

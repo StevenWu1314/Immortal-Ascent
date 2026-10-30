@@ -8,8 +8,8 @@ using UnityEngine;
 /// </summary>
 public class QuickUse : MonoBehaviour
 {
-    /// <summary>Proposed key. Confirm at the T08 checkpoint; changing it is this one constant.</summary>
-    public const KeyCode UseKey = KeyCode.Q;
+    [Tooltip("Key that uses the selected pill. Set it here instead of in code so it can be rebound.")]
+    [SerializeField] private KeyCode useKey = KeyCode.Q;
 
     public static QuickUse Instance { get; private set; }
 
@@ -79,7 +79,7 @@ public class QuickUse : MonoBehaviour
 
     private void Update()
     {
-        if (!Input.GetKeyDown(UseKey))
+        if (!Input.GetKeyDown(useKey))
         {
             return;
         }

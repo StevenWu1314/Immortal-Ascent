@@ -18,6 +18,9 @@ public class InscriptionPanel : MonoBehaviour
     [Header("Root")]
     [SerializeField] private GameObject window;
 
+    [Tooltip("The board image behind the panel. Assigned by Tools/Content/Assign Inscription Page Art.")]
+    [SerializeField] private Image board;
+
     [Header("Inscription being applied")]
     [SerializeField] private TMP_Text inscriptionName;
     [SerializeField] private TMP_Text inscriptionEffect;
@@ -89,6 +92,24 @@ public class InscriptionPanel : MonoBehaviour
         }
         BuildTargetList(targets);
         SetPlayerMenuOpen(true);
+
+        // An inactive window never gets a layout pass, so on the first open every widget could draw at a zero
+        // size until a second open (or a canvas resize) forced one. Rebuild it now that the content exists.
+        RebuildLayout();
+    }
+
+    /// <summary>
+    /// Force the window's layout to recompute after its content changed. Needed because the panel is built and
+    /// populated while inactive, and inactive UI does not receive a layout pass.
+    /// </summary>
+    private void RebuildLayout()
+    {
+        Canvas.ForceUpdateCanvases();
+        RectTransform root = window != null ? window.transform as RectTransform : null;
+        if (root != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(root);
+        }
     }
 
     private void SetPlayerMenuOpen(bool open)
@@ -180,6 +201,7 @@ public class InscriptionPanel : MonoBehaviour
         if (slotSection != null)
         {
             slotSection.SetActive(true);
+            RebuildLayout();
         }
 
         int free = InscriptionService.NextFreeSlot(target);

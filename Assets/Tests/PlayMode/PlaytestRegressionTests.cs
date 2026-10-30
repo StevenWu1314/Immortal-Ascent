@@ -41,7 +41,7 @@ public class PlaytestRegressionTests
 
         Controls controls = DungeonSceneFixture.Player();
         DungeonSceneFixture.EquipFirstWeapon(ranged: true);
-        PlayerStats.Instance.AddArrows(ArrowEconomy.ArrowsPerOre);
+        PlayerStats.Instance.AddArrows(10);
 
         RangeAttackTilemap overlay = PlayerStats.Instance.GetComponentInChildren<RangeAttackTilemap>(true);
         Assert.IsTrue(overlay != null, "the player should carry the aim overlay");

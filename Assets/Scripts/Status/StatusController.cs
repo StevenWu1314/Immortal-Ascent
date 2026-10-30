@@ -10,6 +10,10 @@ using UnityEngine;
 public class StatusController : MonoBehaviour
 {
     /// <summary>Rounds a spider web's Root lasts (GDD 5.4).</summary>
+    /// <summary>
+    /// Rounds Root lasts. A GDD 9.4 number, so it stays a constant until M2 adds status assets to hold it -
+    /// do not add a one-number settings asset just to move it.
+    /// </summary>
     public const int RootRounds = 2;
 
     private readonly StatusSet statuses = new StatusSet();

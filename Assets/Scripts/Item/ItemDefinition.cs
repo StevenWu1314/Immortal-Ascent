@@ -242,6 +242,18 @@ public class ItemDefinition : ScriptableObject
     /// <summary>The recipe as data, for the crafting rules (T07). Empty means "not craftable".</summary>
     public IReadOnlyList<Ingredient> Recipe => recipe;
 
+    [Tooltip("How many of this item one craft produces. The arrow recipe is the standard example: 1 ore -> 10 arrows.")]
+    [SerializeField] private int recipeOutput = 1;
+
+    /// <summary>How many this item's recipe produces per craft. At least 1, so an unauthored asset still crafts.</summary>
+    public int RecipeOutput => Mathf.Max(1, recipeOutput);
+
+    /// <summary>Set the craft output. Editor content tooling and tests only - definitions are shared assets.</summary>
+    public void SetRecipeOutput(int amount)
+    {
+        recipeOutput = Mathf.Max(1, amount);
+    }
+
     /// <summary>
     /// Replace the recipe. Editor content tooling and tests use this; gameplay never rewrites a definition,
     /// because definitions are shared immutable assets.

@@ -13,6 +13,13 @@ public static class OreVeinRegistry
     /// <summary>Terrain code for an intact vein: blocked until it is mined out.</summary>
     public const int OreCode = 7;
 
+    /// <summary>
+    /// Ore taken per mine attempt, inclusive (GDD 5.5). This one is a fixed rule, not a tuning knob - the
+    /// per-vein total is the number that differs per floor, and it lives on the generator.
+    /// </summary>
+    public const int OrePerMineMin = 1;
+    public const int OrePerMineMax = 3;
+
     private struct Vein
     {
         public ItemDefinition ore;
@@ -60,7 +67,7 @@ public static class OreVeinRegistry
             return false;
         }
 
-        int take = Mathf.Min(vein.remaining, rng.Next(1, 4));
+        int take = Mathf.Min(vein.remaining, rng.Next(OrePerMineMin, OrePerMineMax + 1));
         vein.remaining -= take;
         ore = vein.ore;
         yielded = take;

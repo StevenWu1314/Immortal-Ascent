@@ -17,6 +17,9 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
     /// </summary>
     [SerializeField] private Vector2Int enemiesPerRoom = new Vector2Int(1, 2);
 
+    [Tooltip("Ore a vein holds, as (min, max-exclusive). Floor tuning, not a rule - GDD 12.2.")]
+    [SerializeField] private Vector2Int orePerVein = new Vector2Int(3, 9);
+
     [Header("Chests")]
     [Tooltip("Entity spawned at every chest cell. Leave empty to keep chest cells as bare terrain.")]
     [SerializeField] private GameObject chestPrefab;
@@ -189,7 +192,7 @@ public class RoomFirstDungeonGenerator : MonoBehaviour
             foreach (Vector2Int veinCell in tilePlacer.generateOreVeins(roomsSpace, grid, spawnCell, 2, 4))
             {
                 // The yield is rolled at generation time so a vein is finite, and so a save can hold it later.
-                OreVeinRegistry.Register(veinCell, metal, Random.Range(3, 9));
+                OreVeinRegistry.Register(veinCell, metal, Random.Range(orePerVein.x, orePerVein.y));
             }
         }
         // Corridors must span the gap between rooms (Rooms.distanceApart) plus enough to
