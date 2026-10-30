@@ -22,6 +22,7 @@ Code is split into asmdefs (added by T00): `RogueAsianFantasy.Runtime` (`Assets/
 | The same spec as Word | `Docs/Immortal-Ascent-GDD-v2.docx` (generated — edit the `.md`/generator, never the `.docx`) |
 | GDD generator | `Docs/gdd_build/` — `build.py` writes both `.docx` and `.md` |
 | Current work plan and checkpoint protocol | `Docs/plan/M1/README.md` |
+| Input and accessibility plan (mouse-only / keyboard-only runs) | `Docs/plan/input-and-accessibility.md` |
 | Item system detail | `Docs/ItemSystem.md` |
 | Refactor backlog (partly executed) | `Docs/Refactoring-Plan.md` |
 | Runtime code | `Assets/Scripts/` (41 `.cs`) |

@@ -17,7 +17,7 @@ MonoBehaviour:
   description: 'Spider Web
 
 '
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 66f44ab17fd414175ae5b3cbd79c81c6, type: 3}
   stackLimit: 99
   kind: 0
   damage: 0
@@ -27,3 +27,8 @@ MonoBehaviour:
   stat: 0
   effectAmount: 0
   effectDuration: 0
+  inscriptionEffect: 0
+  inscriptionStat: 0
+  inscriptionAmount: 0
+  inscriptionTarget: 0
+  recipe: []

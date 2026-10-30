@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ffd8dfc6f5844faf9d2aff47d559803, type: 3}
+  m_Name: PigYao
+  m_EditorClassIdentifier: 
+  displayName: Pig Yao
+  maxHealth: 50
+  damage: 10
+  experience: 10
+  detectionRadius: 10
+  chaseRange: 20
+  range: 0
+  rangedCooldown: 2
+  dropTable: {fileID: 11400000, guid: 1b9131c564c6e4016ba88f527796d867, type: 2}
+  resistancePhysical: 0
+  resistanceFire: 0
+  resistancePoison: 0
+  resistanceEnfeeblement: 0

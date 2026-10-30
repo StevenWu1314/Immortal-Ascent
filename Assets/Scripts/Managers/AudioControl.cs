@@ -7,6 +7,8 @@ public class AudioControl : MonoBehaviour
     [SerializeField] private AudioMixer audioMixer;
     [SerializeField] private Slider slider;
 
+
+
     private void Start()
     {
         // Load saved volume or set to default (1f)

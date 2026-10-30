@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26c195695e13f4ceabdbd31d36a03744, type: 3}
+  m_Name: Pig_yao
+  m_EditorClassIdentifier: 
+  enemyName: Pig_yao
+  drops:
+  - material: {fileID: 11400000, guid: 00b47d2dbb0d3444993a074e28872a0f, type: 2}
+    chancePercent: 30
+    minAmount: 1
+    maxAmount: 1
+  - material: {fileID: 11400000, guid: 970aa598cd6234c20ad1a0e5a7a11778, type: 2}
+    chancePercent: 30
+    minAmount: 1
+    maxAmount: 1

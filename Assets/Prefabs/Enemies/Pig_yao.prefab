@@ -119,6 +119,7 @@ MonoBehaviour:
   health: 50
   damage: 10
   expValue: 10
+  definition: {fileID: 11400000, guid: 7fccee8ed2a8549b9ac239921b20ce48, type: 2}
 --- !u!50 &-2914483047055078606
 Rigidbody2D:
   serializedVersion: 4

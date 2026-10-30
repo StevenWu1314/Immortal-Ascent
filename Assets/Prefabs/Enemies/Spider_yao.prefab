@@ -119,6 +119,7 @@ MonoBehaviour:
   health: 50
   damage: 10
   expValue: 10
+  definition: {fileID: 11400000, guid: bee991dab5ea54ff9aab2637f6028143, type: 2}
 --- !u!58 &-7594236510293803726
 CircleCollider2D:
   m_ObjectHideFlags: 0

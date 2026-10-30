@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53498a2282f24df59ca92f1289e8979, type: 3}
+  m_Name: Plains
+  m_EditorClassIdentifier: 
+  realmIndex: 0
+  displayName: Plains
+  floorsInRealm: 2
+  aggroMode: 0
+  metal: {fileID: 11400000, guid: ad19ce6ce6fb44d05a84efee81935af4, type: 2}
+  enemies:
+  - {fileID: 1363082926110395293, guid: 3e1d33bf9a53f474f83f98e2ae9f0535, type: 3}
+  - {fileID: 1363082926110395293, guid: b247bccf31880df4c839e6f6bae6fc1c, type: 3}
+  - {fileID: 4491772018395455330, guid: 38530b514ce2d4737ac2b67c89f29127, type: 3}

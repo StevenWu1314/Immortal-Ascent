@@ -25,3 +25,13 @@ MonoBehaviour:
   stat: 0
   effectAmount: 0
   effectDuration: 0
+  inscriptionEffect: 0
+  inscriptionStat: 0
+  inscriptionAmount: 0
+  inscriptionTarget: 0
+  recipe:
+  - material: {fileID: 11400000, guid: 970aa598cd6234c20ad1a0e5a7a11778, type: 2}
+    amount: 4
+  - material: {fileID: 11400000, guid: 9465bb9696f674b37a36c249a214225a, type: 2}
+    amount: 2
+  recipeOutput: 1

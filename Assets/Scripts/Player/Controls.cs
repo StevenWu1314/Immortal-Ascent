@@ -332,6 +332,17 @@ public class Controls : MonoBehaviour
         // terrain grid - passing an overlay cell straight in tested a cell nowhere near the target, which is
         // what made every shot report "no line of sight".
         Vector2Int levelTarget = Grid.CellFromWorld(cellCenter);
+
+        // Combat is per island (GDD 6.1). Without this the player could stand in a corridor, aim through the
+        // doorway and kill a room without ever entering it, which skips the turn economy entirely.
+        if (IslandManager.GetIsland(levelTarget) != IslandManager.GetIsland(PlayerCell()))
+        {
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.DrawFlowupText("Not in this room", transform.position);
+            }
+            return false;
+        }
         if (!LineOfSight.HasClearShot(grid, PlayerCell(), levelTarget))
         {
             if (UIManager.Instance != null)

@@ -130,6 +130,7 @@ MonoBehaviour:
   health: 30
   damage: 10
   expValue: 10
+  definition: {fileID: 11400000, guid: f7bb8e759515349249a2eb6d27c1a5ff, type: 2}
 --- !u!114 &7325254153722871514
 MonoBehaviour:
   m_ObjectHideFlags: 0

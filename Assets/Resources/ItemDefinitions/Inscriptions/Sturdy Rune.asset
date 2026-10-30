@@ -15,7 +15,7 @@ MonoBehaviour:
   id: Sturdy Rune
   displayName: Sturdy Rune
   description: A rune that hardens whoever carries it.
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 28dcf77fd9fd942d091d00700f66c7e5, type: 3}
   stackLimit: 1
   kind: 5
   damage: 0
@@ -28,4 +28,6 @@ MonoBehaviour:
   inscriptionEffect: 1
   inscriptionStat: 2
   inscriptionAmount: 20
-  inscriptionTarget: 0
+  inscriptionTarget: 3
+  recipe: []
+  recipeOutput: 1

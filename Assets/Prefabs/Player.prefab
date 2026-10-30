@@ -45,7 +45,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e136d209f2d84e3f8816cc27a927ac6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mousez: 0
   states:
   - {fileID: 21300000, guid: f8232ec78854e684f9a00f3dad4b2001, type: 3}
   - {fileID: 21300000, guid: 6cdbf32b1d0b3e34bac97fe7d18d5865, type: 3}
@@ -359,13 +358,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9afd5089f268d49409b1ee0f49be81ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  swordDrawn: 1
   moveCooldown: 0.1
   runningCooldown: 0
   MenuIsOpen: 0
   playerStats: {fileID: 3324978833351514589}
   positionDisplay: {fileID: 0}
-  CollectButton: {fileID: 0}
   takingTurn: 0
   shotArrow: {fileID: 4132982777459572664, guid: cc9ae52b9c0cf4739830d8599356e047, type: 3}
   bow: {fileID: 0}
@@ -381,7 +378,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 169b8e5eed2a142e189d640c034d2478, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inventoryContainer: {fileID: 0}
   items: []
   StarterItems:
   - definition: {fileID: 11400000, guid: 039af1c772be5490caec0d6df58c64fe, type: 2}
@@ -419,8 +415,10 @@ MonoBehaviour:
   experienceToNextLevel: 10
   equipments: {fileID: 3665873110269209749}
   expMultiplier: 1
+  startingArrows: 0
   HealthBar: {fileID: 0}
   ExpBar: {fileID: 0}
+  deathSceneIndex: 0
 --- !u!114 &3665873110269209749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -433,9 +431,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5d7a7ea9c9004926812fb47c41d3b6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inventoryContainer: {fileID: 0}
   meleeWeapon:
-    definition: {fileID: 11400000, guid: 039af1c772be5490caec0d6df58c64fe, type: 2}
+    definition: {fileID: 0}
     inscriptions: []
   rangeWeapon:
     definition: {fileID: 0}
@@ -443,8 +440,6 @@ MonoBehaviour:
   armor:
     definition: {fileID: 0}
     inscriptions: []
-  ItemContainer: {fileID: 0}
-  itemDisplay: {fileID: 0}
 --- !u!58 &6555760731972634069
 CircleCollider2D:
   m_ObjectHideFlags: 0

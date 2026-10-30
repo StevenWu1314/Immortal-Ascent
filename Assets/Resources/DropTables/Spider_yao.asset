@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26c195695e13f4ceabdbd31d36a03744, type: 3}
+  m_Name: Spider_yao
+  m_EditorClassIdentifier: 
+  enemyName: Spider_yao
+  drops:
+  - material: {fileID: 11400000, guid: 9465bb9696f674b37a36c249a214225a, type: 2}
+    chancePercent: 40
+    minAmount: 1
+    maxAmount: 2
